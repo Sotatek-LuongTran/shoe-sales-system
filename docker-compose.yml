@@ -16,6 +16,15 @@ services:
     networks:
       - shoes_sales_network
 
+  redis:
+    image: redis:7-alpine
+    container_name: redis_cache
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - shoes_sales_network
+
 volumes:
   postgres_data:
 
