@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { DatabaseModule } from './database/database.module';
 import { ConfigModule } from '@nestjs/config';
 import { AuthenticationModule } from './auth/authentication.module';
+import { RedisModule } from './redis/redis.module';
 
 @Module({
   imports: [
@@ -9,6 +10,7 @@ import { AuthenticationModule } from './auth/authentication.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    RedisModule,
     AuthenticationModule,
   ],
   controllers: [],

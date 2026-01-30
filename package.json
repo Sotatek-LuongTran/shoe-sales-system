@@ -23,7 +23,8 @@
     "migration:create": "node ./migration-scripts/migration-create.js",
     "migration:run": "npm run typeorm -- migration:run -d src/database/data-source.ts",
     "migration:revert": "npm run typeorm -- migration:revert -d src/database/data-source.ts",
-    "migration:show": "npm run typeorm -- migration:show -d src/database/data-source.ts"
+    "migration:show": "npm run typeorm -- migration:show -d src/database/data-source.ts",
+    "seed:run": "ts-node -r tsconfig-paths/register src/database/seed/seed.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
@@ -37,6 +38,7 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.3",
     "dotenv": "^17.2.3",
+    "ioredis": "^5.9.2",
     "passport-jwt": "^4.0.1",
     "pg": "^8.17.2",
     "reflect-metadata": "^0.2.2",
