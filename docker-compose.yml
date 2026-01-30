@@ -1,0 +1,24 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: shoes_sales_password
+      POSTGRES_DB: shoes_sales
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - shoes_sales_network
+
+volumes:
+  postgres_data:
+
+networks:
+  shoes_sales_network:
+    driver: bridge
