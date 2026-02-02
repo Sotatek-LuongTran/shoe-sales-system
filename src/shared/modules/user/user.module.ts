@@ -7,4 +7,4 @@ import { UserEntity } from "src/database/entities/user.entity";
     imports: [TypeOrmModule.forFeature([UserEntity])],
     exports: [UserRepository]
 })
-export class BaseModule {}
+export class UserModule {}

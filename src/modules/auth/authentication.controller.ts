@@ -1,13 +1,12 @@
 import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
-import { CreateUserDto } from '../../shared/dto/create-user.dto';
+import { CreateUserDto } from '../../shared/dto/user/create-user.dto';
 import { AuthenticationService } from './authentication.service';
-import { LoginDto } from '../../shared/dto/login.dto';
+import { LoginDto } from '../../shared/dto/user/login.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { Request } from 'express';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Authentication')
-@ApiBearerAuth('access-token')
 @Controller('auth')
 export class AuthenticationController {
   constructor(private readonly authService: AuthenticationService) {}
@@ -41,6 +40,7 @@ export class AuthenticationController {
   })
   @ApiResponse({ status: 400, description: 'Bad request' })
   @Post('logout')
+  @ApiBearerAuth('access-token')
   @UseGuards(AuthGuard('jwt'))
   async logout(@Req() req: Request) {
     const user = req.user as {
@@ -60,6 +60,7 @@ export class AuthenticationController {
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @Get('profile')
+  @ApiBearerAuth('access-token')
   @UseGuards(AuthGuard('jwt'))
   async getProfile(@Req() req: Request) {
     const user = req.user as {
