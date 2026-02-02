@@ -8,7 +8,7 @@ import {
     DeepPartial,
     SelectQueryBuilder,
   } from 'typeorm';
-  import { BaseEntity } from '../entities/base.entity';
+  import { BaseEntity } from './base.entity';
   import { Injectable } from '@nestjs/common';
   
   export interface PaginationOptions {

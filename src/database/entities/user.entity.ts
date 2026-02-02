@@ -1,11 +1,7 @@
 import { Column, Entity, Index, OneToMany } from "typeorm";
-import { BaseEntity } from "./base.entity";
+import { BaseEntity } from "../../shared/modules/base/base.entity";
 import { OrderEntity } from "./order.entity";
-
-export enum UserRole {
-    ADMIN = 'admin',
-    USER = 'user',
-}
+import { UserRole } from "src/shared/enums/user.enum";
 
 @Entity('users')
 @Index('idx_users_email_deleted_at', ['email', 'deletedAt'])
@@ -31,3 +27,5 @@ export class UserEntity extends BaseEntity {
     @OneToMany(() => OrderEntity, (order) => order.user)
     orders: OrderEntity[];
 }
+
+export { UserRole };
