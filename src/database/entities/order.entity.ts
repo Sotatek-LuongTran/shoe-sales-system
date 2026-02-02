@@ -1,21 +1,9 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany } from "typeorm";
-import { BaseEntity } from "./base.entity";
+import { BaseEntity } from "../../shared/modules/base/base.entity";
 import { OrderItemEntity } from "./order-item.entity";
 import { PaymentEntity } from "./payment.entity";
 import { UserEntity } from "./user.entity";
-
-export enum OrderStatus {
-    PENDING = 'pending',
-    PROCESSING = 'processing',
-    SHIPPED = 'shipped',
-    COMPLETED = 'completed',
-    CANCELLED = 'cancelled',
-}
-
-export enum OrderPaymentStatus {
-    PAID = 'paid',
-    UNPAID = 'unpaid'
-}
+import { OrderPaymentStatus, OrderStatus } from "src/shared/enums/order.enum";
 
 @Entity('orders')
 @Index('idx_orders_created_at', ['createdAt'])

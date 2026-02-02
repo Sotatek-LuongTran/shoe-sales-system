@@ -1,5 +1,5 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
-import { BaseEntity } from './base.entity';
+import { BaseEntity } from '../../shared/modules/base/base.entity';
 import { OrderEntity } from './order.entity';
 
 export enum PaymentStatus {

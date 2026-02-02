@@ -1,5 +1,5 @@
 import { Column, Entity, ManyToOne, OneToMany, JoinColumn, Index } from "typeorm";
-import { BaseEntity } from "./base.entity";
+import { BaseEntity } from "../../shared/modules/base/base.entity";
 import { BrandEntity } from "./brand.entity";
 import { CategoryEntity } from "./category.entity";
 import { ProductVariantEntity } from "./product-variant.entity";
