@@ -5,13 +5,13 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { UserRepository } from 'src/database/repositories/user.repository';
-import { CreateUserDto } from './dto/create-user.dto';
+import { UserRepository } from 'src/shared/modules/user/user.repository';
+import { CreateUserDto } from '../../shared/dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
-import { LoginDto } from './dto/login.dto';
-import { UserRole } from 'src/database/entities/user.entity';
-import { RedisService } from '../redis/redis.service';
+import { LoginDto } from '../../shared/dto/login.dto';
+import { RedisService } from '../../common/redis/redis.service';
 import { randomUUID } from 'crypto';
+import { UserRole } from 'src/shared/enums/user.enum';
 
 @Injectable()
 export class AuthenticationService {

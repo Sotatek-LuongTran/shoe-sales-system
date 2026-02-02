@@ -2,10 +2,26 @@ import { Module, Global } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UserEntity } from './entities/user.entity';
-import { UserRepository } from './repositories/user.repository';
+import { UserRepository } from '../shared/modules/user/user.repository';
+import { BrandEntity } from './entities/brand.entity';
+import { CategoryEntity } from './entities/category.entity';
+import { ProductEntity } from './entities/product.entity';
+import { ProductVariantEntity } from './entities/product-variant.entity';
+import { OrderEntity } from './entities/order.entity';
+import { OrderItemEntity } from './entities/order-item.entity';
+import { PaymentEntity } from './entities/payment.entity';
 
 // All entities should be imported here
-const entities = [UserEntity];
+const entities = [
+  UserEntity,
+  BrandEntity,
+  CategoryEntity,
+  ProductEntity,
+  ProductVariantEntity,
+  OrderEntity,
+  OrderItemEntity,
+  PaymentEntity,
+];
 
 // All repositories should be imported here
 const repositories = [UserRepository];
