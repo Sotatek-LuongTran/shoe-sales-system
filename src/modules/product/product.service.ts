@@ -44,11 +44,8 @@ export class ProductService {
     return this.productRepository.save(product);
   }
 
-  async updateProduct(
-    productId: string,
-    dto: UpdateProductDto,
-  ): Promise<ProductEntity> {
-    const product = await this.productRepository.findById(productId);
+  async updateProduct(dto: UpdateProductDto): Promise<ProductEntity> {
+    const product = await this.productRepository.findById(dto.id);
 
     if (!product) {
       throw new NotFoundException('Product not found');
@@ -109,15 +106,13 @@ export class ProductService {
 
   async deleteProduct(id: string) {
     const product = await this.productRepository.findById(id);
+
     if (!product) {
       throw new NotFoundException('No product found');
     }
 
-    const deletedProduct = await this.productRepository.create({
-      ...product,
-      deletedAt: Date.now(),
-    });
+    product.deletedAt = new Date(); // or new Date(Date.now())
 
-    return this.productRepository.save(deletedProduct)
+    return this.productRepository.save(product);
   }
 }

@@ -106,7 +106,8 @@ describe('ProductService', () => {
       brandRepository.findById.mockResolvedValue(mockBrand);
       productRepository.save.mockResolvedValue(mockProduct);
 
-      const result = await service.updateProduct('product-id', {
+      const result = await service.updateProduct({
+        id: 'product-id',
         name: 'Updated Name',
         brandId: mockBrand.id,
       });
@@ -119,7 +120,7 @@ describe('ProductService', () => {
       productRepository.findById.mockResolvedValue(null);
 
       await expect(
-        service.updateProduct('invalid-id', {}),
+        service.updateProduct({id: 'invalid-id'}),
       ).rejects.toThrow(NotFoundException);
     });
   });

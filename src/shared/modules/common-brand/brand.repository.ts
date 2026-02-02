@@ -8,4 +8,12 @@ export class BrandRepository extends BaseRepository<BrandEntity> {
     constructor(datasource: DataSource){
         super(datasource, BrandEntity)
     }
+
+    async findByName(name: string){
+        return this.repository.findOne({
+            where: {
+                name
+            }
+        })
+    }
 }
