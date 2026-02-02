@@ -17,5 +17,14 @@ export class ProductRepository extends BaseRepository<ProductEntity> {
       }
     });
   }
+
+  async findAllByCategory(categoryId: string) {
+    return this.repository.find({
+      where: {
+        categoryId,
+        isActive: true,
+      }
+    });
+  }
   
 }

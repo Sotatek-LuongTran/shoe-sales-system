@@ -1,52 +1,52 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
-import { BrandService } from './brand.service';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { Roles } from 'src/shared/decorators/role.decorator';
 import { UserRole } from 'src/shared/enums/user.enum';
 import { RolesGuard } from 'src/shared/guards/role.guard';
-import { CreateBrandDto } from 'src/shared/dto/brand/create-brand.dto';
-import { UpdateBrandDto } from 'src/shared/dto/brand/update-brand.dto';
+import { CreateCategoryDto } from 'src/shared/dto/category/create-category.dto';
+import { CategoryService } from './category.service';
+import { UpdateCategoryDto } from 'src/shared/dto/category/update-category';
 
-@ApiTags('Brands')
+@ApiTags('categories')
 @ApiBearerAuth('access-token')
 @UseGuards(AuthGuard('jwt'))
-@Controller('brands')
-export class BrandController {
-  constructor(private readonly brandService: BrandService) {}
+@Controller('categories')
+export class CategoryController {
+  constructor(private readonly categoryService: CategoryService) {}
 
   @Post()
   @Roles(UserRole.ADMIN)
   @UseGuards(RolesGuard)
-  @ApiOperation({ summary: 'Create a new brand' })
+  @ApiOperation({ summary: 'Create a new category' })
   @ApiResponse({ 
     status: 201, 
-    description: 'Brand created successfully'
+    description: 'category created successfully'
   })
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  create(@Body() dto: CreateBrandDto) {
-    return this.brandService.createBrand(dto);
+  create(@Body() dto: CreateCategoryDto) {
+    return this.categoryService.createCategory(dto);
   }
 
   @Patch(':id')
   @Roles(UserRole.ADMIN)
   @UseGuards(RolesGuard)
-  @ApiOperation({ summary: 'Update a brand' })
+  @ApiOperation({ summary: 'Update a category' })
   @ApiResponse({ 
     status: 201, 
     description: 'Product updated successfully'
   })
   @ApiResponse({ status: 400, description: 'Bad request' })
-  update(@Body() dto: UpdateBrandDto) {
-    return this.brandService.updateBrand(dto);
+  update(@Body() dto: UpdateCategoryDto) {
+    return this.categoryService.updateCategory(dto);
   }
 
   @Get()
-  @ApiOperation({ summary: 'Get brands with pagination & filters' })
+  @ApiOperation({ summary: 'Get categories with pagination & filters' })
   @ApiResponse({ 
     status: 201, 
-    description: 'Brands get successfully'
+    description: 'Categories get successfully'
   })
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -58,7 +58,7 @@ export class BrandController {
     @Query('limit') limit?: number,
     @Query('search') search?: string,
   ) {
-    return this.brandService.getBrandsPagination({
+    return this.categoryService.getCategorysPagination({
       page: Number(page) || 1,
       limit: Number(limit) || 10,
       search,
@@ -66,16 +66,16 @@ export class BrandController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get brand detail' })
+  @ApiOperation({ summary: 'Get category detail' })
   @ApiResponse({ 
     status: 201, 
-    description: 'Brand get successfully'
+    description: 'Category get successfully'
   })
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
   getOne(@Param('id') id: string) {
-    return this.brandService.getBrand(id);
+    return this.categoryService.getCategory(id);
   }
 
   @Delete(':id')
@@ -84,12 +84,12 @@ export class BrandController {
   @ApiOperation({ summary: 'Soft delete a product' })
   @ApiResponse({ 
     status: 201, 
-    description: 'Brand deleted successfully'
+    description: 'Category deleted successfully'
   })
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
   remove(@Param('id') id: string) {
-    return this.brandService.deleteBrand(id);
+    return this.categoryService.deleteCategory(id);
   }
 }
