@@ -1,4 +1,4 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsEnum,
   IsOptional,
@@ -11,6 +11,12 @@ import {
 import { Gender, ProductType } from 'src/shared/enums/product.enum';
 
 export class UpdateProductDto {
+  @ApiProperty({
+    description: 'Id of the product',
+  })
+  @IsUUID()
+  id: string;
+
   @ApiPropertyOptional({
     description: 'Name of the product',
     example: 'Updated shoe name',
