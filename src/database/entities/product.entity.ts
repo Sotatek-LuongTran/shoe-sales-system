@@ -4,18 +4,7 @@ import { BrandEntity } from "./brand.entity";
 import { CategoryEntity } from "./category.entity";
 import { ProductVariantEntity } from "./product-variant.entity";
 import { OrderItemEntity } from "./order-item.entity";
-
-export enum ProductType {
-    SHOE = 'shoe',
-    CLOTHING = 'clothing',
-    ACCESSORY = 'accessory',
-}
-
-export enum Gender {
-    MALE = 'male',
-    FEMALE = 'female',
-    UNISEX = 'unisex',
-}
+import { Gender, ProductType } from "src/shared/enums/product.enum";
 
 @Entity('products')
 @Index('idx_products_brand_id', ['brandId'])
@@ -65,3 +54,5 @@ export class ProductEntity extends BaseEntity{
     @OneToMany(() => OrderItemEntity, (item) => item.product)
     orderItems: OrderItemEntity[];
 }
+
+export { Gender, ProductType };

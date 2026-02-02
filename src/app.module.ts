@@ -3,7 +3,7 @@ import { DatabaseModule } from './database/database.module';
 import { ConfigModule } from '@nestjs/config';
 import { AuthenticationModule } from './modules/auth/authentication.module';
 import { RedisModule } from './common/redis/redis.module';
-
+import { ProductModule } from './modules/product/product.module';
 @Module({
   imports: [
     DatabaseModule,
@@ -12,8 +12,7 @@ import { RedisModule } from './common/redis/redis.module';
     }),
     RedisModule,
     AuthenticationModule,
+    ProductModule,
   ],
-  controllers: [],
-  providers: [],
 })
 export class AppModule {}

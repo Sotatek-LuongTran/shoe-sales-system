@@ -6,9 +6,9 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { UserRepository } from 'src/shared/modules/user/user.repository';
-import { CreateUserDto } from '../../shared/dto/create-user.dto';
+import { CreateUserDto } from '../../shared/dto/user/create-user.dto';
 import * as bcrypt from 'bcrypt';
-import { LoginDto } from '../../shared/dto/login.dto';
+import { LoginDto } from '../../shared/dto/user/login.dto';
 import { RedisService } from '../../common/redis/redis.service';
 import { randomUUID } from 'crypto';
 import { UserRole } from 'src/shared/enums/user.enum';
@@ -37,6 +37,8 @@ export class AuthenticationService {
       role: UserRole.USER,
       deletedAt: null,
     });
+
+    await this.usersRepo.save(user)
 
     return {
       user: {

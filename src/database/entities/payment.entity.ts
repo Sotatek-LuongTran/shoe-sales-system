@@ -1,14 +1,7 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
 import { BaseEntity } from '../../shared/modules/base/base.entity';
 import { OrderEntity } from './order.entity';
-
-export enum PaymentStatus {
-  PENDING = 'pending',
-  SUCCESSFUL = 'successful',
-  FAILED = 'failed',
-  REFUNDED = 'refunded',
-  CANCELLED = 'cancelled',
-}
+import { PaymentStatus } from 'src/shared/enums/payment.enum';
 
 @Entity('payments')
 @Index('idx_payments_order_id', ['orderId'])
