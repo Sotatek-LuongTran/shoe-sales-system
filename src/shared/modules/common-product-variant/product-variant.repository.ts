@@ -8,4 +8,17 @@ export class ProductVariantRepository extends BaseRepository<ProductVariantEntit
   constructor(datasource: DataSource) {
     super(datasource, ProductVariantEntity);
   }
+
+  async findByProductAndVariant(
+    productId: string,
+    variantValue: string,
+  ): Promise<ProductVariantEntity | null> {
+    return this.repository.findOne({
+      where: {
+        productId,
+        variantValue,
+        isActive: true,
+      },
+    });
+  }
 }
