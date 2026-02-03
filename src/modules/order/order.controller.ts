@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Post,
@@ -36,8 +37,8 @@ export class OrderController {
   @ApiResponse({ status: 201, description: 'Order created successfully' })
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async checkoutOrder(@Req() req: any, @Body() dto: CreateOrderDto) {
-    return this.orderService.checkoutOrder(dto, req.user.id);
+  async checkoutOrder(@Req() req: any) {
+    return this.orderService.checkoutOrder( req.user.id);
   }
 
   // =========================
@@ -86,5 +87,16 @@ export class OrderController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async getAllOrders() {
     return this.orderService.getAllOrders();
+  }
+
+  // =========================
+  // USER: CANCEL ORDER BY ID
+  // =========================
+  @Delete(':id/cancel')
+  @ApiOperation({ summary: 'Cancel order by id (owner only)' })
+  @ApiResponse({ status: 400, description: 'Bad request' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async cancelOrder(@Req() req: any, @Param('id') id: string) {
+    return this.orderService.cancelOrder(id, req.user.id);
   }
 }

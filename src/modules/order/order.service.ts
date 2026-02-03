@@ -4,15 +4,20 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateOrderDto, CreateOrderItemDto } from 'src/shared/dto/order/create-order.dto';
+import {
+  CreateOrderDto,
+  CreateOrderItemDto,
+} from 'src/shared/dto/order/create-order.dto';
 import { DataSource } from 'typeorm';
-import { OrderRepository } from './order.repository';
-import { OrderItemRepository } from './order-item.repository';
+import { OrderRepository } from '../../shared/modules/common-order/order.repository';
+import { OrderItemRepository } from './repository/order-item.repository';
 import { UserRepository } from 'src/shared/modules/user/user.repository';
 import { AddToPendingOrderDto } from 'src/shared/dto/order/add-to-order.dto';
 import { OrderPaymentStatus, OrderStatus } from 'src/shared/enums/order.enum';
 import { ProductVariantRepository } from 'src/shared/modules/common-product-variant/product-variant.repository';
 import { ProductRepository } from 'src/shared/modules/common-product/product.repository';
+import { PaymentRepository } from '../payment/repository/payment.repository';
+import { PaymentStatus } from 'src/shared/enums/payment.enum';
 
 @Injectable()
 export class OrderService {
@@ -23,16 +28,39 @@ export class OrderService {
     private readonly userRepository: UserRepository,
     private readonly productVariantRepository: ProductVariantRepository,
     private readonly productRepository: ProductRepository,
+    private readonly paymentRepository: PaymentRepository,
   ) {}
 
-  async checkoutOrder(dto: CreateOrderDto, userId: string) {
-    return this.dataSource.transaction(async (manager) => {
-      const order = await this.orderRepository.createOrder(manager, userId);
-      await this.orderItemRepository.createItems(manager, order.id, dto.items);
-
-      return order;
+  async checkoutOrder(userId: string) {
+    const order = await this.orderRepository.findPendingOrderByUser(userId);
+  
+    if (!order) {
+      throw new BadRequestException('No pending order found');
+    }
+  
+    if (order.items.length === 0) {
+      throw new BadRequestException('Order is empty');
+    }
+  
+    // create payment
+    const payment = await this.paymentRepository.create({
+      orderId: order.id,
+      amount: order.totalPrice,
+      paymentStatus: PaymentStatus.PENDING,
     });
+  
+    await this.paymentRepository.save(payment);
+  
+    order.status = OrderStatus.PROCESSING;
+    await this.orderRepository.save(order);
+  
+    return {
+      orderId: order.id,
+      paymentId: payment.id,
+      amount: payment.amount,
+    };
   }
+  
 
   async getMyOrders(userId: string) {
     const user = await this.userRepository.findById(userId);
@@ -84,7 +112,7 @@ export class OrderService {
       throw new BadRequestException('Not enough stock');
     }
 
-    variant.stock-= quantity;
+    variant.stock -= quantity;
 
     await this.productVariantRepository.save(variant);
 
@@ -138,5 +166,50 @@ export class OrderService {
     order.totalPrice = items.reduce((sum, i) => sum + Number(i.finalPrice), 0);
 
     return this.orderRepository.save(order);
+  }
+
+  async cancelOrder(orderId: string, userId: string) {
+    return this.dataSource.transaction(async (manager) => {
+      const user = await this.userRepository.findById(userId);
+      if (!user) throw new NotFoundException('User not found');
+
+      const order = await this.orderRepository.findById(orderId, ['items']); // Load items
+      if (!order) {
+        throw new NotFoundException('Order not found');
+      }
+
+      if (order.userId !== userId) {
+        throw new ForbiddenException('Access denied');
+      }
+
+      if (
+        order.status !== OrderStatus.PENDING &&
+        order.status !== OrderStatus.PROCESSING
+      ) {
+        throw new BadRequestException(
+          'Order can only be cancelled when pending or processing',
+        );
+      }
+
+      order.status = OrderStatus.CANCELLED;
+      order.paymentStatus = OrderPaymentStatus.UNPAID; // Reset payment status
+
+      // 🔁 ROLLBACK STOCK
+      for (const item of order.items) {
+        const variant =
+          await this.productVariantRepository.findByProductAndVariant(
+            item.productId,
+            item.variantValue,
+          );
+
+        if (variant) {
+          variant.stock += item.quantity;
+          await manager.getRepository(variant.constructor).save(variant);
+        }
+      }
+
+      await manager.getRepository(order.constructor).save(order);
+      return order;
+    });
   }
 }

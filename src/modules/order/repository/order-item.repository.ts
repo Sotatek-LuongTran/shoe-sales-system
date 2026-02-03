@@ -67,4 +67,8 @@ export class OrderItemRepository extends BaseRepository<OrderItemEntity> {
       },
     });
   }
+
+  async deleteByOrderId(manager: EntityManager, orderId: string): Promise<void> {
+    await manager.getRepository(OrderItemEntity).delete({ orderId });
+  }
 }

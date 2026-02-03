@@ -8,6 +8,7 @@ import { BrandModule } from './modules/brand/brand.module';
 import { CategoryModule } from './modules/category/category.module';
 import { ProductVariantModule } from './modules/product-variant/product-variant.module';
 import { OrderModule } from './modules/order/order.module';
+import { PaymentModule } from './modules/payment/payment.module';
 @Module({
   imports: [
     DatabaseModule,
@@ -21,6 +22,7 @@ import { OrderModule } from './modules/order/order.module';
     CategoryModule,
     ProductVariantModule,
     OrderModule,
+    PaymentModule,
   ],
 })
 export class AppModule {}
