@@ -1,0 +1,84 @@
+import { Controller, Post, Param, Req, UseGuards, Get } from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+  ApiParam,
+} from '@nestjs/swagger';
+import { AuthGuard } from '@nestjs/passport';
+import { PaymentService } from './payment.service';
+import { RolesGuard } from 'src/shared/guards/role.guard';
+import { UserRole } from 'src/shared/enums/user.enum';
+import { Roles } from 'src/shared/decorators/role.decorator';
+
+@ApiTags('Payments')
+@ApiBearerAuth('access-token')
+@UseGuards(AuthGuard('jwt'))
+@Controller('payments')
+export class PaymentController {
+  constructor(private readonly paymentService: PaymentService) {}
+
+  // =========================
+  // CREATE PAYMENT (USER)
+  // =========================
+  @Post(':orderId')
+  @ApiOperation({ summary: 'Create payment for an order (fake)' })
+  @ApiParam({ name: 'orderId', type: String })
+  @ApiResponse({ status: 201, description: 'Payment created' })
+  @ApiResponse({ status: 400, description: 'Invalid order' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async createPayment(@Param('orderId') orderId: string, @Req() req: any) {
+    return this.paymentService.createPayment(orderId, req.user.id);
+  }
+
+  // =========================
+  // CONFIRM PAYMENT (FAKE)
+  // =========================
+  @Post('confirm/:paymentId')
+  @ApiOperation({ summary: 'Confirm payment (simulate success/failure)' })
+  @ApiParam({ name: 'paymentId', type: String })
+  @ApiResponse({ status: 200, description: 'Payment processed' })
+  @ApiResponse({ status: 400, description: 'Payment already processed' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async confirmPayment(@Param('paymentId') paymentId: string) {
+    return this.paymentService.confirmPayment(paymentId);
+  }
+
+  // =========================
+  // CONFIRM PAYMENT (FAKE)
+  // =========================
+  @Post('retry/:paymentId')
+  @ApiOperation({ summary: 'Retry failed payment' })
+  @ApiResponse({ status: 200, description: 'Payment retried successfully' })
+  @ApiResponse({ status: 400, description: 'Bad request' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async retryPayment(@Param('paymentId') paymentId: string, @Req() req: any) {
+    return this.paymentService.retryPayment(paymentId, req.user.id);
+  }
+
+  // =========================
+  // REFUND PAYMENT
+  // =========================
+  @Post('refund/:paymentId')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Admin refund payment' })
+  @ApiResponse({ status: 200, description: 'Payment refunded successfully' })
+  @ApiResponse({ status: 400, description: 'Bad request' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async refund(@Param('paymentId') paymentId: string) {
+    return this.paymentService.refundPayment(paymentId);
+  }
+
+  @Get()
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Admin: get all payments' })
+  @ApiResponse({ status: 200, description: 'Payments get successfully' })
+  @ApiResponse({ status: 400, description: 'Bad request' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async getAllPayments() {
+    return this.paymentService.getAllPayments();
+  }
+}

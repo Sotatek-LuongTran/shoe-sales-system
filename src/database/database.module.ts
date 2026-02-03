@@ -2,7 +2,6 @@ import { Module, Global } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UserEntity } from './entities/user.entity';
-import { UserRepository } from '../shared/modules/user/user.repository';
 import { BrandEntity } from './entities/brand.entity';
 import { CategoryEntity } from './entities/category.entity';
 import { ProductEntity } from './entities/product.entity';
@@ -22,9 +21,6 @@ const entities = [
   OrderItemEntity,
   PaymentEntity,
 ];
-
-// All repositories should be imported here
-const repositories = [UserRepository];
 
 @Global()
 @Module({
@@ -55,7 +51,6 @@ const repositories = [UserRepository];
     }),
     TypeOrmModule.forFeature(entities),
   ],
-  providers: [...repositories],
-  exports: [TypeOrmModule, ...repositories],
+  exports: [TypeOrmModule],
 })
 export class DatabaseModule {}

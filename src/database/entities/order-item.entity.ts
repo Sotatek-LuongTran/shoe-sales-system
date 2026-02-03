@@ -1,7 +1,8 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
 import { BaseEntity } from '../../shared/modules/base/base.entity';
-import { Gender, ProductEntity, ProductType } from './product.entity';
 import { OrderEntity } from './order.entity';
+import { Gender, ProductType } from '../../shared/enums/product.enum';
+import { ProductEntity } from './product.entity';
 
 @Entity('order_items')
 @Index('idx_order_items_order_id', ['orderId'])
