@@ -3,6 +3,7 @@ import { CreateVariantDto } from 'src/shared/dto/product-variant/create-variant.
 import { UpdateVariantDto } from 'src/shared/dto/product-variant/update-vatiant.dto';
 import { ProductVariantRepository } from 'src/shared/modules/common-product-variant/product-variant.repository';
 import { ProductRepository } from 'src/shared/modules/common-product/product.repository';
+import { LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
 
 @Injectable()
 export class ProductVariantService {
@@ -17,7 +18,7 @@ export class ProductVariantService {
     );
     if (!product) throw new NotFoundException('Product not found');
 
-    const variant = this.productVariantRepository.create({
+    const variant = await this.productVariantRepository.create({
       variantValue: createVariantDto.variantValue,
       price: createVariantDto.price,
       stock: createVariantDto.stock,
@@ -25,7 +26,7 @@ export class ProductVariantService {
       isActive: true,
     });
 
-    return variant;
+    return this.productVariantRepository.save(variant);
   }
 
   async updateProductVariant(updateVariantDto: UpdateVariantDto) {
@@ -56,10 +57,13 @@ export class ProductVariantService {
       search?: string;
       sortBy?: string;
       sortOrder?: 'ASC' | 'DESC';
+      minPrice?: number;
+      maxPrice?: number;
+      minStock?: number;
     },
   ) {
-    const product = await this.productRepository.findById(productId);
-    if (!product) {
+    const exists = await this.productRepository.findById(productId);
+    if (!exists) {
       throw new NotFoundException('Product not found');
     }
   
@@ -67,15 +71,15 @@ export class ProductVariantService {
       page: options?.page,
       limit: options?.limit,
       search: options?.search,
-      searchFields: ['name', 'price', 'stock'],
+      searchFields: ['variantValue'],
       sortBy: options?.sortBy ?? 'createdAt',
       sortOrder: options?.sortOrder ?? 'DESC',
       additionalWhere: {
-        product: { id: productId } as any,
+        productId
       },
-      relations: ['product'],
     });
   }
+  
   
   async getProductVariant(id: string) {
     const variant = await this.productVariantRepository.findById(id);

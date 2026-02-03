@@ -13,11 +13,11 @@ import {
 export class CreateVariantDto {
   @ApiProperty({
     description: 'Value of the variant',
-    example: 'Blue',
+    example: 'Light Blue',
   })
   @IsString()
   @IsNotEmpty()
-  @MinLength(6)
+  @MinLength(1)
   @MaxLength(100)
   variantValue: string;
 

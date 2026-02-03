@@ -143,13 +143,6 @@ export class ProductController {
   @ApiQuery({ name: 'page', required: false, example: 1 })
   @ApiQuery({ name: 'limit', required: false, example: 10 })
   @ApiQuery({ name: 'search', required: false, example: 'shoe' })
-  @ApiQuery({ name: 'sortBy', required: false, example: 'createdAt' })
-  @ApiQuery({
-    name: 'sortOrder',
-    required: false,
-    enum: ['ASC', 'DESC'],
-    example: 'DESC',
-  })
   @ApiResponse({ status: 200, description: 'Paginated products by category' })
   @ApiResponse({ status: 404, description: 'Category not found' })
   async getProductsByCategory(
@@ -157,15 +150,11 @@ export class ProductController {
     @Query('page') page?: number,
     @Query('limit') limit?: number,
     @Query('search') search?: string,
-    @Query('sortBy') sortBy?: string,
-    @Query('sortOrder') sortOrder?: 'ASC' | 'DESC',
   ) {
     return this.productService.getProductsByCategory(categoryId, {
       page: page ? Number(page) : undefined,
       limit: limit ? Number(limit) : undefined,
       search,
-      sortBy,
-      sortOrder,
     });
   }
 
@@ -182,13 +171,6 @@ export class ProductController {
   @ApiQuery({ name: 'page', required: false, example: 1 })
   @ApiQuery({ name: 'limit', required: false, example: 10 })
   @ApiQuery({ name: 'search', required: false, example: 'nike' })
-  @ApiQuery({ name: 'sortBy', required: false, example: 'createdAt' })
-  @ApiQuery({
-    name: 'sortOrder',
-    required: false,
-    enum: ['ASC', 'DESC'],
-    example: 'DESC',
-  })
   @ApiResponse({ status: 200, description: 'Paginated products by brand' })
   @ApiResponse({ status: 404, description: 'Brand not found' })
   async getProductsByBrand(
@@ -196,15 +178,11 @@ export class ProductController {
     @Query('page') page?: number,
     @Query('limit') limit?: number,
     @Query('search') search?: string,
-    @Query('sortBy') sortBy?: string,
-    @Query('sortOrder') sortOrder?: 'ASC' | 'DESC',
   ) {
     return this.productService.getProductsByBrand(brandId, {
       page: page ? Number(page) : undefined,
       limit: limit ? Number(limit) : undefined,
       search,
-      sortBy,
-      sortOrder,
     });
   }
 }

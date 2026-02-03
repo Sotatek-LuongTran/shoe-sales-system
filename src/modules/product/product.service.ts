@@ -72,23 +72,25 @@ export class ProductService {
     page?: number;
     limit?: number;
     search?: string;
-    filters?: Record<string, any>;
+    filters?: {
+      gender?: string;
+      productType?: string;
+      brandId?: string;
+      categoryId?: string;
+      isActive?: boolean;
+      minPrice?: number;
+      maxPrice?: number;
+    };
   }) {
     try {
-      return this.productRepository.getListPagination({
+      return this.productRepository.findProductsPaginationWithPriceRange({
         page: options.page,
         limit: options.limit,
         search: options.search,
-        searchFields: ['name', 'description'],
         filters: {
-          gender: options.filters?.gender,
-          productType: options.filters?.productType,
-          brandId: options.filters?.brandId,
-          categoryId: options.filters?.categoryId,
+          ...options.filters,
           isActive: options.filters?.isActive ?? true,
         },
-        sortBy: 'createdAt',
-        sortOrder: 'DESC',
       });
     } catch (error) {
       console.error('Error fetching paginated products:', error);
@@ -97,11 +99,19 @@ export class ProductService {
   }
 
   async getProduct(id: string) {
-    const product = await this.productRepository.findById(id);
-    if (!product) {
+    const product = await this.productRepository.findProductWithPriceRange(id);
+
+    if (!product.entities.length) {
       throw new NotFoundException('No product found');
     }
-    return product;
+
+    return {
+      ...product.entities[0],
+      priceRange: {
+        min: Number(product.raw[0].minprice),
+        max: Number(product.raw[0].maxprice),
+      },
+    };
   }
 
   async deleteProduct(id: string) {
@@ -116,36 +126,34 @@ export class ProductService {
     return this.productRepository.save(product);
   }
 
-      
   async getProductsByCategory(
     categoryId: string,
     options?: {
       page?: number;
       limit?: number;
       search?: string;
-      sortBy?: string;
-      sortOrder?: 'ASC' | 'DESC';
+      minPrice?: number;
+      maxPrice?: number;
     },
   ) {
-    const category = await this.categoryRepository.findById(categoryId);
-    if (!category) {
+    // Validate category existence (cheap + clear error)
+    const exists = await this.categoryRepository.findById(categoryId);
+    if (!exists) {
       throw new NotFoundException('Category not found');
     }
-  
-    return this.productRepository.getListPagination({
+
+    return this.productRepository.findProductsPaginationWithPriceRange({
       page: options?.page,
       limit: options?.limit,
       search: options?.search,
-      searchFields: ['name', 'description'], // adjust as needed
-      sortBy: options?.sortBy ?? 'createdAt',
-      sortOrder: options?.sortOrder ?? 'DESC',
-      additionalWhere: {
+      filters: {
         categoryId,
+        minPrice: options?.minPrice,
+        maxPrice: options?.maxPrice,
+        isActive: true,
       },
-      relations: ['category'], // optional
     });
   }
-  
 
   async getProductsByBrand(
     brandId: string,
@@ -153,26 +161,25 @@ export class ProductService {
       page?: number;
       limit?: number;
       search?: string;
-      sortBy?: string;
-      sortOrder?: 'ASC' | 'DESC';
+      minPrice?: number;
+      maxPrice?: number;
     },
   ) {
-    const brand = await this.brandRepository.findById(brandId);
-    if (!brand) {
+    const exists = await this.brandRepository.findById(brandId);
+    if (!exists) {
       throw new NotFoundException('Brand not found');
     }
-  
-    return this.productRepository.getListPagination({
+
+    return this.productRepository.findProductsPaginationWithPriceRange({
       page: options?.page,
       limit: options?.limit,
       search: options?.search,
-      searchFields: ['name', 'description'],
-      sortBy: options?.sortBy ?? 'createdAt',
-      sortOrder: options?.sortOrder ?? 'DESC',
-      additionalWhere: {
+      filters: {
         brandId,
+        minPrice: options?.minPrice,
+        maxPrice: options?.maxPrice,
+        isActive: true,
       },
-      relations: ['brand'],
     });
   }
 }
