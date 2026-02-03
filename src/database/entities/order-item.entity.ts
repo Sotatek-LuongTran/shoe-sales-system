@@ -1,7 +1,7 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
 import { BaseEntity } from '../../shared/modules/base/base.entity';
 import { OrderEntity } from './order.entity';
-import { Gender, ProductType } from 'src/shared/enums/product.enum';
+import { Gender, ProductType } from '../../shared/enums/product.enum';
 import { ProductEntity } from './product.entity';
 
 @Entity('order_items')

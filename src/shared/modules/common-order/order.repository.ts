@@ -13,7 +13,7 @@ export class OrderRepository extends BaseRepository<OrderEntity> {
   createOrder(manager: EntityManager, userId: string) {
     return manager.getRepository(OrderEntity).save({
       userId,
-      status: OrderStatus.COMPLETED,
+      status: OrderStatus.PROCESSING,
       paymentStatus: OrderPaymentStatus.UNPAID,
     });
   }
@@ -26,10 +26,10 @@ export class OrderRepository extends BaseRepository<OrderEntity> {
     });
   }
 
-  async findById(orderId: string) {
+  async findById(orderId: string, relations: string[] = []) {
     const order = await this.repository.findOne({
       where: { id: orderId },
-      relations: ['items', 'payments'],
+      relations: [...relations],
     });
     return order;
   }
