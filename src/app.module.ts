@@ -6,6 +6,7 @@ import { RedisModule } from './common/redis/redis.module';
 import { ProductModule } from './modules/product/product.module';
 import { BrandModule } from './modules/brand/brand.module';
 import { CategoryModule } from './modules/category/category.module';
+import { ProductVariantModule } from './modules/product-variant/product-variant.module';
 @Module({
   imports: [
     DatabaseModule,
@@ -17,6 +18,7 @@ import { CategoryModule } from './modules/category/category.module';
     ProductModule,
     BrandModule,
     CategoryModule,
+    ProductVariantModule,
   ],
 })
 export class AppModule {}
