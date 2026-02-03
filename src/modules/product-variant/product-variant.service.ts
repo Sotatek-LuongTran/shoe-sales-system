@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateVariantDto } from 'src/shared/dto/product-variant/create-variant.dto';
 import { UpdateVariantDto } from 'src/shared/dto/product-variant/update-vatiant.dto';
-import { ProductVariantRepository } from 'src/shared/modules/common-product-variant/common-product-variant.module';
+import { ProductVariantRepository } from 'src/shared/modules/common-product-variant/product-variant.repository';
 import { ProductRepository } from 'src/shared/modules/common-product/product.repository';
 
 @Injectable()

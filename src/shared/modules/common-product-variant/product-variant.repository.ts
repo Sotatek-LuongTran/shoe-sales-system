@@ -1,10 +1,11 @@
-import { Module } from "@nestjs/common";
-import { TypeOrmModule } from "@nestjs/typeorm";
-import { ProductVariantEntity } from "src/database/entities/product-variant.entity";
-import { ProductVariantRepository } from "./common-product-variant.module";
+import { BaseRepository } from '../base/base.repository';
+import { DataSource } from 'typeorm';
+import { Injectable } from '@nestjs/common';
+import { ProductVariantEntity } from 'src/database/entities/product-variant.entity';
 
-@Module({
-    imports: [TypeOrmModule.forFeature([ProductVariantEntity])],
-    exports: [ProductVariantRepository]
-})
-export class CommonProductVariantModule {}
+@Injectable()
+export class ProductVariantRepository extends BaseRepository<ProductVariantEntity> {
+  constructor(datasource: DataSource) {
+    super(datasource, ProductVariantEntity);
+  }
+}
