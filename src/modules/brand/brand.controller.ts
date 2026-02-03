@@ -15,6 +15,9 @@ import { UpdateBrandDto } from 'src/shared/dto/brand/update-brand.dto';
 export class BrandController {
   constructor(private readonly brandService: BrandService) {}
 
+  // =============================
+  // CREATE BRAND
+  // =============================
   @Post()
   @Roles(UserRole.ADMIN)
   @UseGuards(RolesGuard)
@@ -28,7 +31,10 @@ export class BrandController {
   create(@Body() dto: CreateBrandDto) {
     return this.brandService.createBrand(dto);
   }
-
+  
+  // =============================
+  // UPDATE BRAND
+  // =============================
   @Patch(':id')
   @Roles(UserRole.ADMIN)
   @UseGuards(RolesGuard)
@@ -42,6 +48,9 @@ export class BrandController {
     return this.brandService.updateBrand(dto);
   }
 
+  // =============================
+  // GET ALL BRANDS
+  // =============================
   @Get()
   @ApiOperation({ summary: 'Get brands with pagination & filters' })
   @ApiResponse({ 
@@ -65,6 +74,9 @@ export class BrandController {
     });
   }
 
+  // =============================
+  // GET A BRAND
+  // =============================
   @Get(':id')
   @ApiOperation({ summary: 'Get brand detail' })
   @ApiResponse({ 
@@ -78,6 +90,9 @@ export class BrandController {
     return this.brandService.getBrand(id);
   }
 
+  // =============================
+  // DELETE BRAND
+  // =============================
   @Delete(':id')
   @Roles(UserRole.ADMIN)
   @UseGuards(RolesGuard)

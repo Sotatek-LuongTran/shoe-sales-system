@@ -7,13 +7,11 @@ import {
 import { CreateBrandDto } from 'src/shared/dto/brand/create-brand.dto';
 import { UpdateBrandDto } from 'src/shared/dto/brand/update-brand.dto';
 import { BrandRepository } from 'src/shared/modules/common-brand/brand.repository';
-import { ProductRepository } from 'src/shared/modules/common-product/product.repository';
 
 @Injectable()
 export class BrandService {
   constructor(
-    private readonly brandRepository: BrandRepository,
-    private readonly productRepository: ProductRepository,
+    private readonly brandRepository: BrandRepository
 ) {}
 
   async createBrand(createBrandDto: CreateBrandDto) {
@@ -62,15 +60,6 @@ export class BrandService {
       console.error('Error fetching paginated brands:', error);
       throw new InternalServerErrorException('Failed to fetch brands');
     }
-  }
-
-  async getProductsByBrand(brandId: string) {
-    const brand = await this.brandRepository.findById(brandId);
-    if (!brand) throw new NotFoundException('No product found');
-
-    const products = await this.productRepository.findAllByBrand(brandId);
-
-    return products;
   }
 
   async getBrand(brandId: string) {

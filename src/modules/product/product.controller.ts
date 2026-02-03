@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  ParseUUIDPipe,
   Patch,
   Post,
   Query,
@@ -32,6 +33,9 @@ import { Roles } from 'src/shared/decorators/role.decorator';
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
+  // =============================
+  // CREATE PRODUCT
+  // =============================
   @Post()
   @Roles(UserRole.ADMIN)
   @UseGuards(RolesGuard)
@@ -46,6 +50,9 @@ export class ProductController {
     return this.productService.createProduct(dto);
   }
 
+  // =============================
+  // UPDATE PRODUCT
+  // =============================
   @Patch(':id')
   @Roles(UserRole.ADMIN)
   @UseGuards(RolesGuard)
@@ -60,6 +67,9 @@ export class ProductController {
     return this.productService.updateProduct(dto);
   }
 
+  // =============================
+  // GET ALL PRODUCTS
+  // =============================
   @Get()
   @ApiOperation({ summary: 'Get products with pagination & filters' })
   @ApiResponse({ 
@@ -85,6 +95,9 @@ export class ProductController {
     });
   }
 
+  // =============================
+  // GET PRODUCT
+  // =============================
   @Get(':id')
   @ApiOperation({ summary: 'Get product detail' })
   @ApiResponse({ 
@@ -98,6 +111,9 @@ export class ProductController {
     return this.productService.getProduct(id);
   }
 
+  // =============================
+  // DELETE PRODUCT
+  // =============================
   @Delete(':id')
   @Roles(UserRole.ADMIN)
   @UseGuards(RolesGuard)
@@ -111,5 +127,84 @@ export class ProductController {
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
   remove(@Param('id') id: string) {
     return this.productService.deleteProduct(id);
+  }
+
+
+  // =============================
+  // GET PRODUCTS BY CATEGORY
+  // =============================
+  @Get('categories/:categoryId/products')
+  @ApiOperation({ summary: 'Get products by category (paginated)' })
+  @ApiParam({
+    name: 'categoryId',
+    description: 'Category ID',
+    example: 'c1f7c8b2-1234-4abc-9abc-123456789abc',
+  })
+  @ApiQuery({ name: 'page', required: false, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, example: 10 })
+  @ApiQuery({ name: 'search', required: false, example: 'shoe' })
+  @ApiQuery({ name: 'sortBy', required: false, example: 'createdAt' })
+  @ApiQuery({
+    name: 'sortOrder',
+    required: false,
+    enum: ['ASC', 'DESC'],
+    example: 'DESC',
+  })
+  @ApiResponse({ status: 200, description: 'Paginated products by category' })
+  @ApiResponse({ status: 404, description: 'Category not found' })
+  async getProductsByCategory(
+    @Param('categoryId', ParseUUIDPipe) categoryId: string,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('search') search?: string,
+    @Query('sortBy') sortBy?: string,
+    @Query('sortOrder') sortOrder?: 'ASC' | 'DESC',
+  ) {
+    return this.productService.getProductsByCategory(categoryId, {
+      page: page ? Number(page) : undefined,
+      limit: limit ? Number(limit) : undefined,
+      search,
+      sortBy,
+      sortOrder,
+    });
+  }
+
+  // =============================
+  // GET PRODUCTS BY BRAND
+  // =============================
+  @Get('brands/:brandId/products')
+  @ApiOperation({ summary: 'Get products by brand (paginated)' })
+  @ApiParam({
+    name: 'brandId',
+    description: 'Brand ID',
+    example: 'b2e9a111-5678-4def-9def-abcdef123456',
+  })
+  @ApiQuery({ name: 'page', required: false, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, example: 10 })
+  @ApiQuery({ name: 'search', required: false, example: 'nike' })
+  @ApiQuery({ name: 'sortBy', required: false, example: 'createdAt' })
+  @ApiQuery({
+    name: 'sortOrder',
+    required: false,
+    enum: ['ASC', 'DESC'],
+    example: 'DESC',
+  })
+  @ApiResponse({ status: 200, description: 'Paginated products by brand' })
+  @ApiResponse({ status: 404, description: 'Brand not found' })
+  async getProductsByBrand(
+    @Param('brandId', ParseUUIDPipe) brandId: string,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('search') search?: string,
+    @Query('sortBy') sortBy?: string,
+    @Query('sortOrder') sortOrder?: 'ASC' | 'DESC',
+  ) {
+    return this.productService.getProductsByBrand(brandId, {
+      page: page ? Number(page) : undefined,
+      limit: limit ? Number(limit) : undefined,
+      search,
+      sortBy,
+      sortOrder,
+    });
   }
 }

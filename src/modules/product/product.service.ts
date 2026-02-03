@@ -115,4 +115,64 @@ export class ProductService {
 
     return this.productRepository.save(product);
   }
+
+      
+  async getProductsByCategory(
+    categoryId: string,
+    options?: {
+      page?: number;
+      limit?: number;
+      search?: string;
+      sortBy?: string;
+      sortOrder?: 'ASC' | 'DESC';
+    },
+  ) {
+    const category = await this.categoryRepository.findById(categoryId);
+    if (!category) {
+      throw new NotFoundException('Category not found');
+    }
+  
+    return this.productRepository.getListPagination({
+      page: options?.page,
+      limit: options?.limit,
+      search: options?.search,
+      searchFields: ['name', 'description'], // adjust as needed
+      sortBy: options?.sortBy ?? 'createdAt',
+      sortOrder: options?.sortOrder ?? 'DESC',
+      additionalWhere: {
+        categoryId,
+      },
+      relations: ['category'], // optional
+    });
+  }
+  
+
+  async getProductsByBrand(
+    brandId: string,
+    options?: {
+      page?: number;
+      limit?: number;
+      search?: string;
+      sortBy?: string;
+      sortOrder?: 'ASC' | 'DESC';
+    },
+  ) {
+    const brand = await this.brandRepository.findById(brandId);
+    if (!brand) {
+      throw new NotFoundException('Brand not found');
+    }
+  
+    return this.productRepository.getListPagination({
+      page: options?.page,
+      limit: options?.limit,
+      search: options?.search,
+      searchFields: ['name', 'description'],
+      sortBy: options?.sortBy ?? 'createdAt',
+      sortOrder: options?.sortOrder ?? 'DESC',
+      additionalWhere: {
+        brandId,
+      },
+      relations: ['brand'],
+    });
+  }
 }
