@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsInt,
-  IsNotEmpty,
   IsNumber,
+  IsOptional,
   IsPositive,
   IsString,
   IsUUID,
@@ -16,15 +16,15 @@ export class UpdateVariantDto {
   })
   @IsUUID()
   id: string;
-  
+
   @ApiProperty({
     description: 'Value of the variant',
     example: 'Blue',
   })
   @IsString()
-  @IsNotEmpty()
   @MinLength(6)
   @MaxLength(100)
+  @IsOptional()
   variantValue?: string;
 
   @ApiProperty({
@@ -33,6 +33,7 @@ export class UpdateVariantDto {
   })
   @IsNumber()
   @IsPositive()
+  @IsOptional()
   price?: number;
 
   @ApiProperty({
@@ -42,5 +43,6 @@ export class UpdateVariantDto {
   @IsNumber()
   @IsPositive()
   @IsInt()
+  @IsOptional()
   stock?: number;
 }

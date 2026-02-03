@@ -7,6 +7,7 @@ import { ProductModule } from './modules/product/product.module';
 import { BrandModule } from './modules/brand/brand.module';
 import { CategoryModule } from './modules/category/category.module';
 import { ProductVariantModule } from './modules/product-variant/product-variant.module';
+import { OrderModule } from './modules/order/order.module';
 @Module({
   imports: [
     DatabaseModule,
@@ -19,6 +20,7 @@ import { ProductVariantModule } from './modules/product-variant/product-variant.
     BrandModule,
     CategoryModule,
     ProductVariantModule,
+    OrderModule,
   ],
 })
 export class AppModule {}
