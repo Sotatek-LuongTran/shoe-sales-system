@@ -15,6 +15,9 @@ import { UpdateCategoryDto } from 'src/shared/dto/category/update-category';
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
 
+  // =============================
+  // CREATE CATEGORY
+  // =============================
   @Post()
   @Roles(UserRole.ADMIN)
   @UseGuards(RolesGuard)
@@ -29,6 +32,9 @@ export class CategoryController {
     return this.categoryService.createCategory(dto);
   }
 
+  // =============================
+  // UPDATE CATEGORY
+  // =============================
   @Patch(':id')
   @Roles(UserRole.ADMIN)
   @UseGuards(RolesGuard)
@@ -42,6 +48,9 @@ export class CategoryController {
     return this.categoryService.updateCategory(dto);
   }
 
+  // =============================
+  // GET ALL CATEGORIES
+  // =============================
   @Get()
   @ApiOperation({ summary: 'Get categories with pagination & filters' })
   @ApiResponse({ 
@@ -65,6 +74,9 @@ export class CategoryController {
     });
   }
 
+  // =============================
+  // GET A CATEGORY
+  // =============================
   @Get(':id')
   @ApiOperation({ summary: 'Get category detail' })
   @ApiResponse({ 
@@ -78,6 +90,9 @@ export class CategoryController {
     return this.categoryService.getCategory(id);
   }
 
+  // =============================
+  // DELETE CATEGORY
+  // =============================
   @Delete(':id')
   @Roles(UserRole.ADMIN)
   @UseGuards(RolesGuard)
