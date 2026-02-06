@@ -71,8 +71,8 @@ export class CategoryService {
         },
       });
     } catch (error) {
-      console.error('Error fetching paginated categorys:', error);
-      throw new InternalServerErrorException('Failed to fetch categorys');
+      console.error('Error fetching paginated categories:', error);
+      throw new InternalServerErrorException('Failed to fetch categories');
     }
   }
 
@@ -99,5 +99,53 @@ export class CategoryService {
 
     category.deletedAt = null;
     return this.categoryRepository.save(category);
+  }
+
+  async getSoftDeletedCategoriesPagination(options: {
+    page?: number;
+    limit?: number;
+    search?: string;
+  }) {
+    try {
+      return this.categoryRepository.findSoftDeletedCategories(options);
+    } catch (error) {
+      console.error('Error fetching paginated categories:', error);
+      throw new InternalServerErrorException(
+        'Failed to fetch categories',
+      );
+    }
+  }
+
+  async removeOneSoftDeletedCategory(categoryId: string) {
+    const category = await this.categoryRepository.findById(categoryId);
+
+    if (!category) {
+      throw new NotFoundException('Category not found');
+    }
+
+    if (!category.deletedAt) {
+      throw new BadRequestException(
+        'Category must be soft deleted before permanent removal',
+      );
+    }
+
+    await this.categoryRepository.removeOneSoftDeletedCategory(categoryId);
+
+    return {
+      message: 'Category permanently deleted',
+      categoryId,
+    };
+  }
+
+  async removeSoftDeletedCategories() {
+    const categories = await this.categoryRepository.findSoftDeletedCategories({});
+    if (!categories.data.length) {
+      throw new NotFoundException('The list is empty');
+    }
+
+    await this.categoryRepository.removeSoftDeletedCategories();
+    return {
+      message: 'Categories permanently deleted'
+    }
   }
 }

@@ -146,4 +146,51 @@ export class ProductRepository extends BaseRepository<ProductEntity> {
       relations: ['brand', 'category'],
     });
   }
+
+  async findSoftDeletedProducts(options: {
+    page?: number;
+    limit?: number;
+    search?: string;
+  }) {
+    const { page = 1, limit = 10, search } = options;
+
+    const qb = this.repository
+      .createQueryBuilder('product')
+      .withDeleted()
+      .leftJoin('product.brand', 'brand', 'brand.deletedAt IS NULL')
+      .leftJoin('product.category', 'category', 'category.deletedAt IS NULL')
+      .where('product.deletedAt IS NOT NULL');
+
+    if (search) {
+      qb.andWhere(
+        '(product.name ILIKE :search OR product.description ILIKE :search)',
+        { search: `%${search}%` },
+      );
+    }
+
+    qb.orderBy('product.deletedAt', 'DESC')
+      .skip((page - 1) * limit)
+      .take(limit);
+
+    const [data, total] = await qb.getManyAndCount();
+
+    return {
+      data,
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  async removeSoftDeletedProducts(): Promise<void> {
+    await this.repository
+      .createQueryBuilder()
+      .delete()
+      .from(ProductEntity)
+      .where('deleted_at IS NOT NULL')
+      .execute();
+  }
 }

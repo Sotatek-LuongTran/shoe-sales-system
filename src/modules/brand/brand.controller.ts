@@ -59,7 +59,7 @@ export class BrandController {
   @ApiOperation({ summary: 'Update a brand' })
   @ApiResponse({
     status: 201,
-    description: 'Product updated successfully',
+    description: 'Brand updated successfully',
   })
   @ApiResponse({ status: 400, description: 'Bad request' })
   update(@Body() dto: UpdateBrandDto) {
@@ -139,5 +139,74 @@ export class BrandController {
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
   restoreBrand(@Param('id', ParseUUIDPipe) id: string) {
     return this.brandService.restoreBrand(id);
+  }
+
+  // ===============================
+  // Get soft-deleted brands
+  // ===============================
+  @Get('deleted')
+  @Roles(UserRole.ADMIN)
+  @UseGuards(RolesGuard)
+  @ApiOperation({
+    summary: 'Get soft-deleted brands',
+    description: 'Retrieve brands that were soft deleted (recycle bin)',
+  })
+  @ApiQuery({ name: 'page', required: false, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, example: 10 })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    example: 'nike',
+    description: 'Search by brand name or description',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'List of soft-deleted brands',
+  })
+  async getSoftDeletedBrands(
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('search') search?: string,
+  ) {
+    return this.brandService.getSoftDeletedBrandsPagination({
+      page: Number(page) || 1,
+      limit: Number(limit) || 10,
+      search,
+    });
+  }
+  // =======================================
+  // Permanently delete soft-deleted ones
+  // =======================================
+  @Delete('deleted')
+  @Roles(UserRole.ADMIN)
+  @UseGuards(RolesGuard)
+  @ApiOperation({
+    summary: 'Permanently delete soft-deleted brands',
+    description: 'Hard delete all brands that are currently soft deleted',
+  })
+  @ApiResponse({
+    status: 204,
+    description: 'Soft-deleted brands permanently removed',
+  })
+  async hardDeleteSoftDeletedBrands() {
+    await this.brandService.removeSoftDeletedBrands();
+  }
+
+  // =======================================
+  // Permanently delete 1 soft-deleted one
+  // =======================================
+  @Delete('deleted/:id')
+  @Roles(UserRole.ADMIN)
+  @UseGuards(RolesGuard)
+  @ApiOperation({
+    summary: 'Permanently delete 1 soft-deleted brand',
+    description: 'Hard delete 1 brand that is currently soft deleted',
+  })
+  @ApiResponse({
+    status: 204,
+    description: 'Soft-deleted brand permanently removed',
+  })
+  async hardDeleteOneSoftDeletedBrand(@Param('id', ParseUUIDPipe) id: string) {
+    await this.brandService.removeOneSoftDeletedBrand(id);
   }
 }
