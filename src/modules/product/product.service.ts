@@ -217,4 +217,50 @@ export class ProductService {
 
     return this.productRepository.save(product);
   }
+
+  async getSoftDeletedProductsPagination(options: {
+    page?: number;
+    limit?: number;
+    search?: string;
+  }) {
+    try {
+      return this.productRepository.findSoftDeletedProducts(options);
+    } catch (error) {
+      console.error('Error fetching paginated products:', error);
+      throw new InternalServerErrorException('Failed to fetch products');
+    }
+  }
+
+  async removeOneSoftDeletedProduct(productId: string) {
+    const product = await this.productRepository.findById(productId);
+
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+
+    if (!product.deletedAt) {
+      throw new BadRequestException(
+        'Product must be soft deleted before permanent removal',
+      );
+    }
+
+    await this.productRepository.delete(productId);
+
+    return {
+      message: 'Product permanently deleted',
+      productId,
+    };
+  }
+
+  async removeSoftDeletedProducts() {
+    const products = await this.productRepository.findSoftDeletedProducts({})
+    if (!products.data.length) {
+      throw new NotFoundException('The list is empty')
+    }
+
+    await this.productRepository.removeSoftDeletedProducts()
+    return {
+      message: 'Products permanently deleted'
+    }
+  }
 }

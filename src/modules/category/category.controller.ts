@@ -142,4 +142,75 @@ export class CategoryController {
   restoreCategory(@Param('id', ParseUUIDPipe) id: string) {
     return this.categoryService.restoreCategory(id);
   }
+
+  // ===============================
+  // Get soft-deleted products
+  // ===============================
+  @Get('deleted')
+  @Roles(UserRole.ADMIN)
+  @UseGuards(RolesGuard)
+  @ApiOperation({
+    summary: 'Get soft-deleted products',
+    description: 'Retrieve products that were soft deleted (recycle bin)',
+  })
+  @ApiQuery({ name: 'page', required: false, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, example: 10 })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    example: 'nike',
+    description: 'Search by product name or description',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'List of soft-deleted products',
+  })
+  async getSoftDeletedProducts(
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('search') search?: string,
+  ) {
+    return this.categoryService.getSoftDeletedCategoriesPagination({
+      page: Number(page) || 1,
+      limit: Number(limit) || 10,
+      search,
+    });
+  }
+  // =======================================
+  // Permanently delete soft-deleted ones
+  // =======================================
+  @Delete('deleted')
+  @Roles(UserRole.ADMIN)
+  @UseGuards(RolesGuard)
+  @ApiOperation({
+    summary: 'Permanently delete soft-deleted products',
+    description: 'Hard delete all products that are currently soft deleted',
+  })
+  @ApiResponse({
+    status: 204,
+    description: 'Soft-deleted products permanently removed',
+  })
+  async hardDeleteSoftDeletedProducts() {
+    await this.categoryService.removeSoftDeletedCategories();
+  }
+
+  // =======================================
+  // Permanently delete 1 soft-deleted one
+  // =======================================
+  @Delete('deleted/:id')
+  @Roles(UserRole.ADMIN)
+  @UseGuards(RolesGuard)
+  @ApiOperation({
+    summary: 'Permanently delete 1 soft-deleted product',
+    description: 'Hard delete 1 product that is currently soft deleted',
+  })
+  @ApiResponse({
+    status: 204,
+    description: 'Soft-deleted product permanently removed',
+  })
+  async hardDeleteOneSoftDeletedProduct(
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    await this.categoryService.removeOneSoftDeletedCategory(id);
+  }
 }
