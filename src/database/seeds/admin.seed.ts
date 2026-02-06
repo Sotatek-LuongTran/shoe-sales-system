@@ -23,7 +23,7 @@ export async function seedAdmin(dataSource: DataSource) {
   const admin = await userRepo.create({
     name: 'System Admin',
     email: adminEmail,
-    password_hash: passwordHash,
+    passwordHash: passwordHash,
     role: UserRole.ADMIN,
     deletedAt: null,
   });
