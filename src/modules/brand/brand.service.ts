@@ -11,9 +11,7 @@ import { IsNull } from 'typeorm';
 
 @Injectable()
 export class BrandService {
-  constructor(
-    private readonly brandRepository: BrandRepository
-) {}
+  constructor(private readonly brandRepository: BrandRepository) {}
 
   async createBrand(createBrandDto: CreateBrandDto) {
     const existing = await this.brandRepository.findByName(createBrandDto.name);
@@ -39,7 +37,7 @@ export class BrandService {
 
   async deleteBrand(brandId: string) {
     const brand = await this.brandRepository.findById(brandId);
-    if (!brand) throw new NotFoundException('No product found');
+    if (!brand) throw new NotFoundException('No brand found');
 
     if (brand.deletedAt) {
       throw new NotFoundException('Brand has already been unavailable');
@@ -66,7 +64,7 @@ export class BrandService {
         sortOrder: 'DESC',
         filters: {
           deletedAt: null,
-        }
+        },
       });
     } catch (error) {
       console.error('Error fetching paginated brands:', error);
@@ -76,7 +74,7 @@ export class BrandService {
 
   async getBrand(brandId: string) {
     const brand = await this.brandRepository.findById(brandId);
-    if (!brand) throw new NotFoundException('No product found');
+    if (!brand) throw new NotFoundException('No brand found');
 
     if (brand.deletedAt) {
       throw new NotFoundException('Brand currently unavailable');
@@ -90,16 +88,64 @@ export class BrandService {
       where: { id: brandId },
       withDeleted: true,
     });
-  
+
     if (!brand) {
       throw new NotFoundException('Brand not found');
     }
-  
+
     if (!brand.deletedAt) {
       throw new BadRequestException('Brand is not deleted');
     }
-  
+
     brand.deletedAt = null;
     return this.brandRepository.save(brand);
+  }
+
+  async getSoftDeletedBrandsPagination(options: {
+    page?: number;
+    limit?: number;
+    search?: string;
+  }) {
+    try {
+      return this.brandRepository.findSoftDeletedBrands(options);
+    } catch (error) {
+      console.error('Error fetching paginated categories:', error);
+      throw new InternalServerErrorException('Failed to fetch categories');
+    }
+  }
+
+  async removeOneSoftDeletedBrand(brandId: string) {
+    const brand = await this.brandRepository.findById(brandId);
+
+    if (!brand) {
+      throw new NotFoundException('Category not found');
+    }
+
+    if (!brand.deletedAt) {
+      throw new BadRequestException(
+        'Category must be soft deleted before permanent removal',
+      );
+    }
+
+    await this.brandRepository.removeOneSoftDeletedBrand(brandId);
+
+    return {
+      message: 'Category permanently deleted',
+      brandId,
+    };
+  }
+
+  async removeSoftDeletedBrands() {
+    const brands = await this.brandRepository.findSoftDeletedBrands(
+      {},
+    );
+    if (!brands.data.length) {
+      throw new NotFoundException('The list is empty');
+    }
+
+    await this.brandRepository.removeSoftDeletedBrands();
+    return {
+      message: 'Brands permanently deleted'
+    }
   }
 }

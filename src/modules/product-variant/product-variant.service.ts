@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { CreateVariantDto } from 'src/shared/dto/product-variant/create-variant.dto';
@@ -77,7 +78,8 @@ export class ProductVariantService {
       minStock?: number;
     },
   ) {
-    const product = await this.productRepository.findOneWithBrandAndCategory(productId);
+    const product =
+      await this.productRepository.findOneWithBrandAndCategory(productId);
     if (!product) {
       throw new NotFoundException('Product not found');
     }
@@ -133,5 +135,51 @@ export class ProductVariantService {
 
     variant.deletedAt = null;
     return this.productVariantRepository.save(variant);
+  }
+
+  async getSoftDeletedVariantsPagination(options: {
+    page?: number;
+    limit?: number;
+    search?: string;
+  }) {
+    try {
+      return this.productVariantRepository.findSoftDeletedVariants(options);
+    } catch (error) {
+      console.error('Error fetching paginated product variants:', error);
+      throw new InternalServerErrorException('Failed to fetch product variants');
+    }
+  }
+
+  async removeOneSoftDeletedVariant(productId: string) {
+    const product = await this.productVariantRepository.findById(productId);
+
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+
+    if (!product.deletedAt) {
+      throw new BadRequestException(
+        'Product must be soft deleted before permanent removal',
+      );
+    }
+
+    await this.productRepository.delete(productId);
+
+    return {
+      message: 'Product permanently deleted',
+      productId,
+    };
+  }
+
+  async removeSoftDeletedVariants() {
+    const variants = await this.productVariantRepository.findSoftDeletedVariants({});
+    if (!variants.data.length) {
+      throw new NotFoundException('The list is empty');
+    }
+
+    await this.productVariantRepository.removeSoftDeletedVariants();
+    return {
+      message: 'Variants permanently deleted'
+    }
   }
 }

@@ -1,9 +1,13 @@
 import {
   Body,
   Controller,
+  DefaultValuePipe,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
+  ParseIntPipe,
   ParseUUIDPipe,
   Patch,
   Post,
@@ -51,23 +55,6 @@ export class ProductController {
   }
 
   // =============================
-  // UPDATE PRODUCT
-  // =============================
-  @Patch(':id')
-  @Roles(UserRole.ADMIN)
-  @UseGuards(RolesGuard)
-  @ApiOperation({ summary: 'Update a product' })
-  @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
-  @ApiResponse({
-    status: 201,
-    description: 'Product updated successfully',
-  })
-  @ApiResponse({ status: 400, description: 'Bad request' })
-  update(@Body() dto: UpdateProductDto) {
-    return this.productService.updateProduct(dto);
-  }
-
-  // =============================
   // GET ALL PRODUCTS
   // =============================
   @Get()
@@ -93,6 +80,74 @@ export class ProductController {
       search,
       filters,
     });
+  }
+
+  // ===============================
+  // Get soft-deleted products
+  // ===============================
+  @Get('deleted')
+  @Roles(UserRole.ADMIN)
+  @UseGuards(RolesGuard)
+  @ApiOperation({
+    summary: 'Get soft-deleted products',
+    description: 'Retrieve products that were soft deleted (recycle bin)',
+  })
+  @ApiQuery({ name: 'page', required: false, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, example: 10 })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    example: 'nike',
+    description: 'Search by product name or description',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'List of soft-deleted products',
+  })
+  async getSoftDeletedProducts(
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+    @Query('search') search?: string,
+  ) {
+    return this.productService.getSoftDeletedProductsPagination({
+      page: Number(page) || 1,
+      limit: Number(limit) || 10,
+      search,
+    });
+  }
+  // =======================================
+  // Permanently delete soft-deleted ones
+  // =======================================
+  @Delete('deleted')
+  @Roles(UserRole.ADMIN)
+  @UseGuards(RolesGuard)
+  @ApiOperation({
+    summary: 'Permanently delete soft-deleted products',
+    description: 'Hard delete all products that are currently soft deleted',
+  })
+  @ApiResponse({
+    status: 204,
+    description: 'Soft-deleted products permanently removed',
+  })
+  async hardDeleteSoftDeletedProducts() {
+    return await this.productService.removeSoftDeletedProducts();
+  }
+
+  // =============================
+  // UPDATE PRODUCT
+  // =============================
+  @Patch(':id')
+  @Roles(UserRole.ADMIN)
+  @UseGuards(RolesGuard)
+  @ApiOperation({ summary: 'Update a product' })
+  @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
+  @ApiResponse({
+    status: 201,
+    description: 'Product updated successfully',
+  })
+  @ApiResponse({ status: 400, description: 'Bad request' })
+  update(@Body() dto: UpdateProductDto) {
+    return this.productService.updateProduct(dto);
   }
 
   // =============================
@@ -201,5 +256,25 @@ export class ProductController {
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
   restoreProduct(@Param('id', ParseUUIDPipe) id: string) {
     return this.productService.restoreProduct(id);
+  }
+
+  // =======================================
+  // Permanently delete 1 soft-deleted one
+  // =======================================
+  @Delete('deleted/:id')
+  @Roles(UserRole.ADMIN)
+  @UseGuards(RolesGuard)
+  @ApiOperation({
+    summary: 'Permanently delete 1 soft-deleted product',
+    description: 'Hard delete 1 product that is currently soft deleted',
+  })
+  @ApiResponse({
+    status: 204,
+    description: 'Soft-deleted product permanently removed',
+  })
+  async hardDeleteOneSoftDeletedProduct(
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return await this.productService.removeOneSoftDeletedProduct(id);
   }
 }

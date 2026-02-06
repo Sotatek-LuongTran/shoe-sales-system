@@ -27,4 +27,50 @@ export class ProductVariantRepository extends BaseRepository<ProductVariantEntit
       .andWhere('category.deletedAt IS NULL')
       .getOne();
   }
+
+  async findSoftDeletedVariants(options: {
+    page?: number;
+    limit?: number;
+    search?: string;
+  }) {
+    const { page = 1, limit = 10, search } = options;
+
+    const qb = this.repository
+      .createQueryBuilder('variant')
+      .withDeleted()
+      .innerJoin('variant.product', 'product')
+      .where('variant.deletedAt IS NOT NULL');
+
+    if (search) {
+      qb.andWhere(
+        '(variant.variantValue ILIKE :search)',
+        { search: `%${search}%` },
+      );
+    }
+
+    qb.orderBy('variant.deletedAt', 'DESC')
+      .skip((page - 1) * limit)
+      .take(limit);
+
+    const [data, total] = await qb.getManyAndCount();
+
+    return {
+      data,
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  async removeSoftDeletedVariants(): Promise<void> {
+    await this.repository
+      .createQueryBuilder()
+      .delete()
+      .from(ProductVariantEntity)
+      .where('deleted_at IS NOT NULL')
+      .execute();
+  }
 }
