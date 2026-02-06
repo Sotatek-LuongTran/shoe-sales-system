@@ -7,6 +7,7 @@ import {
 import { CreateBrandDto } from 'src/shared/dto/brand/create-brand.dto';
 import { UpdateBrandDto } from 'src/shared/dto/brand/update-brand.dto';
 import { BrandRepository } from 'src/shared/modules/common-brand/brand.repository';
+import { IsNull } from 'typeorm';
 
 @Injectable()
 export class BrandService {
@@ -27,6 +28,10 @@ export class BrandService {
     const brand = await this.brandRepository.findById(updateBrandDto.id);
     if (!brand) throw new NotFoundException('Brand not found');
 
+    if (brand.deletedAt) {
+      throw new NotFoundException('Brand currently unavailable');
+    }
+
     Object.assign(brand, updateBrandDto);
 
     return this.brandRepository.save(brand);
@@ -35,6 +40,10 @@ export class BrandService {
   async deleteBrand(brandId: string) {
     const brand = await this.brandRepository.findById(brandId);
     if (!brand) throw new NotFoundException('No product found');
+
+    if (brand.deletedAt) {
+      throw new NotFoundException('Brand has already been unavailable');
+    }
 
     brand.deletedAt = new Date(Date.now());
 
@@ -55,6 +64,9 @@ export class BrandService {
         searchFields: ['name', 'description'],
         sortBy: 'createdAt',
         sortOrder: 'DESC',
+        filters: {
+          deletedAt: null,
+        }
       });
     } catch (error) {
       console.error('Error fetching paginated brands:', error);
@@ -66,6 +78,28 @@ export class BrandService {
     const brand = await this.brandRepository.findById(brandId);
     if (!brand) throw new NotFoundException('No product found');
 
+    if (brand.deletedAt) {
+      throw new NotFoundException('Brand currently unavailable');
+    }
+
     return brand;
+  }
+
+  async restoreBrand(brandId: string) {
+    const brand = await this.brandRepository.findOne({
+      where: { id: brandId },
+      withDeleted: true,
+    });
+  
+    if (!brand) {
+      throw new NotFoundException('Brand not found');
+    }
+  
+    if (!brand.deletedAt) {
+      throw new BadRequestException('Brand is not deleted');
+    }
+  
+    brand.deletedAt = null;
+    return this.brandRepository.save(brand);
   }
 }

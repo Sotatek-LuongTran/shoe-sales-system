@@ -1,5 +1,5 @@
 import { BaseRepository } from '../base/base.repository';
-import { DataSource } from 'typeorm';
+import { DataSource, IsNull } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { ProductVariantEntity } from 'src/database/entities/product-variant.entity';
 
@@ -13,12 +13,18 @@ export class ProductVariantRepository extends BaseRepository<ProductVariantEntit
     productId: string,
     variantValue: string,
   ): Promise<ProductVariantEntity | null> {
-    return this.repository.findOne({
-      where: {
-        productId,
-        variantValue,
-        isActive: true,
-      },
-    });
+    return this.repository
+      .createQueryBuilder('variant')
+      .innerJoin('variant.product', 'product')
+      .innerJoin('product.brand', 'brand')
+      .innerJoin('product.category', 'category')
+      .where('variant.productId = :productId', { productId })
+      .andWhere('variant.variantValue = :variantValue', { variantValue })
+      .andWhere('variant.isActive = true')
+      .andWhere('variant.deletedAt IS NULL')
+      .andWhere('product.deletedAt IS NULL')
+      .andWhere('brand.deletedAt IS NULL')
+      .andWhere('category.deletedAt IS NULL')
+      .getOne();
   }
 }

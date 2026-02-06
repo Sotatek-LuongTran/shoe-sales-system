@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { BaseRepository } from '../base/base.repository';
 import { ProductEntity } from 'src/database/entities/product.entity';
-import { DataSource } from 'typeorm';
+import { DataSource, IsNull } from 'typeorm';
 
 @Injectable()
 export class ProductRepository extends BaseRepository<ProductEntity> {
   constructor(datasource: DataSource) {
     super(datasource, ProductEntity);
   }
- 
+
   async findProductsPaginationWithPriceRange(options: {
     page?: number;
     limit?: number;
@@ -23,13 +23,8 @@ export class ProductRepository extends BaseRepository<ProductEntity> {
       maxPrice?: number;
     };
   }) {
-    const {
-      page = 1,
-      limit = 10,
-      search,
-      filters = {},
-    } = options;
-  
+    const { page = 1, limit = 10, search, filters = {} } = options;
+
     const qb = this.repository
       .createQueryBuilder('product')
       .leftJoin('product.variants', 'variant')
@@ -43,11 +38,16 @@ export class ProductRepository extends BaseRepository<ProductEntity> {
         'MIN(variant.price) AS minPrice',
         'MAX(variant.price) AS maxPrice',
       ])
+      .leftJoin('product.brand', 'brand')
+      .leftJoin('product.category', 'category')
       .where('product.isActive = :isActive', {
         isActive: filters.isActive ?? true,
       })
+      .andWhere('product.deletedAt IS NULL')
+      .andWhere('brand.deletedAt IS NULL')
+      .andWhere('category.deletedAt IS NULL')
       .groupBy('product.id');
-  
+
     // Search
     if (search) {
       qb.andWhere(
@@ -55,52 +55,49 @@ export class ProductRepository extends BaseRepository<ProductEntity> {
         { search: `%${search}%` },
       );
     }
-  
+
     // Filters
     if (filters.gender) {
       qb.andWhere('product.gender = :gender', { gender: filters.gender });
     }
-  
+
     if (filters.productType) {
       qb.andWhere('product.productType = :productType', {
         productType: filters.productType,
       });
     }
-  
+
     if (filters.brandId) {
       qb.andWhere('product.brandId = :brandId', {
         brandId: filters.brandId,
       });
     }
-  
+
     if (filters.categoryId) {
       qb.andWhere('product.categoryId = :categoryId', {
         categoryId: filters.categoryId,
       });
     }
-  
+
     // Price range filtering (AGGREGATE → HAVING)
     if (filters.minPrice !== undefined) {
       qb.having('MIN(variant.price) >= :minPrice', {
         minPrice: filters.minPrice,
       });
     }
-  
+
     if (filters.maxPrice !== undefined) {
       qb.andHaving('MAX(variant.price) <= :maxPrice', {
         maxPrice: filters.maxPrice,
       });
     }
-  
+
     qb.orderBy('product.createdAt', 'DESC')
       .skip((page - 1) * limit)
       .take(limit);
-  
-    const [raw, total] = await Promise.all([
-      qb.getRawMany(),
-      qb.getCount(),
-    ]);
-  
+
+    const [raw, total] = await Promise.all([qb.getRawMany(), qb.getCount()]);
+
     return {
       data: raw.map((row) => ({
         id: row.id,
@@ -112,6 +109,7 @@ export class ProductRepository extends BaseRepository<ProductEntity> {
           min: Number(row.minprice),
           max: Number(row.maxprice),
         },
+        deleteAt: row.deleteAt,
         createdAt: row.createdat,
       })),
       meta: {
@@ -125,17 +123,27 @@ export class ProductRepository extends BaseRepository<ProductEntity> {
 
   async findProductWithPriceRange(id: string) {
     const product = await this.repository
-    .createQueryBuilder('product')
-    .leftJoin('product.variants', 'variant')
-    .select([
-      'product',
-      'MIN(variant.price) AS minPrice',
-      'MAX(variant.price) AS maxPrice',
-    ])
-    .where('product.id = :id', { id })
-    .groupBy('product.id')
-    .getRawAndEntities();
+      .createQueryBuilder('product')
+      .leftJoin('product.variants', 'variant')
+      .select([
+        'product',
+        'MIN(variant.price) AS minPrice',
+        'MAX(variant.price) AS maxPrice',
+      ])
+      .where('product.id = :id', { id })
+      .groupBy('product.id')
+      .getRawAndEntities();
 
     return product;
+  }
+
+  async findOneWithBrandAndCategory(id: string) {
+    return await this.repository.findOne({
+      where: {
+        id: id,
+        deletedAt: IsNull(),
+      },
+      relations: ['brand', 'category'],
+    });
   }
 }
