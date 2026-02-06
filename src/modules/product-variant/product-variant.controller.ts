@@ -94,6 +94,51 @@ export class ProductVariantController {
     description: 'Paginated list of product variants',
   })
   @ApiResponse({ status: 404, description: 'Product not found' })
+  async getActiveVariantsByProduct(
+    @Param('productId', new ParseUUIDPipe()) productId: string,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('search') search?: string,
+    @Query('sortBy') sortBy?: string,
+    @Query('sortOrder') sortOrder?: 'ASC' | 'DESC',
+  ) {
+    return this.productVariantService.getVariantsByProduct(productId, {
+      page: page ? Number(page) : undefined,
+      limit: limit ? Number(limit) : undefined,
+      search,
+      sortBy,
+      sortOrder,
+    });
+  }
+
+  // =============================
+  // GET ALL PRODUCT VARIANTS OF A PRODUCT
+  // =============================
+  @Get(':productId/variants/admin')
+  @ApiOperation({
+    summary: 'Get variants of a product with pagination',
+  })
+  @ApiParam({ name: 'productId', description: 'Product ID', type: String })
+  @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
+  @ApiQuery({ name: 'search', required: false, type: String, example: 'red' })
+  @ApiQuery({
+    name: 'sortBy',
+    required: false,
+    type: String,
+    example: 'createdAt',
+  })
+  @ApiQuery({
+    name: 'sortOrder',
+    required: false,
+    enum: ['ASC', 'DESC'],
+    example: 'DESC',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Paginated list of product variants',
+  })
+  @ApiResponse({ status: 404, description: 'Product not found' })
   async getVariantsByProduct(
     @Param('productId', new ParseUUIDPipe()) productId: string,
     @Query('page') page?: number,

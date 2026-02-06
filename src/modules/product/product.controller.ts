@@ -74,6 +74,36 @@ export class ProductController {
     @Query('search') search?: string,
     @Query() filters?: Record<string, any>,
   ) {
+    return this.productService.getActiveProductsPagination({
+      page: Number(page) || 1,
+      limit: Number(limit) || 10,
+      search,
+      filters,
+    });
+  }
+
+  // =============================
+  // GET ALL PRODUCTS FOR ADMIN
+  // =============================
+  @Get('admin')
+  @Roles(UserRole.ADMIN)
+  @UseGuards(RolesGuard)
+  @ApiOperation({ summary: 'Get products with pagination & filters' })
+  @ApiResponse({
+    status: 201,
+    description: 'Products get successfully',
+  })
+  @ApiResponse({ status: 400, description: 'Bad request' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiQuery({ name: 'search', required: false, type: String })
+  getProducts(
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('search') search?: string,
+    @Query() filters?: Record<string, any>,
+  ) {
     return this.productService.getProductsPagination({
       page: Number(page) || 1,
       limit: Number(limit) || 10,
@@ -187,11 +217,11 @@ export class ProductController {
   // =============================
   // GET PRODUCTS BY CATEGORY
   // =============================
-  @Get('categories/:productId/products')
+  @Get('categories/:categoryId/products')
   @ApiOperation({ summary: 'Get products by product (paginated)' })
   @ApiParam({
-    name: 'productId',
-    description: 'Product ID',
+    name: 'categoryId',
+    description: 'category ID',
     example: 'c1f7c8b2-1234-4abc-9abc-123456789abc',
   })
   @ApiQuery({ name: 'page', required: false, example: 1 })
@@ -200,12 +230,12 @@ export class ProductController {
   @ApiResponse({ status: 200, description: 'Paginated products by product' })
   @ApiResponse({ status: 404, description: 'Product not found' })
   async getProductsByProduct(
-    @Param('productId', ParseUUIDPipe) productId: string,
+    @Param('categoryId', ParseUUIDPipe) categoryId: string,
     @Query('page') page?: number,
     @Query('limit') limit?: number,
     @Query('search') search?: string,
   ) {
-    return this.productService.getProductsByCategory(productId, {
+    return this.productService.getProductsByCategory(categoryId, {
       page: page ? Number(page) : undefined,
       limit: limit ? Number(limit) : undefined,
       search,
