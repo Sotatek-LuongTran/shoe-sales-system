@@ -3,9 +3,10 @@ import { BaseEntity } from "../../shared/modules/base/base.entity";
 import { OrderItemEntity } from "./order-item.entity";
 import { PaymentEntity } from "./payment.entity";
 import { UserEntity } from "./user.entity";
-import { OrderPaymentStatus, OrderStatus } from "src/shared/enums/order.enum";
+import { OrderPaymentStatus, OrderStatus } from "../../shared/enums/order.enum";
 
 @Entity('orders')
+@Index('idx_orders_user_status',['user', 'status'], { unique: true })
 @Index('idx_orders_created_at', ['createdAt'])
 @Index('idx_orders_status', ['status'])
 @Index('idx_orders_payment_status', ['paymentStatus'])

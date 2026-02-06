@@ -1,7 +1,7 @@
 import { Column, Entity, Index, OneToMany } from "typeorm";
 import { BaseEntity } from "../../shared/modules/base/base.entity";
 import { OrderEntity } from "./order.entity";
-import { UserRole } from "src/shared/enums/user.enum";
+import { UserRole } from "../../shared/enums/user.enum";
 
 @Entity('users')
 @Index('idx_users_email_deleted_at', ['email', 'deletedAt'])

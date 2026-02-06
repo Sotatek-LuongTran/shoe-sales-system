@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { OrderEntity } from 'src/database/entities/order.entity';
 import { OrderPaymentStatus, OrderStatus } from 'src/shared/enums/order.enum';
 import { BaseRepository } from 'src/shared/modules/base/base.repository';
-import { DataSource, EntityManager } from 'typeorm';
+import { DataSource, EntityManager, IsNull } from 'typeorm';
 
 @Injectable()
 export class OrderRepository extends BaseRepository<OrderEntity> {
@@ -44,11 +44,14 @@ export class OrderRepository extends BaseRepository<OrderEntity> {
   async findPendingOrderByUser(userId: string) {
     return this.repository.findOne({
       where: {
-        userId,
+        user: { id: userId },
         status: OrderStatus.PENDING,
-        deletedAt: undefined,
+        deletedAt: IsNull(),
       },
-      relations: ['items'],
+      relations: {
+        items: true,
+        user: true,
+      },
     });
   }
 }
