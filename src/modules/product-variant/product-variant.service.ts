@@ -1,9 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateVariantDto } from 'src/shared/dto/product-variant/create-variant.dto';
 import { UpdateVariantDto } from 'src/shared/dto/product-variant/update-vatiant.dto';
 import { ProductVariantRepository } from 'src/shared/modules/common-product-variant/product-variant.repository';
 import { ProductRepository } from 'src/shared/modules/common-product/product.repository';
-import { LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
+import { IsNull } from 'typeorm';
 
 @Injectable()
 export class ProductVariantService {
@@ -17,6 +21,10 @@ export class ProductVariantService {
       createVariantDto.productId,
     );
     if (!product) throw new NotFoundException('Product not found');
+
+    if (product.deletedAt) {
+      throw new NotFoundException('Product variant currently unavailable');
+    }
 
     const variant = await this.productVariantRepository.create({
       variantValue: createVariantDto.variantValue,
@@ -35,6 +43,10 @@ export class ProductVariantService {
     );
     if (!variant) throw new NotFoundException('Product variant not found');
 
+    if (variant.deletedAt) {
+      throw new NotFoundException('Product variant currently unavailable');
+    }
+
     Object.assign(variant, UpdateVariantDto);
 
     return this.productVariantRepository.save(variant);
@@ -43,6 +55,9 @@ export class ProductVariantService {
   async deleteProductVariant(id: string) {
     const variant = await this.productVariantRepository.findById(id);
     if (!variant) throw new NotFoundException('Product variant not found');
+    if (variant.deletedAt) {
+      throw new BadRequestException('Product variant has already unactivated');
+    }
 
     variant.deletedAt = new Date(Date.now());
 
@@ -62,11 +77,19 @@ export class ProductVariantService {
       minStock?: number;
     },
   ) {
-    const exists = await this.productRepository.findById(productId);
-    if (!exists) {
+    const product = await this.productRepository.findOneWithBrandAndCategory(productId);
+    if (!product) {
       throw new NotFoundException('Product not found');
     }
-  
+
+    if (product.brand?.deletedAt) {
+      throw new NotFoundException('Product brand is unavailable');
+    }
+
+    if (product.category?.deletedAt) {
+      throw new NotFoundException('Product category is unavailable');
+    }
+
     return this.productVariantRepository.getListPagination({
       page: options?.page,
       limit: options?.limit,
@@ -75,16 +98,40 @@ export class ProductVariantService {
       sortBy: options?.sortBy ?? 'createdAt',
       sortOrder: options?.sortOrder ?? 'DESC',
       additionalWhere: {
-        productId
+        productId,
+      },
+      filters: {
+        deletedAt: null,
       },
     });
   }
-  
-  
+
   async getProductVariant(id: string) {
     const variant = await this.productVariantRepository.findById(id);
     if (!variant) throw new NotFoundException('Product variant not found');
 
+    if (variant.deletedAt) {
+      throw new NotFoundException('Product variant currently unavailable');
+    }
+
     return variant;
+  }
+
+  async restoreProductVariant(variantId: string) {
+    const variant = await this.productVariantRepository.findOne({
+      where: { id: variantId },
+      withDeleted: true,
+    });
+
+    if (!variant) {
+      throw new NotFoundException('Product variant not found');
+    }
+
+    if (!variant.deletedAt) {
+      throw new BadRequestException('Product variant is not deleted');
+    }
+
+    variant.deletedAt = null;
+    return this.productVariantRepository.save(variant);
   }
 }

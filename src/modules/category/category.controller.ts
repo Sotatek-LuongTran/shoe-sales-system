@@ -1,5 +1,23 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { Roles } from 'src/shared/decorators/role.decorator';
 import { UserRole } from 'src/shared/enums/user.enum';
@@ -22,9 +40,9 @@ export class CategoryController {
   @Roles(UserRole.ADMIN)
   @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Create a new category' })
-  @ApiResponse({ 
-    status: 201, 
-    description: 'category created successfully'
+  @ApiResponse({
+    status: 201,
+    description: 'category created successfully',
   })
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -39,9 +57,9 @@ export class CategoryController {
   @Roles(UserRole.ADMIN)
   @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Update a category' })
-  @ApiResponse({ 
-    status: 201, 
-    description: 'Product updated successfully'
+  @ApiResponse({
+    status: 201,
+    description: 'Product updated successfully',
   })
   @ApiResponse({ status: 400, description: 'Bad request' })
   update(@Body() dto: UpdateCategoryDto) {
@@ -53,9 +71,9 @@ export class CategoryController {
   // =============================
   @Get()
   @ApiOperation({ summary: 'Get categories with pagination & filters' })
-  @ApiResponse({ 
-    status: 201, 
-    description: 'Categories get successfully'
+  @ApiResponse({
+    status: 201,
+    description: 'Categories get successfully',
   })
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -79,9 +97,9 @@ export class CategoryController {
   // =============================
   @Get(':id')
   @ApiOperation({ summary: 'Get category detail' })
-  @ApiResponse({ 
-    status: 201, 
-    description: 'Category get successfully'
+  @ApiResponse({
+    status: 201,
+    description: 'Category get successfully',
   })
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -96,15 +114,32 @@ export class CategoryController {
   @Delete(':id')
   @Roles(UserRole.ADMIN)
   @UseGuards(RolesGuard)
-  @ApiOperation({ summary: 'Soft delete a product' })
-  @ApiResponse({ 
-    status: 201, 
-    description: 'Category deleted successfully'
+  @ApiOperation({ summary: 'Soft delete a category' })
+  @ApiResponse({
+    status: 201,
+    description: 'Category deleted successfully',
   })
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
   remove(@Param('id') id: string) {
     return this.categoryService.deleteCategory(id);
+  }
+  // =============================
+  // RESTORE DELETED CATEGORY
+  // =============================
+  @Patch(':id/restore')
+  @Roles(UserRole.ADMIN)
+  @UseGuards(RolesGuard)
+  @ApiOperation({ summary: 'Restore a soft-deleted a category' })
+  @ApiResponse({
+    status: 201,
+    description: 'Category deleted successfully',
+  })
+  @ApiResponse({ status: 400, description: 'Bad request' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
+  restoreCategory(@Param('id', ParseUUIDPipe) id: string) {
+    return this.categoryService.restoreCategory(id);
   }
 }

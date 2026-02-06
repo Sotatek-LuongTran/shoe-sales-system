@@ -1,6 +1,6 @@
 import { BrandEntity } from "src/database/entities/brand.entity";
 import { BaseRepository } from "../base/base.repository";
-import { DataSource } from "typeorm";
+import { DataSource, IsNull } from "typeorm";
 import { Injectable } from "@nestjs/common";
 
 @Injectable()
@@ -12,7 +12,7 @@ export class BrandRepository extends BaseRepository<BrandEntity> {
     async findByName(name: string){
         return this.repository.findOne({
             where: {
-                name
+                name,
             }
         })
     }

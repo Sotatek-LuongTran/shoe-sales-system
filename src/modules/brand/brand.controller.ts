@@ -1,6 +1,24 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { BrandService } from './brand.service';
-import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { Roles } from 'src/shared/decorators/role.decorator';
 import { UserRole } from 'src/shared/enums/user.enum';
@@ -22,16 +40,16 @@ export class BrandController {
   @Roles(UserRole.ADMIN)
   @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Create a new brand' })
-  @ApiResponse({ 
-    status: 201, 
-    description: 'Brand created successfully'
+  @ApiResponse({
+    status: 201,
+    description: 'Brand created successfully',
   })
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   create(@Body() dto: CreateBrandDto) {
     return this.brandService.createBrand(dto);
   }
-  
+
   // =============================
   // UPDATE BRAND
   // =============================
@@ -39,9 +57,9 @@ export class BrandController {
   @Roles(UserRole.ADMIN)
   @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Update a brand' })
-  @ApiResponse({ 
-    status: 201, 
-    description: 'Product updated successfully'
+  @ApiResponse({
+    status: 201,
+    description: 'Product updated successfully',
   })
   @ApiResponse({ status: 400, description: 'Bad request' })
   update(@Body() dto: UpdateBrandDto) {
@@ -53,9 +71,9 @@ export class BrandController {
   // =============================
   @Get()
   @ApiOperation({ summary: 'Get brands with pagination & filters' })
-  @ApiResponse({ 
-    status: 201, 
-    description: 'Brands get successfully'
+  @ApiResponse({
+    status: 201,
+    description: 'Brands get successfully',
   })
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -79,9 +97,9 @@ export class BrandController {
   // =============================
   @Get(':id')
   @ApiOperation({ summary: 'Get brand detail' })
-  @ApiResponse({ 
-    status: 201, 
-    description: 'Brand get successfully'
+  @ApiResponse({
+    status: 201,
+    description: 'Brand get successfully',
   })
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -96,15 +114,30 @@ export class BrandController {
   @Delete(':id')
   @Roles(UserRole.ADMIN)
   @UseGuards(RolesGuard)
-  @ApiOperation({ summary: 'Soft delete a product' })
-  @ApiResponse({ 
-    status: 201, 
-    description: 'Brand deleted successfully'
+  @ApiOperation({ summary: 'Soft delete a brand' })
+  @ApiResponse({
+    status: 201,
+    description: 'Brand deleted successfully',
   })
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
   remove(@Param('id') id: string) {
     return this.brandService.deleteBrand(id);
+  }
+
+  @Patch(':id/restore')
+  @Roles(UserRole.ADMIN)
+  @UseGuards(RolesGuard)
+  @ApiOperation({ summary: 'Restore a soft-deleted a brand' })
+  @ApiResponse({
+    status: 201,
+    description: 'Brand deleted successfully',
+  })
+  @ApiResponse({ status: 400, description: 'Bad request' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
+  restoreBrand(@Param('id', ParseUUIDPipe) id: string) {
+    return this.brandService.restoreBrand(id);
   }
 }

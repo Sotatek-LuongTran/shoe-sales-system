@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -26,9 +27,16 @@ export class ProductService {
     if (!brand) {
       throw new NotFoundException('Brand not exists');
     }
+    if (brand.deletedAt) {
+      throw new NotFoundException('Brand currently unavailable');
+    }
+
     const category = await this.categoryRepository.findById(categoryId);
     if (!category) {
       throw new NotFoundException('Category not exists');
+    }
+    if (category.deletedAt) {
+      throw new NotFoundException('Category currently unavailable');
     }
 
     const product = await this.productRepository.create({
@@ -181,5 +189,32 @@ export class ProductService {
         isActive: true,
       },
     });
+  }
+
+  async restoreProduct(productId: string) {
+    const product = await this.productRepository.findOne({
+      where: { id: productId },
+      withDeleted: true,
+      relations: ['variants'],
+    });
+
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+
+    if (!product.deletedAt) {
+      throw new BadRequestException('Product is not deleted');
+    }
+
+    product.deletedAt = null;
+
+    // Optional: restore variants too
+    for (const variant of product.variants) {
+      if (variant.deletedAt) {
+        variant.deletedAt = null;
+      }
+    }
+
+    return this.productRepository.save(product);
   }
 }
