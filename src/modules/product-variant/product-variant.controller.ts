@@ -56,7 +56,7 @@ export class ProductVariantController {
   @Patch(':productId/variants/:id')
   @Roles(UserRole.ADMIN)
   @UseGuards(RolesGuard)
-  @ApiOperation({ summary: 'Update a productVariant' })
+  @ApiOperation({ summary: 'Update a product variant' })
   @ApiResponse({
     status: 201,
     description: 'Product updated successfully',
@@ -105,7 +105,7 @@ export class ProductVariantController {
   // GET A PRODUCT VARIANT
   // =============================
   @Get(':productId/variants/:id')
-  @ApiOperation({ summary: 'Get productVariant detail' })
+  @ApiOperation({ summary: 'Get product variant detail' })
   @ApiResponse({
     status: 201,
     description: 'ProductVariant get successfully',
@@ -117,13 +117,13 @@ export class ProductVariantController {
     return this.productVariantService.getProductVariant(id);
   }
 
-   // =============================
+  // =============================
   // DELETE PRODUCT VARIANT
   // =============================
   @Delete(':productId/variants/:id')
   @Roles(UserRole.ADMIN)
   @UseGuards(RolesGuard)
-  @ApiOperation({ summary: 'Soft delete a product' })
+  @ApiOperation({ summary: 'Soft delete a product variant' })
   @ApiResponse({
     status: 201,
     description: 'ProductVariant deleted successfully',
@@ -133,5 +133,23 @@ export class ProductVariantController {
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
   remove(@Param('id') id: string) {
     return this.productVariantService.deleteProductVariant(id);
+  }
+
+  // =============================
+  // RESTORE DELETED PRODUCT VARIANT
+  // =============================
+  @Patch(':productId/variants/:id/restore')
+  @Roles(UserRole.ADMIN)
+  @UseGuards(RolesGuard)
+  @ApiOperation({ summary: 'Restore a soft-deleted a product variant' })
+  @ApiResponse({
+    status: 201,
+    description: 'Product variant deleted successfully',
+  })
+  @ApiResponse({ status: 400, description: 'Bad request' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
+  restoreProduct(@Param('id', ParseUUIDPipe) id: string) {
+    return this.productVariantService.restoreProductVariant(id);
   }
 }
