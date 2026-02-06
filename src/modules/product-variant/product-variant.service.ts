@@ -65,6 +65,50 @@ export class ProductVariantService {
     return this.productVariantRepository.save(variant);
   }
 
+  async getActiveVariantsByProduct(
+    productId: string,
+    options?: {
+      page?: number;
+      limit?: number;
+      search?: string;
+      sortBy?: string;
+      sortOrder?: 'ASC' | 'DESC';
+      minPrice?: number;
+      maxPrice?: number;
+      minStock?: number;
+    },
+  ) {
+    const product =
+      await this.productRepository.findOneWithBrandAndCategory(productId);
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+
+    if (product.brand?.deletedAt) {
+      throw new NotFoundException('Product brand is unavailable');
+    }
+
+    if (product.category?.deletedAt) {
+      throw new NotFoundException('Product category is unavailable');
+    }
+
+    return this.productVariantRepository.getListPagination({
+      page: options?.page,
+      limit: options?.limit,
+      search: options?.search,
+      searchFields: ['variantValue'],
+      sortBy: options?.sortBy ?? 'createdAt',
+      sortOrder: options?.sortOrder ?? 'DESC',
+      additionalWhere: {
+        productId,
+      },
+      filters: {
+        deletedAt: null,
+        isActive: true,
+      },
+    });
+  }
+
   async getVariantsByProduct(
     productId: string,
     options?: {

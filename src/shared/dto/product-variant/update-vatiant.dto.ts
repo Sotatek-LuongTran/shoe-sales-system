@@ -1,5 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
+  IsBoolean,
   IsInt,
   IsNumber,
   IsOptional,
@@ -45,4 +46,12 @@ export class UpdateVariantDto {
   @IsInt()
   @IsOptional()
   stock?: number;
+
+  @ApiPropertyOptional({
+    description: 'Activate / Deactivate product',
+    example: false,
+  })
+  @IsBoolean()
+  @IsOptional()
+  isActive?: boolean;
 }

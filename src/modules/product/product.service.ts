@@ -76,7 +76,7 @@ export class ProductService {
     return this.productRepository.save(product);
   }
 
-  async getProductsPagination(options: {
+  async getActiveProductsPagination(options: {
     page?: number;
     limit?: number;
     search?: string;
@@ -98,6 +98,35 @@ export class ProductService {
         filters: {
           ...options.filters,
           isActive: options.filters?.isActive ?? true,
+        },
+      });
+    } catch (error) {
+      console.error('Error fetching paginated products:', error);
+      throw new InternalServerErrorException('Failed to fetch products');
+    }
+  }
+
+  async getProductsPagination(options: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    filters?: {
+      gender?: string;
+      productType?: string;
+      brandId?: string;
+      categoryId?: string;
+      isActive?: boolean;
+      minPrice?: number;
+      maxPrice?: number;
+    };
+  }) {
+    try {
+      return this.productRepository.getListPagination({
+        page: options.page,
+        limit: options.limit,
+        search: options.search,
+        filters: {
+          ...options.filters,
         },
       });
     } catch (error) {
