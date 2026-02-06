@@ -33,7 +33,7 @@ export class AuthenticationService {
     const user = await this.usersRepo.create({
       email: createUserDto.email,
       name: createUserDto.name,
-      password_hash: hashedPassword,
+      passwordHash: hashedPassword,
       role: UserRole.USER,
       deletedAt: null,
     });
@@ -58,7 +58,7 @@ export class AuthenticationService {
 
     const isPasswordValid = await bcrypt.compare(
       loginDto.password,
-      user.password_hash,
+      user.passwordHash,
     );
     if (!isPasswordValid) {
       throw new UnauthorizedException('Password is wrong');

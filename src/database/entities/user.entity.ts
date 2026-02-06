@@ -15,7 +15,7 @@ export class UserEntity extends BaseEntity {
     email: string;
 
     @Column({name: 'password_hash', type: 'varchar', length: 255 })
-    password_hash: string;
+    passwordHash: string;
 
     @Column({ name: 'role', type: 'enum', enum: UserRole })
     role: UserRole;
