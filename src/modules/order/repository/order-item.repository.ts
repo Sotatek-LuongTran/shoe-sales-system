@@ -9,6 +9,7 @@ export class OrderItemRepository extends BaseRepository<OrderItemEntity> {
   constructor(datasource: DataSource) {
     super(datasource, OrderItemEntity);
   }
+
   async createItems(
     manager: EntityManager,
     orderId: string,
@@ -68,7 +69,21 @@ export class OrderItemRepository extends BaseRepository<OrderItemEntity> {
     });
   }
 
-  async deleteByOrderId(manager: EntityManager, orderId: string): Promise<void> {
-    await manager.getRepository(OrderItemEntity).delete({ orderId });
+  async deleteByOrderId(orderId: string): Promise<void> {
+    await this.repository.delete({ orderId });
+  }
+
+  async removeItemFromOrder(
+    orderId: string,
+    productId: string,
+    variantValue: string,
+  ): Promise<boolean> {
+    const result = await this.repository.delete({
+      orderId,
+      productId,
+      variantValue,
+    });
+
+    return (result.affected ?? 0) > 0;
   }
 }
