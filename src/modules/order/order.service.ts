@@ -18,6 +18,7 @@ import { ProductVariantRepository } from 'src/shared/modules/common-product-vari
 import { ProductRepository } from 'src/shared/modules/common-product/product.repository';
 import { PaymentRepository } from '../payment/repository/payment.repository';
 import { PaymentStatus } from 'src/shared/enums/payment.enum';
+import { RemoveOrderItemDto } from 'src/shared/dto/order/remove-item.dto';
 
 @Injectable()
 export class OrderService {
@@ -33,36 +34,36 @@ export class OrderService {
 
   async checkoutOrder(userId: string) {
     const order = await this.orderRepository.findPendingOrderByUser(userId);
-  
+
     if (!order) {
       throw new BadRequestException('No pending order found');
     }
-  
+
     if (order.items.length === 0) {
       throw new BadRequestException('Order is empty');
     }
-  
+
     // create payment
     const payment = await this.paymentRepository.create({
       orderId: order.id,
       amount: order.totalPrice,
       paymentStatus: PaymentStatus.PENDING,
     });
-  
+
     await this.paymentRepository.save(payment);
-  
+
     order.status = OrderStatus.PROCESSING;
     await this.orderRepository.save(order);
-  
+
     return {
       orderId: order.id,
       paymentId: payment.id,
       amount: payment.amount,
     };
   }
-  
 
   async getMyOrders(userId: string) {
+    console.log(userId)
     const user = await this.userRepository.findById(userId);
     if (!user) throw new NotFoundException('User not found');
 
@@ -169,10 +170,10 @@ export class OrderService {
   }
 
   async cancelOrder(orderId: string, userId: string) {
-    return this.dataSource.transaction(async (manager) => {
-      const user = await this.userRepository.findById(userId);
-      if (!user) throw new NotFoundException('User not found');
+    const user = await this.userRepository.findById(userId);
+    if (!user) throw new NotFoundException('User not found');
 
+    return this.dataSource.transaction(async (manager) => {
       const order = await this.orderRepository.findById(orderId, ['items']); // Load items
       if (!order) {
         throw new NotFoundException('Order not found');
@@ -194,7 +195,7 @@ export class OrderService {
       order.status = OrderStatus.CANCELLED;
       order.paymentStatus = OrderPaymentStatus.UNPAID; // Reset payment status
 
-      // 🔁 ROLLBACK STOCK
+      // ROLLBACK STOCK
       for (const item of order.items) {
         const variant =
           await this.productVariantRepository.findByProductAndVariant(
@@ -211,5 +212,65 @@ export class OrderService {
       await manager.getRepository(order.constructor).save(order);
       return order;
     });
+  }
+
+  async removeItemFromPendingOrder(userId: string, dto: RemoveOrderItemDto) {
+    const { productId, variantValue } = dto;
+    // Find pending order
+    const order = await this.orderRepository.findPendingOrderByUser(userId);
+
+    if (!order) {
+      throw new BadRequestException('No pending order found');
+    }
+
+    if (order.status !== OrderStatus.PENDING) {
+      throw new BadRequestException('Cannot modify a non-pending order');
+    }
+
+    // Find item in order
+    const item = await this.orderItemRepository.findItemInOrder(
+      order.id,
+      productId,
+      variantValue,
+    );
+
+    if (!item) {
+      throw new NotFoundException('Item not found in order');
+    }
+
+    // Restore stock
+    const variant = await this.productVariantRepository.findByProductAndVariant(
+      productId,
+      variantValue,
+    );
+
+    if (variant) {
+      variant.stock += item.quantity;
+      await this.productVariantRepository.save(variant);
+    }
+
+    // Remove item
+    await this.orderItemRepository.removeItemFromOrder(
+      order.id,
+      productId,
+      variantValue,
+    );
+
+    // Recalculate total price
+    const remainingItems = await this.orderItemRepository.findByOrderId(
+      order.id,
+    );
+
+    order.totalPrice = remainingItems.reduce(
+      (sum, i) => sum + Number(i.finalPrice),
+      0,
+    );
+
+    await this.orderRepository.save(order);
+
+    return {
+      message: 'Item removed from order successfully',
+      order,
+    };
   }
 }

@@ -29,7 +29,7 @@ export class PaymentController {
   @ApiResponse({ status: 400, description: 'Invalid order' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async createPayment(@Param('orderId') orderId: string, @Req() req: any) {
-    return this.paymentService.createPayment(orderId, req.user.id);
+    return this.paymentService.createPayment(orderId, req.user.userId);
   }
 
   // =========================
@@ -54,7 +54,7 @@ export class PaymentController {
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async retryPayment(@Param('paymentId') paymentId: string, @Req() req: any) {
-    return this.paymentService.retryPayment(paymentId, req.user.id);
+    return this.paymentService.retryPayment(paymentId, req.user.userId);
   }
 
   // =========================

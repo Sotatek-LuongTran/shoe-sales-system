@@ -15,12 +15,12 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { OrderService } from './order.service';
-import { CreateOrderDto } from 'src/shared/dto/order/create-order.dto';
 import { AddToPendingOrderDto } from 'src/shared/dto/order/add-to-order.dto';
 import { UserRole } from 'src/shared/enums/user.enum';
 import { RolesGuard } from 'src/shared/guards/role.guard';
 import { Roles } from 'src/shared/decorators/role.decorator';
 import { AuthGuard } from '@nestjs/passport';
+import { RemoveOrderItemDto } from 'src/shared/dto/order/remove-item.dto';
 
 @ApiTags('Orders')
 @ApiBearerAuth('access-token')
@@ -38,7 +38,7 @@ export class OrderController {
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async checkoutOrder(@Req() req: any) {
-    return this.orderService.checkoutOrder( req.user.id);
+    return this.orderService.checkoutOrder(req.user.userId);
   }
 
   // =========================
@@ -50,7 +50,7 @@ export class OrderController {
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async addToPendingOrder(@Req() req: any, @Body() dto: AddToPendingOrderDto) {
-    return this.orderService.addProductToPendingOrder(req.user.id, dto);
+    return this.orderService.addProductToPendingOrder(req.user.userId, dto);
   }
 
   // =========================
@@ -58,11 +58,11 @@ export class OrderController {
   // =========================
   @Get('me')
   @ApiOperation({ summary: 'Get my orders' })
-  @ApiResponse({ status: 200, description: 'Oder get successfully' })
+  @ApiResponse({ status: 200, description: 'Order get successfully' })
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async getMyOrders(@Req() req: any) {
-    return this.orderService.getMyOrders(req.user.id);
+    return this.orderService.getMyOrders(req.user.userId);
   }
 
   // =========================
@@ -73,7 +73,7 @@ export class OrderController {
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async getOrderById(@Req() req: any, @Param('id') id: string) {
-    return this.orderService.getOrderById(id, req.user.id);
+    return this.orderService.getOrderById(id, req.user.userId);
   }
 
   // =========================
@@ -97,6 +97,18 @@ export class OrderController {
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async cancelOrder(@Req() req: any, @Param('id') id: string) {
-    return this.orderService.cancelOrder(id, req.user.id);
+    return this.orderService.cancelOrder(id, req.user.userId);
+  }
+
+  // =========================
+  // USER: REMOVE ORDER ITEM
+  // =========================
+  @Delete('pending/item')
+  @ApiOperation({ summary: 'Delete order item' })
+  @ApiResponse({ status: 200, description: 'Item deleted successfully' })
+  @ApiResponse({ status: 400, description: 'Bad request' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async removeItem(@Req() req: any, @Body() dto: RemoveOrderItemDto) {
+    return this.orderService.removeItemFromPendingOrder(req.user.userId, dto);
   }
 }
