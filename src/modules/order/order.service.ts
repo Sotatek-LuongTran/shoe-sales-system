@@ -7,18 +7,18 @@ import {
 import {
   CreateOrderDto,
   CreateOrderItemDto,
-} from 'src/shared/dto/order/create-order.dto';
+} from 'src/modules/order/dto/create-order.dto';
 import { DataSource } from 'typeorm';
 import { OrderRepository } from '../../shared/modules/common-order/order.repository';
 import { OrderItemRepository } from './repository/order-item.repository';
 import { UserRepository } from 'src/shared/modules/user/user.repository';
-import { AddToPendingOrderDto } from 'src/shared/dto/order/add-to-order.dto';
+import { AddToPendingOrderDto } from 'src/modules/order/dto/add-to-order.dto';
 import { OrderPaymentStatus, OrderStatus } from 'src/shared/enums/order.enum';
 import { ProductVariantRepository } from 'src/shared/modules/common-product-variant/product-variant.repository';
 import { ProductRepository } from 'src/shared/modules/common-product/product.repository';
 import { PaymentRepository } from '../payment/repository/payment.repository';
 import { PaymentStatus } from 'src/shared/enums/payment.enum';
-import { RemoveOrderItemDto } from 'src/shared/dto/order/remove-item.dto';
+import { RemoveOrderItemDto } from 'src/modules/order/dto/remove-item.dto';
 
 @Injectable()
 export class OrderService {

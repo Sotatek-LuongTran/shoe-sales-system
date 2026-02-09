@@ -4,8 +4,8 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateBrandDto } from 'src/shared/dto/brand/create-brand.dto';
-import { UpdateBrandDto } from 'src/shared/dto/brand/update-brand.dto';
+import { CreateBrandDto } from 'src/modules/brand/dto/create-brand.dto';
+import { UpdateBrandDto } from 'src/modules/brand/dto/update-brand.dto';
 import { BrandRepository } from 'src/shared/modules/common-brand/brand.repository';
 import { IsNull } from 'typeorm';
 

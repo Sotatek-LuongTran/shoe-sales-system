@@ -11,7 +11,7 @@ import * as bcrypt from 'bcrypt';
 import { LoginDto } from '../../shared/dto/user/login.dto';
 import { RedisService } from '../../common/redis/redis.service';
 import { randomUUID } from 'crypto';
-import { UserRole } from 'src/shared/enums/user.enum';
+import { UserRoleEnum } from 'src/shared/enums/user.enum';
 
 @Injectable()
 export class AuthenticationService {
@@ -34,7 +34,7 @@ export class AuthenticationService {
       email: createUserDto.email,
       name: createUserDto.name,
       passwordHash: hashedPassword,
-      role: UserRole.USER,
+      role: UserRoleEnum.USER,
       deletedAt: null,
     });
 

@@ -23,11 +23,11 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { ProductService } from './product.service';
-import { CreateProductDto } from 'src/shared/dto/product/create-product.dto';
-import { UpdateProductDto } from 'src/shared/dto/product/update-product.dto';
+import { CreateProductDto } from 'src/modules/product/product/create-product.dto';
+import { UpdateProductDto } from 'src/modules/product/product/update-product.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from 'src/shared/guards/role.guard';
-import { UserRole } from 'src/shared/enums/user.enum';
+import { UserRoleEnum } from 'src/shared/enums/user.enum';
 import { Roles } from 'src/shared/decorators/role.decorator';
 
 @ApiTags('Products')
@@ -41,7 +41,7 @@ export class ProductController {
   // CREATE PRODUCT
   // =============================
   @Post()
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRoleEnum.ADMIN)
   @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Create a new product' })
   @ApiResponse({
@@ -86,7 +86,7 @@ export class ProductController {
   // GET ALL PRODUCTS FOR ADMIN
   // =============================
   @Get('admin')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRoleEnum.ADMIN)
   @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Get products with pagination & filters' })
   @ApiResponse({
@@ -116,7 +116,7 @@ export class ProductController {
   // Get soft-deleted products
   // ===============================
   @Get('deleted')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRoleEnum.ADMIN)
   @UseGuards(RolesGuard)
   @ApiOperation({
     summary: 'Get soft-deleted products',
@@ -149,7 +149,7 @@ export class ProductController {
   // Permanently delete soft-deleted ones
   // =======================================
   @Delete('deleted')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRoleEnum.ADMIN)
   @UseGuards(RolesGuard)
   @ApiOperation({
     summary: 'Permanently delete soft-deleted products',
@@ -167,7 +167,7 @@ export class ProductController {
   // UPDATE PRODUCT
   // =============================
   @Patch(':id')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRoleEnum.ADMIN)
   @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Update a product' })
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
@@ -200,7 +200,7 @@ export class ProductController {
   // DELETE PRODUCT
   // =============================
   @Delete(':id')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRoleEnum.ADMIN)
   @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Soft delete a product' })
   @ApiResponse({
@@ -274,7 +274,7 @@ export class ProductController {
   // RESTORE DELETED PRODUCT
   // =============================
   @Patch(':id/restore')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRoleEnum.ADMIN)
   @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Restore a soft-deleted a product' })
   @ApiResponse({
@@ -292,7 +292,7 @@ export class ProductController {
   // Permanently delete 1 soft-deleted one
   // =======================================
   @Delete('deleted/:id')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRoleEnum.ADMIN)
   @UseGuards(RolesGuard)
   @ApiOperation({
     summary: 'Permanently delete 1 soft-deleted product',

@@ -5,8 +5,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { ProductEntity } from 'src/database/entities/product.entity';
-import { CreateProductDto } from 'src/shared/dto/product/create-product.dto';
-import { UpdateProductDto } from 'src/shared/dto/product/update-product.dto';
+import { CreateProductDto } from 'src/modules/product/product/create-product.dto';
+import { UpdateProductDto } from 'src/modules/product/product/update-product.dto';
 import { BrandRepository } from 'src/shared/modules/common-brand/brand.repository';
 import { CategoryRepository } from 'src/shared/modules/common-category/category.repository';
 import { ProductRepository } from 'src/shared/modules/common-product/product.repository';

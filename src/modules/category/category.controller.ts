@@ -20,11 +20,11 @@ import {
 } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { Roles } from 'src/shared/decorators/role.decorator';
-import { UserRole } from 'src/shared/enums/user.enum';
+import { UserRoleEnum } from 'src/shared/enums/user.enum';
 import { RolesGuard } from 'src/shared/guards/role.guard';
-import { CreateCategoryDto } from 'src/shared/dto/category/create-category.dto';
+import { CreateCategoryDto } from 'src/modules/category/dto/create-category.dto';
 import { CategoryService } from './category.service';
-import { UpdateCategoryDto } from 'src/shared/dto/category/update-category';
+import { UpdateCategoryDto } from 'src/modules/category/dto/update-category';
 
 @ApiTags('categories')
 @ApiBearerAuth('access-token')
@@ -37,7 +37,7 @@ export class CategoryController {
   // CREATE CATEGORY
   // =============================
   @Post()
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRoleEnum.ADMIN)
   @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Create a new category' })
   @ApiResponse({
@@ -54,7 +54,7 @@ export class CategoryController {
   // UPDATE CATEGORY
   // =============================
   @Patch(':id')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRoleEnum.ADMIN)
   @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Update a category' })
   @ApiResponse({
@@ -112,7 +112,7 @@ export class CategoryController {
   // DELETE CATEGORY
   // =============================
   @Delete(':id')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRoleEnum.ADMIN)
   @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Soft delete a category' })
   @ApiResponse({
@@ -129,7 +129,7 @@ export class CategoryController {
   // RESTORE DELETED CATEGORY
   // =============================
   @Patch(':id/restore')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRoleEnum.ADMIN)
   @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Restore a soft-deleted a category' })
   @ApiResponse({
@@ -147,7 +147,7 @@ export class CategoryController {
   // Get soft-deleted products
   // ===============================
   @Get('deleted')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRoleEnum.ADMIN)
   @UseGuards(RolesGuard)
   @ApiOperation({
     summary: 'Get soft-deleted products',
@@ -180,7 +180,7 @@ export class CategoryController {
   // Permanently delete soft-deleted ones
   // =======================================
   @Delete('deleted')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRoleEnum.ADMIN)
   @UseGuards(RolesGuard)
   @ApiOperation({
     summary: 'Permanently delete soft-deleted products',
@@ -198,7 +198,7 @@ export class CategoryController {
   // Permanently delete 1 soft-deleted one
   // =======================================
   @Delete('deleted/:id')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRoleEnum.ADMIN)
   @UseGuards(RolesGuard)
   @ApiOperation({
     summary: 'Permanently delete 1 soft-deleted product',

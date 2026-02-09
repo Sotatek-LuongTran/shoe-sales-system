@@ -9,7 +9,7 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { PaymentService } from './payment.service';
 import { RolesGuard } from 'src/shared/guards/role.guard';
-import { UserRole } from 'src/shared/enums/user.enum';
+import { UserRoleEnum } from 'src/shared/enums/user.enum';
 import { Roles } from 'src/shared/decorators/role.decorator';
 
 @ApiTags('Payments')
@@ -62,7 +62,7 @@ export class PaymentController {
   // =========================
   @Post('refund/:paymentId')
   @UseGuards(RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRoleEnum.ADMIN)
   @ApiOperation({ summary: 'Admin refund payment' })
   @ApiResponse({ status: 200, description: 'Payment refunded successfully' })
   @ApiResponse({ status: 400, description: 'Bad request' })
@@ -73,7 +73,7 @@ export class PaymentController {
 
   @Get()
   @UseGuards(RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRoleEnum.ADMIN)
   @ApiOperation({ summary: 'Admin: get all payments' })
   @ApiResponse({ status: 200, description: 'Payments get successfully' })
   @ApiResponse({ status: 400, description: 'Bad request' })

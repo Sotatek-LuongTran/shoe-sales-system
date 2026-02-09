@@ -21,10 +21,10 @@ import {
 } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { Roles } from 'src/shared/decorators/role.decorator';
-import { UserRole } from 'src/shared/enums/user.enum';
+import { UserRoleEnum } from 'src/shared/enums/user.enum';
 import { RolesGuard } from 'src/shared/guards/role.guard';
-import { CreateBrandDto } from 'src/shared/dto/brand/create-brand.dto';
-import { UpdateBrandDto } from 'src/shared/dto/brand/update-brand.dto';
+import { CreateBrandDto } from 'src/modules/brand/dto/create-brand.dto';
+import { UpdateBrandDto } from 'src/modules/brand/dto/update-brand.dto';
 
 @ApiTags('Brands')
 @ApiBearerAuth('access-token')
@@ -37,7 +37,7 @@ export class BrandController {
   // CREATE BRAND
   // =============================
   @Post()
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRoleEnum.ADMIN)
   @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Create a new brand' })
   @ApiResponse({
@@ -54,7 +54,7 @@ export class BrandController {
   // UPDATE BRAND
   // =============================
   @Patch(':id')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRoleEnum.ADMIN)
   @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Update a brand' })
   @ApiResponse({
@@ -112,7 +112,7 @@ export class BrandController {
   // DELETE BRAND
   // =============================
   @Delete(':id')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRoleEnum.ADMIN)
   @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Soft delete a brand' })
   @ApiResponse({
@@ -127,7 +127,7 @@ export class BrandController {
   }
 
   @Patch(':id/restore')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRoleEnum.ADMIN)
   @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Restore a soft-deleted a brand' })
   @ApiResponse({
@@ -145,7 +145,7 @@ export class BrandController {
   // Get soft-deleted brands
   // ===============================
   @Get('deleted')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRoleEnum.ADMIN)
   @UseGuards(RolesGuard)
   @ApiOperation({
     summary: 'Get soft-deleted brands',
@@ -178,7 +178,7 @@ export class BrandController {
   // Permanently delete soft-deleted ones
   // =======================================
   @Delete('deleted')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRoleEnum.ADMIN)
   @UseGuards(RolesGuard)
   @ApiOperation({
     summary: 'Permanently delete soft-deleted brands',
@@ -196,7 +196,7 @@ export class BrandController {
   // Permanently delete 1 soft-deleted one
   // =======================================
   @Delete('deleted/:id')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRoleEnum.ADMIN)
   @UseGuards(RolesGuard)
   @ApiOperation({
     summary: 'Permanently delete 1 soft-deleted brand',

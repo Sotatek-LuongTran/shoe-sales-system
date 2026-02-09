@@ -4,8 +4,8 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateCategoryDto } from 'src/shared/dto/category/create-category.dto';
-import { UpdateCategoryDto } from 'src/shared/dto/category/update-category';
+import { CreateCategoryDto } from 'src/modules/category/dto/create-category.dto';
+import { UpdateCategoryDto } from 'src/modules/category/dto/update-category';
 import { CategoryRepository } from 'src/shared/modules/common-category/category.repository';
 import { IsNull } from 'typeorm';
 

@@ -15,12 +15,12 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { OrderService } from './order.service';
-import { AddToPendingOrderDto } from 'src/shared/dto/order/add-to-order.dto';
-import { UserRole } from 'src/shared/enums/user.enum';
+import { AddToPendingOrderDto } from 'src/modules/order/dto/add-to-order.dto';
+import { UserRoleEnum } from 'src/shared/enums/user.enum';
 import { RolesGuard } from 'src/shared/guards/role.guard';
 import { Roles } from 'src/shared/decorators/role.decorator';
 import { AuthGuard } from '@nestjs/passport';
-import { RemoveOrderItemDto } from 'src/shared/dto/order/remove-item.dto';
+import { RemoveOrderItemDto } from 'src/modules/order/dto/remove-item.dto';
 
 @ApiTags('Orders')
 @ApiBearerAuth('access-token')
@@ -81,7 +81,7 @@ export class OrderController {
   // =========================
   @Get()
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRoleEnum.ADMIN)
   @ApiOperation({ summary: 'Admin: get all orders' })
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })

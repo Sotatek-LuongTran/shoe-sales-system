@@ -3,7 +3,7 @@ import { BaseEntity } from "../../shared/modules/base/base.entity";
 import { OrderItemEntity } from "./order-item.entity";
 import { PaymentEntity } from "./payment.entity";
 import { UserEntity } from "./user.entity";
-import { OrderPaymentStatus, OrderStatus } from "../../shared/enums/order.enum";
+import { OrderPaymentStatusEnum, OrderStatusEnum } from "../../shared/enums/order.enum";
 
 @Entity('orders')
 @Index('idx_orders_user_status',['user', 'status'], { unique: true })
@@ -12,11 +12,11 @@ import { OrderPaymentStatus, OrderStatus } from "../../shared/enums/order.enum";
 @Index('idx_orders_payment_status', ['paymentStatus'])
 @Index('idx_orders_deleted_at', ['deletedAt'])
 export class OrderEntity extends BaseEntity {
-    @Column({ name: 'status', type: 'enum', enum: OrderStatus })
-    status: OrderStatus;
+    @Column({ name: 'status', type: 'enum', enum: OrderStatusEnum })
+    status: OrderStatusEnum;
 
-    @Column({ name: 'payment_status', type: 'enum', enum: OrderPaymentStatus })
-    paymentStatus: OrderPaymentStatus;
+    @Column({ name: 'payment_status', type: 'enum', enum: OrderPaymentStatusEnum })
+    paymentStatus: OrderPaymentStatusEnum;
 
     @Column({ name: 'deleted_at', type: 'timestamp', nullable: true })
     deletedAt: Date | null;
@@ -24,7 +24,7 @@ export class OrderEntity extends BaseEntity {
     @Column({ name: 'user_id', type: 'uuid' })
     userId: string;
 
-    @Column({ name: 'total_price', type: 'numeric', precision: 12, scale: 2 })
+    @Column({ name: 'total_price', type: 'numeric', precision: 12, scale: 4 })
     totalPrice: number;
 
     // Relations
