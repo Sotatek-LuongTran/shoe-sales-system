@@ -39,12 +39,4 @@ export class PaginateVariantsDto extends PaginateDto {
   @IsBoolean()
   @IsOptional()
   isActive?: boolean;
-
-  @ApiPropertyOptional({
-    description: 'Include deleted products',
-    example: false,
-  })
-  @IsBoolean()
-  @IsOptional()
-  includeDeleted?: boolean;
 }

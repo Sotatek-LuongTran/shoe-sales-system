@@ -67,4 +67,13 @@ export class ProductVariantRepository extends BaseRepository<ProductVariantEntit
       .where('deleted_at IS NOT NULL')
       .execute();
   }
+
+  async findByProductAndValue(productId: string, variantValue: string) {
+    return this.createQueryBuilder('variant')
+      .innerJoin('variant.product', 'product')
+      .where('variant.productId = :productId', { productId })
+      .andWhere('variant.variantValue = :variantValue', { variantValue })
+      .andWhere('variant.isActive = true')
+      .getOne();
+  }
 }

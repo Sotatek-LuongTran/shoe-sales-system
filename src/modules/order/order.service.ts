@@ -44,7 +44,7 @@ export class OrderService {
     }
 
     // create payment
-    const payment = await this.paymentRepository.create({
+    const payment = this.paymentRepository.create({
       orderId: order.id,
       amount: order.totalPrice,
       paymentStatus: PaymentStatusEnum.PENDING,
@@ -95,7 +95,7 @@ export class OrderService {
     const user = await this.userRepository.findById(userId);
     if (!user) throw new NotFoundException('User not found');
 
-    const { productId, variantValue, quantity } = dto;
+    const { productId, productVariantId, quantity } = dto;
 
     // Validate product
     const product = await this.productRepository.findById(productId);
@@ -104,10 +104,7 @@ export class OrderService {
     }
 
     // Validate variant
-    const variant = await this.productVariantRepository.findByProductAndVariant(
-      productId,
-      variantValue,
-    );
+    const variant = await this.productVariantRepository.findById(productVariantId)
 
     if (!variant || variant.stock < quantity) {
       throw new BadRequestException('Not enough stock');
@@ -121,7 +118,7 @@ export class OrderService {
     let order = await this.orderRepository.findPendingOrderByUser(userId);
 
     if (!order) {
-      order = await this.orderRepository.create({
+      order = this.orderRepository.create({
         user,
         status: OrderStatusEnum.PENDING,
         paymentStatus: OrderPaymentStatusEnum.UNPAID,
@@ -133,7 +130,7 @@ export class OrderService {
     let item = await this.orderItemRepository.findItemInOrder(
       order.id,
       productId,
-      variantValue,
+      variant.variantValue,
     );
 
     const price = Number(variant.price);
@@ -144,7 +141,7 @@ export class OrderService {
     } else {
       const createItemDto: CreateOrderItemDto = {
         productId,
-        variantValue,
+        variantValue: variant.variantValue,
         quantity,
         price,
         name: product.name,
@@ -153,7 +150,7 @@ export class OrderService {
         gender: product.gender,
       };
 
-      item = await this.orderItemRepository.create({
+      item = this.orderItemRepository.create({
         orderId: order.id,
         ...createItemDto,
         finalPrice: price * quantity,
@@ -198,7 +195,7 @@ export class OrderService {
       // ROLLBACK STOCK
       for (const item of order.items) {
         const variant =
-          await this.productVariantRepository.findByProductAndVariant(
+          await this.productVariantRepository.findByProductAndValue(
             item.productId,
             item.variantValue,
           );
@@ -239,7 +236,7 @@ export class OrderService {
     }
 
     // Restore stock
-    const variant = await this.productVariantRepository.findByProductAndVariant(
+    const variant = await this.productVariantRepository.findByProductAndValue(
       productId,
       variantValue,
     );

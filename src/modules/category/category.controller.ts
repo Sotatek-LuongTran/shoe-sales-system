@@ -25,6 +25,7 @@ import { RolesGuard } from 'src/shared/guards/role.guard';
 import { CreateCategoryDto } from 'src/modules/category/dto/create-category.dto';
 import { CategoryService } from './category.service';
 import { UpdateCategoryDto } from 'src/modules/category/dto/update-category';
+import { PaginateCategoriesDto } from './dto/paginate-categories.dto';
 
 @ApiTags('categories')
 @ApiBearerAuth('access-token')
@@ -44,8 +45,6 @@ export class CategoryController {
     status: 201,
     description: 'category created successfully',
   })
-  @ApiResponse({ status: 400, description: 'Bad request' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
   create(@Body() dto: CreateCategoryDto) {
     return this.categoryService.createCategory(dto);
   }
@@ -61,7 +60,6 @@ export class CategoryController {
     status: 201,
     description: 'Product updated successfully',
   })
-  @ApiResponse({ status: 400, description: 'Bad request' })
   update(@Body() dto: UpdateCategoryDto) {
     return this.categoryService.updateCategory(dto);
   }
@@ -75,21 +73,11 @@ export class CategoryController {
     status: 201,
     description: 'Categories get successfully',
   })
-  @ApiResponse({ status: 400, description: 'Bad request' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiQuery({ name: 'page', required: false, type: Number })
-  @ApiQuery({ name: 'limit', required: false, type: Number })
-  @ApiQuery({ name: 'search', required: false, type: String })
+  @ApiQuery({ name: 'dto', required: true, type: PaginateCategoriesDto })
   getList(
-    @Query('page') page?: number,
-    @Query('limit') limit?: number,
-    @Query('search') search?: string,
+    @Query('dto') dto: PaginateCategoriesDto,
   ) {
-    return this.categoryService.getCategorysPagination({
-      page: Number(page) || 1,
-      limit: Number(limit) || 10,
-      search,
-    });
+    return this.categoryService.getCategoriesPagination(dto);
   }
 
   // =============================
@@ -101,8 +89,6 @@ export class CategoryController {
     status: 201,
     description: 'Category get successfully',
   })
-  @ApiResponse({ status: 400, description: 'Bad request' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
   getOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.categoryService.getCategory(id);
@@ -119,8 +105,6 @@ export class CategoryController {
     status: 201,
     description: 'Category deleted successfully',
   })
-  @ApiResponse({ status: 400, description: 'Bad request' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.categoryService.deleteCategory(id);
@@ -136,81 +120,8 @@ export class CategoryController {
     status: 201,
     description: 'Category deleted successfully',
   })
-  @ApiResponse({ status: 400, description: 'Bad request' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
   restoreCategory(@Param('id', ParseUUIDPipe) id: string) {
     return this.categoryService.restoreCategory(id);
-  }
-
-  // ===============================
-  // Get soft-deleted products
-  // ===============================
-  @Get('deleted')
-  @Roles(UserRoleEnum.ADMIN)
-  @UseGuards(RolesGuard)
-  @ApiOperation({
-    summary: 'Get soft-deleted products',
-    description: 'Retrieve products that were soft deleted (recycle bin)',
-  })
-  @ApiQuery({ name: 'page', required: false, example: 1 })
-  @ApiQuery({ name: 'limit', required: false, example: 10 })
-  @ApiQuery({
-    name: 'search',
-    required: false,
-    example: 'nike',
-    description: 'Search by product name or description',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'List of soft-deleted products',
-  })
-  async getSoftDeletedProducts(
-    @Query('page') page?: number,
-    @Query('limit') limit?: number,
-    @Query('search') search?: string,
-  ) {
-    return this.categoryService.getSoftDeletedCategoriesPagination({
-      page: Number(page) || 1,
-      limit: Number(limit) || 10,
-      search,
-    });
-  }
-  // =======================================
-  // Permanently delete soft-deleted ones
-  // =======================================
-  @Delete('deleted')
-  @Roles(UserRoleEnum.ADMIN)
-  @UseGuards(RolesGuard)
-  @ApiOperation({
-    summary: 'Permanently delete soft-deleted products',
-    description: 'Hard delete all products that are currently soft deleted',
-  })
-  @ApiResponse({
-    status: 204,
-    description: 'Soft-deleted products permanently removed',
-  })
-  async hardDeleteSoftDeletedProducts() {
-    await this.categoryService.removeSoftDeletedCategories();
-  }
-
-  // =======================================
-  // Permanently delete 1 soft-deleted one
-  // =======================================
-  @Delete('deleted/:id')
-  @Roles(UserRoleEnum.ADMIN)
-  @UseGuards(RolesGuard)
-  @ApiOperation({
-    summary: 'Permanently delete 1 soft-deleted product',
-    description: 'Hard delete 1 product that is currently soft deleted',
-  })
-  @ApiResponse({
-    status: 204,
-    description: 'Soft-deleted product permanently removed',
-  })
-  async hardDeleteOneSoftDeletedProduct(
-    @Param('id', ParseUUIDPipe) id: string,
-  ) {
-    await this.categoryService.removeOneSoftDeletedCategory(id);
   }
 }

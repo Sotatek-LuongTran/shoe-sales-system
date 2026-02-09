@@ -1,11 +1,11 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsBoolean, IsOptional, IsString, MaxLength } from 'class-validator';
 
 export class PaginateDto {
   @ApiPropertyOptional({
     description: 'Page number',
-    example: 1
+    example: 1,
   })
   @IsOptional()
   @Type(() => Number)
@@ -27,4 +27,12 @@ export class PaginateDto {
   @MaxLength(500)
   @IsOptional()
   search?: string;
+
+  @ApiPropertyOptional({
+    description: 'Include deleted products',
+    example: false,
+  })
+  @IsBoolean()
+  @IsOptional()
+  includeDeleted?: boolean;
 }

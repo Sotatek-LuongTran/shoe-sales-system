@@ -8,6 +8,7 @@ import { CreateCategoryDto } from 'src/modules/category/dto/create-category.dto'
 import { UpdateCategoryDto } from 'src/modules/category/dto/update-category';
 import { CategoryRepository } from 'src/shared/modules/common-category/category.repository';
 import { IsNull } from 'typeorm';
+import { PaginateCategoriesDto } from './dto/paginate-categories.dto';
 
 @Injectable()
 export class CategoryService {
@@ -19,7 +20,7 @@ export class CategoryService {
     );
     if (existing) throw new BadRequestException('Category already exists');
 
-    const category = await this.categoryRepository.create(createCategoryDto);
+    const category = this.categoryRepository.create(createCategoryDto);
 
     return this.categoryRepository.save(category);
   }
@@ -44,23 +45,8 @@ export class CategoryService {
     return this.categoryRepository.save(category);
   }
 
-  async getCategorysPagination(options: {
-    page?: number;
-    limit?: number;
-    search?: string;
-    filters?: Record<string, any>;
-  }) {
-      return this.categoryRepository.getListPagination({
-        page: options.page,
-        limit: options.limit,
-        search: options.search,
-        searchFields: ['name', 'description'],
-        sortBy: 'createdAt',
-        sortOrder: 'DESC',
-        filters: {
-          deletedAt: null,
-        },
-      });
+  async getCategoriesPagination(dto: PaginateCategoriesDto) {
+      return this.categoryRepository.findCategoriesPagination(dto)
   }
 
   async getCategory(categoryId: string) {
@@ -82,40 +68,5 @@ export class CategoryService {
 
     category.deletedAt = null;
     return this.categoryRepository.save(category);
-  }
-
-  async getSoftDeletedCategoriesPagination(options: {
-    page?: number;
-    limit?: number;
-    search?: string;
-  }) {
-      return this.categoryRepository.findSoftDeletedCategories(options);
-  }
-
-  async removeOneSoftDeletedCategory(categoryId: string) {
-    const category = await this.categoryRepository.findById(categoryId);
-
-    if (!category) {
-      throw new NotFoundException('Category not found');
-    }
-
-    await this.categoryRepository.removeOneSoftDeletedCategory(categoryId);
-
-    return {
-      message: 'Category permanently deleted',
-      categoryId,
-    };
-  }
-
-  async removeSoftDeletedCategories() {
-    const categories = await this.categoryRepository.findSoftDeletedCategories({});
-    if (!categories.data.length) {
-      throw new NotFoundException('The list is empty');
-    }
-
-    await this.categoryRepository.removeSoftDeletedCategories();
-    return {
-      message: 'Categories permanently deleted'
-    }
   }
 }

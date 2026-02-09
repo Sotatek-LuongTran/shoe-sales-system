@@ -5,10 +5,10 @@ export class AddToPendingOrderDto {
     @ApiProperty({ description: 'Product ID' })
     @IsUUID()
     productId: string;
-  
-    @ApiProperty({ description: 'Variant value (size / color)' })
-    @IsString()
-    variantValue: string;
+
+    @ApiProperty({ description: 'Product ID' })
+    @IsUUID()
+    productVariantId: string;
   
     @ApiProperty({ description: 'Quantity' })
     @IsInt()
