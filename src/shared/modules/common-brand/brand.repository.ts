@@ -11,7 +11,7 @@ export class BrandRepository extends BaseRepository<BrandEntity> {
   }
 
   async findByName(name: string) {
-    return this.repository.findOne({
+    return this.findOne({
       where: {
         name,
       },
@@ -25,7 +25,7 @@ export class BrandRepository extends BaseRepository<BrandEntity> {
   }) {
     const { page = 1, limit = 10, search } = options;
 
-    const qb = this.repository
+    const qb = this
       .createQueryBuilder('brand')
       .withDeleted()
       .where('brand.deletedAt IS NOT NULL');
@@ -55,7 +55,7 @@ export class BrandRepository extends BaseRepository<BrandEntity> {
   }
 
   async removeSoftDeletedBrands(): Promise<void> {
-    await this.repository.manager.transaction(async (manager) => {
+    await this.manager.transaction(async (manager) => {
       const deletedBrands = await manager
         .createQueryBuilder(BrandEntity, 'brand')
         .withDeleted()
@@ -83,7 +83,7 @@ export class BrandRepository extends BaseRepository<BrandEntity> {
     });
   }
   async removeOneSoftDeletedBrand(brandId: string): Promise<void> {
-    await this.repository.manager.transaction(async (manager) => {
+    await this.manager.transaction(async (manager) => {
       // HARD delete products under this brand
       await manager
         .createQueryBuilder()

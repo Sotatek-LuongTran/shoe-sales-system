@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { BaseRepository } from '../base/base.repository';
 import { ProductEntity } from 'src/database/entities/product.entity';
 import { DataSource, IsNull } from 'typeorm';
+import { BaseRepository } from '../base/base.repository';
 
 @Injectable()
 export class ProductRepository extends BaseRepository<ProductEntity> {
@@ -25,8 +25,7 @@ export class ProductRepository extends BaseRepository<ProductEntity> {
   }) {
     const { page = 1, limit = 10, search, filters = {} } = options;
 
-    const qb = this.repository
-      .createQueryBuilder('product')
+    const qb = this.createQueryBuilder('product')
       .leftJoin('product.variants', 'variant')
       .select([
         'product.id AS id',
@@ -122,8 +121,7 @@ export class ProductRepository extends BaseRepository<ProductEntity> {
   }
 
   async findProductWithPriceRange(id: string) {
-    const product = await this.repository
-      .createQueryBuilder('product')
+    const product = await this.createQueryBuilder('product')
       .leftJoin('product.variants', 'variant')
       .select([
         'product',
@@ -138,7 +136,7 @@ export class ProductRepository extends BaseRepository<ProductEntity> {
   }
 
   async findOneWithBrandAndCategory(id: string) {
-    return await this.repository.findOne({
+    return await this.findOne({
       where: {
         id: id,
         deletedAt: IsNull(),
@@ -154,8 +152,7 @@ export class ProductRepository extends BaseRepository<ProductEntity> {
   }) {
     const { page = 1, limit = 10, search } = options;
 
-    const qb = this.repository
-      .createQueryBuilder('product')
+    const qb = this.createQueryBuilder('product')
       .withDeleted()
       .leftJoin('product.brand', 'brand', 'brand.deletedAt IS NULL')
       .leftJoin('product.category', 'category', 'category.deletedAt IS NULL')
@@ -186,8 +183,7 @@ export class ProductRepository extends BaseRepository<ProductEntity> {
   }
 
   async removeSoftDeletedProducts(): Promise<void> {
-    await this.repository
-      .createQueryBuilder()
+    await this.createQueryBuilder()
       .delete()
       .from(ProductEntity)
       .where('deleted_at IS NOT NULL')

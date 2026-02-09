@@ -49,7 +49,7 @@ export class OrderItemRepository extends BaseRepository<OrderItemEntity> {
     productId: string,
     variantValue: string,
   ) {
-    return this.repository.findOne({
+    return this.findOne({
       where: {
         orderId,
         productId,
@@ -59,7 +59,7 @@ export class OrderItemRepository extends BaseRepository<OrderItemEntity> {
   }
 
   async findByOrderId(orderId: string): Promise<OrderItemEntity[]> {
-    return this.repository.find({
+    return this.find({
       where: {
         orderId,
       },
@@ -70,7 +70,7 @@ export class OrderItemRepository extends BaseRepository<OrderItemEntity> {
   }
 
   async deleteByOrderId(orderId: string): Promise<void> {
-    await this.repository.delete({ orderId });
+    await this.delete({ orderId });
   }
 
   async removeItemFromOrder(
@@ -78,7 +78,7 @@ export class OrderItemRepository extends BaseRepository<OrderItemEntity> {
     productId: string,
     variantValue: string,
   ): Promise<boolean> {
-    const result = await this.repository.delete({
+    const result = await this.delete({
       orderId,
       productId,
       variantValue,
