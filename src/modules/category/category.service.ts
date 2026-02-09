@@ -30,10 +30,6 @@ export class CategoryService {
     );
     if (!category) throw new NotFoundException('category not found');
 
-    if (category.deletedAt) {
-      throw new BadRequestException('Category currently unavailable');
-    }
-
     Object.assign(category, updateCategoryDto);
 
     return this.categoryRepository.save(category);
@@ -42,10 +38,6 @@ export class CategoryService {
   async deleteCategory(categoryId: string) {
     const category = await this.categoryRepository.findById(categoryId);
     if (!category) throw new NotFoundException('No product found');
-
-    if (category.deletedAt) {
-      throw new BadRequestException('Category has already been deleted');
-    }
 
     category.deletedAt = new Date(Date.now());
 
@@ -58,7 +50,6 @@ export class CategoryService {
     search?: string;
     filters?: Record<string, any>;
   }) {
-    try {
       return this.categoryRepository.getListPagination({
         page: options.page,
         limit: options.limit,
@@ -70,10 +61,6 @@ export class CategoryService {
           deletedAt: null,
         },
       });
-    } catch (error) {
-      console.error('Error fetching paginated categories:', error);
-      throw new InternalServerErrorException('Failed to fetch categories');
-    }
   }
 
   async getCategory(categoryId: string) {
@@ -93,10 +80,6 @@ export class CategoryService {
       throw new NotFoundException('Category not found');
     }
 
-    if (!category.deletedAt) {
-      throw new BadRequestException('Category is not deleted');
-    }
-
     category.deletedAt = null;
     return this.categoryRepository.save(category);
   }
@@ -106,14 +89,7 @@ export class CategoryService {
     limit?: number;
     search?: string;
   }) {
-    try {
       return this.categoryRepository.findSoftDeletedCategories(options);
-    } catch (error) {
-      console.error('Error fetching paginated categories:', error);
-      throw new InternalServerErrorException(
-        'Failed to fetch categories',
-      );
-    }
   }
 
   async removeOneSoftDeletedCategory(categoryId: string) {
@@ -121,12 +97,6 @@ export class CategoryService {
 
     if (!category) {
       throw new NotFoundException('Category not found');
-    }
-
-    if (!category.deletedAt) {
-      throw new BadRequestException(
-        'Category must be soft deleted before permanent removal',
-      );
     }
 
     await this.categoryRepository.removeOneSoftDeletedCategory(categoryId);

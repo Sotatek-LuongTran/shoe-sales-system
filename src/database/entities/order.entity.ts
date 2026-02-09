@@ -1,4 +1,4 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany } from "typeorm";
+import { Column, DeleteDateColumn, Entity, Index, JoinColumn, ManyToOne, OneToMany } from "typeorm";
 import { BaseEntity } from "../../shared/modules/base/base.entity";
 import { OrderItemEntity } from "./order-item.entity";
 import { PaymentEntity } from "./payment.entity";
@@ -7,10 +7,6 @@ import { OrderPaymentStatusEnum, OrderStatusEnum } from "../../shared/enums/orde
 
 @Entity('orders')
 @Index('idx_orders_user_status',['user', 'status'], { unique: true })
-@Index('idx_orders_created_at', ['createdAt'])
-@Index('idx_orders_status', ['status'])
-@Index('idx_orders_payment_status', ['paymentStatus'])
-@Index('idx_orders_deleted_at', ['deletedAt'])
 export class OrderEntity extends BaseEntity {
     @Column({ name: 'status', type: 'enum', enum: OrderStatusEnum })
     status: OrderStatusEnum;
@@ -18,7 +14,8 @@ export class OrderEntity extends BaseEntity {
     @Column({ name: 'payment_status', type: 'enum', enum: OrderPaymentStatusEnum })
     paymentStatus: OrderPaymentStatusEnum;
 
-    @Column({ name: 'deleted_at', type: 'timestamp', nullable: true })
+    // @Column({ name: 'deleted_at', type: 'timestamp', nullable: true })
+    @DeleteDateColumn()
     deletedAt: Date | null;
 
     @Column({ name: 'user_id', type: 'uuid' })

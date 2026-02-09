@@ -27,16 +27,10 @@ export class ProductService {
     if (!brand) {
       throw new NotFoundException('Brand not exists');
     }
-    if (brand.deletedAt) {
-      throw new NotFoundException('Brand currently unavailable');
-    }
 
     const category = await this.categoryRepository.findById(categoryId);
     if (!category) {
       throw new NotFoundException('Category not exists');
-    }
-    if (category.deletedAt) {
-      throw new NotFoundException('Category currently unavailable');
     }
 
     const product = await this.productRepository.create({
@@ -62,13 +56,11 @@ export class ProductService {
     if (dto.brandId) {
       const brand = await this.brandRepository.findById(dto.brandId);
       if (!brand) throw new NotFoundException('Brand not exists');
-      product.brand = brand;
     }
 
     if (dto.categoryId) {
       const category = await this.categoryRepository.findById(dto.categoryId);
       if (!category) throw new NotFoundException('Category not exists');
-      product.category = category;
     }
 
     Object.assign(product, dto);
@@ -90,7 +82,6 @@ export class ProductService {
       maxPrice?: number;
     };
   }) {
-    try {
       return this.productRepository.findProductsPaginationWithPriceRange({
         page: options.page,
         limit: options.limit,
@@ -100,10 +91,6 @@ export class ProductService {
           isActive: options.filters?.isActive ?? true,
         },
       });
-    } catch (error) {
-      console.error('Error fetching paginated products:', error);
-      throw new InternalServerErrorException('Failed to fetch products');
-    }
   }
 
   async getProductsPagination(options: {
@@ -120,7 +107,6 @@ export class ProductService {
       maxPrice?: number;
     };
   }) {
-    try {
       return this.productRepository.getListPagination({
         page: options.page,
         limit: options.limit,
@@ -129,10 +115,6 @@ export class ProductService {
           ...options.filters,
         },
       });
-    } catch (error) {
-      console.error('Error fetching paginated products:', error);
-      throw new InternalServerErrorException('Failed to fetch products');
-    }
   }
 
   async getProduct(id: string) {
@@ -231,10 +213,6 @@ export class ProductService {
       throw new NotFoundException('Product not found');
     }
 
-    if (!product.deletedAt) {
-      throw new BadRequestException('Product is not deleted');
-    }
-
     product.deletedAt = null;
 
     // Optional: restore variants too
@@ -252,12 +230,7 @@ export class ProductService {
     limit?: number;
     search?: string;
   }) {
-    try {
       return this.productRepository.findSoftDeletedProducts(options);
-    } catch (error) {
-      console.error('Error fetching paginated products:', error);
-      throw new InternalServerErrorException('Failed to fetch products');
-    }
   }
 
   async removeOneSoftDeletedProduct(productId: string) {

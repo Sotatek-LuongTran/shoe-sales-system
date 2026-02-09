@@ -63,11 +63,6 @@ export class AuthenticationService {
     if (!isPasswordValid) {
       throw new UnauthorizedException('Password is wrong');
     }
-
-    if (user.deletedAt !== null) {
-      throw new UnauthorizedException('You have been deactivated');
-    }
-
     const sessionKey = randomUUID();
 
     const accessPayload = { sub: user.id, role: user.role, sessionKey };

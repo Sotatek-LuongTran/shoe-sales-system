@@ -1,4 +1,4 @@
-import { Column, Entity, Index, OneToMany } from "typeorm";
+import { Column, DeleteDateColumn, Entity, Index, OneToMany } from "typeorm";
 import { BaseEntity } from "../../shared/modules/base/base.entity";
 import { OrderEntity } from "./order.entity";
 import { UserRoleEnum } from "../../shared/enums/user.enum";
@@ -20,7 +20,8 @@ export class UserEntity extends BaseEntity {
     @Column({ name: 'role', type: 'enum', enum: UserRoleEnum })
     role: UserRoleEnum;
 
-    @Column({ name: 'deleted_at', type: 'timestamp', nullable: true })
+    // @Column({ name: 'deleted_at', type: 'timestamp', nullable: true })
+    @DeleteDateColumn()
     deletedAt: Date | null;
 
     // Relations

@@ -6,8 +6,6 @@ import { ProductEntity } from './product.entity';
 
 @Entity('order_items')
 @Index('idx_order_items_order_id', ['orderId'])
-@Index('idx_order_items_product_type_gender', ['productType', 'gender'])
-@Index('idx_order_items_created_at', ['createdAt'])
 export class OrderItemEntity extends BaseEntity {  
   @Column({ name: 'order_id', type: 'uuid' })
   orderId: string;
