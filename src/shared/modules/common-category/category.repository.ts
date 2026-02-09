@@ -11,7 +11,7 @@ export class CategoryRepository extends BaseRepository<CategoryEntity> {
   }
 
   async findByName(name: string) {
-    return this.repository.findOne({
+    return this.findOne({
       where: {
         name,
       },
@@ -25,8 +25,7 @@ export class CategoryRepository extends BaseRepository<CategoryEntity> {
   }) {
     const { page = 1, limit = 10, search } = options;
 
-    const qb = this.repository
-      .createQueryBuilder('category')
+    const qb = this.createQueryBuilder('category')
       .withDeleted()
       .where('category.deletedAt IS NOT NULL');
 
@@ -55,7 +54,7 @@ export class CategoryRepository extends BaseRepository<CategoryEntity> {
   }
 
   async removeSoftDeletedCategories(): Promise<void> {
-    await this.repository.manager.transaction(async (manager) => {
+    await this.manager.transaction(async (manager) => {
       // Find soft-deleted categories
       const deletedCategories = await manager
         .createQueryBuilder(CategoryEntity, 'category')
@@ -87,7 +86,7 @@ export class CategoryRepository extends BaseRepository<CategoryEntity> {
   }
 
   async removeOneSoftDeletedCategory(categoryId: string): Promise<void> {
-    await this.repository.manager.transaction(async (manager) => {
+    await this.manager.transaction(async (manager) => {
       // HARD delete products under this category
       await manager
         .createQueryBuilder()
