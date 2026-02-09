@@ -186,7 +186,7 @@ export class ProductVariantController {
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.productVariantService.deleteProductVariant(id);
   }
 

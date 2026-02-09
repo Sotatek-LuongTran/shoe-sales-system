@@ -1,4 +1,4 @@
-import { Controller, Post, Param, Req, UseGuards, Get } from '@nestjs/common';
+import { Controller, Post, Param, Req, UseGuards, Get, ParseUUIDPipe } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -28,7 +28,7 @@ export class PaymentController {
   @ApiResponse({ status: 201, description: 'Payment created' })
   @ApiResponse({ status: 400, description: 'Invalid order' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async createPayment(@Param('orderId') orderId: string, @Req() req: any) {
+  async createPayment(@Param('orderId', ParseUUIDPipe) orderId: string, @Req() req: any) {
     return this.paymentService.createPayment(orderId, req.user.userId);
   }
 
@@ -41,7 +41,7 @@ export class PaymentController {
   @ApiResponse({ status: 200, description: 'Payment processed' })
   @ApiResponse({ status: 400, description: 'Payment already processed' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async confirmPayment(@Param('paymentId') paymentId: string) {
+  async confirmPayment(@Param('paymentId', ParseUUIDPipe) paymentId: string) {
     return this.paymentService.confirmPayment(paymentId);
   }
 
@@ -53,7 +53,7 @@ export class PaymentController {
   @ApiResponse({ status: 200, description: 'Payment retried successfully' })
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async retryPayment(@Param('paymentId') paymentId: string, @Req() req: any) {
+  async retryPayment(@Param('paymentId', ParseUUIDPipe) paymentId: string, @Req() req: any) {
     return this.paymentService.retryPayment(paymentId, req.user.userId);
   }
 
@@ -67,7 +67,7 @@ export class PaymentController {
   @ApiResponse({ status: 200, description: 'Payment refunded successfully' })
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async refund(@Param('paymentId') paymentId: string) {
+  async refund(@Param('paymentId', ParseUUIDPipe) paymentId: string) {
     return this.paymentService.refundPayment(paymentId);
   }
 

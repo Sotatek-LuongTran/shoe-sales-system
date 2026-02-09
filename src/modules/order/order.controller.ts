@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  ParseUUIDPipe,
   Post,
   Req,
   UseGuards,
@@ -72,7 +73,7 @@ export class OrderController {
   @ApiOperation({ summary: 'Get order by id (owner only)' })
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async getOrderById(@Req() req: any, @Param('id') id: string) {
+  async getOrderById(@Req() req: any, @Param('id', ParseUUIDPipe) id: string) {
     return this.orderService.getOrderById(id, req.user.userId);
   }
 
@@ -96,7 +97,7 @@ export class OrderController {
   @ApiOperation({ summary: 'Cancel order by id (owner only)' })
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async cancelOrder(@Req() req: any, @Param('id') id: string) {
+  async cancelOrder(@Req() req: any, @Param('id', ParseUUIDPipe) id: string) {
     return this.orderService.cancelOrder(id, req.user.userId);
   }
 
