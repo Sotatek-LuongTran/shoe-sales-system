@@ -10,8 +10,8 @@ import {
   ParseUUIDPipe,
 } from '@nestjs/common';
 import { AdminService } from './admin.service';
-import { CreateUserDto } from 'src/shared/dto/user/create-user.dto';
-import { UpdateUserDto } from 'src/shared/dto/user/update-user.dto';
+import { CreateUserDto } from 'src/modules/user/dto/create-user.dto';
+import { UpdateUserDto } from 'src/modules/user/dto/update-user.dto';
 import { Roles } from 'src/shared/decorators/role.decorator';
 import { UserRoleEnum } from 'src/shared/enums/user.enum';
 import { RolesGuard } from 'src/shared/guards/role.guard';

@@ -10,6 +10,7 @@ import { ProductVariantModule } from './modules/product-variant/product-variant.
 import { OrderModule } from './modules/order/order.module';
 import { PaymentModule } from './modules/payment/payment.module';
 import { AdminModule } from './modules/admin/admin. module';
+import { UserModule } from './modules/user/user.module';
 @Module({
   imports: [
     DatabaseModule,
@@ -25,6 +26,7 @@ import { AdminModule } from './modules/admin/admin. module';
     OrderModule,
     PaymentModule,
     AdminModule,
+    UserModule,
   ],
 })
 export class AppModule {}
