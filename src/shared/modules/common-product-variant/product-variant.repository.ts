@@ -2,6 +2,9 @@ import { BaseRepository } from '../base/base.repository';
 import { DataSource, IsNull } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { ProductVariantEntity } from 'src/database/entities/product-variant.entity';
+import { PaginateVariantsDto } from 'src/modules/product-variant/dto/paginate-variants.dto';
+import { paginate, Pagination } from 'nestjs-typeorm-paginate';
+import { groupBy } from 'rxjs';
 
 @Injectable()
 export class ProductVariantRepository extends BaseRepository<ProductVariantEntity> {
@@ -9,57 +12,52 @@ export class ProductVariantRepository extends BaseRepository<ProductVariantEntit
     super(datasource, ProductVariantEntity);
   }
 
-  async findByProductAndVariant(
+  async findVariantsPagination(
     productId: string,
-    variantValue: string,
-  ): Promise<ProductVariantEntity | null> {
-    return this.createQueryBuilder('variant')
+    dto: PaginateVariantsDto,
+  ): Promise<Pagination<PaginateVariantsDto>> {
+    const page = dto.page ?? 1;
+    const limit = dto.limit ?? 10;
+
+    const qb = this.createQueryBuilder('variant')
       .innerJoin('variant.product', 'product')
       .innerJoin('product.brand', 'brand')
       .innerJoin('product.category', 'category')
       .where('variant.productId = :productId', { productId })
-      .andWhere('variant.variantValue = :variantValue', { variantValue })
-      .andWhere('variant.isActive = true')
-      .andWhere('variant.deletedAt IS NULL')
-      .andWhere('product.deletedAt IS NULL')
-      .andWhere('brand.deletedAt IS NULL')
-      .andWhere('category.deletedAt IS NULL')
-      .getOne();
-  }
+      .andWhere('variant.variantValue = :variantValue', {
+        variantValue: dto.variantValue,
+      });
 
-  async findSoftDeletedVariants(options: {
-    page?: number;
-    limit?: number;
-    search?: string;
-  }) {
-    const { page = 1, limit = 10, search } = options;
+    if (dto.includeDeleted) {
+      qb.withDeleted();
+    }
+    if (dto.isActive !== undefined) {
+      qb.andWhere('product.isActive = :isActive', {
+        isActive: dto.isActive,
+      });
+    } else if (!dto.includeDeleted) {
+      qb.andWhere('product.isActive = true');
+    }
+    qb.groupBy('variant.id');
 
-    const qb = this.createQueryBuilder('variant')
-      .withDeleted()
-      .innerJoin('variant.product', 'product')
-      .where('variant.deletedAt IS NOT NULL');
-
-    if (search) {
-      qb.andWhere('(variant.variantValue ILIKE :search)', {
-        search: `%${search}%`,
+    if (dto.variantValue) {
+      qb.andWhere('variant.variantValue ILIKE :search', {
+        search: `%${dto.search}%`,
       });
     }
 
-    qb.orderBy('variant.deletedAt', 'DESC')
+    if (dto.stock) {
+      qb.andWhere('variant.stock >= :stock', { stock: `%${dto.stock}%` });
+    }
+
+    if (dto.price) {
+      qb.andWhere('variant.stock <= :price', { price: `%${dto.price}%` });
+    }
+
+    qb.orderBy('product.createdAt', 'DESC')
       .skip((page - 1) * limit)
       .take(limit);
-
-    const [data, total] = await qb.getManyAndCount();
-
-    return {
-      data,
-      meta: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
-      },
-    };
+    return paginate(qb, { page, limit });
   }
 
   async removeSoftDeletedVariants(): Promise<void> {

@@ -1,13 +1,9 @@
 import {
   Body,
   Controller,
-  DefaultValuePipe,
   Delete,
   Get,
-  HttpCode,
-  HttpStatus,
   Param,
-  ParseIntPipe,
   ParseUUIDPipe,
   Patch,
   Post,
@@ -29,6 +25,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from 'src/shared/guards/role.guard';
 import { UserRoleEnum } from 'src/shared/enums/user.enum';
 import { Roles } from 'src/shared/decorators/role.decorator';
+import { PaginateProductsDto } from './dto/paginate-products.dto';
 
 @ApiTags('Products')
 @ApiBearerAuth('access-token')
@@ -63,88 +60,13 @@ export class ProductController {
     status: 201,
     description: 'Products get successfully',
   })
-  @ApiResponse({ status: 400, description: 'Bad request' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
-  @ApiQuery({ name: 'search', required: false, type: String })
-  getList(
-    @Query('page') page?: number,
-    @Query('limit') limit?: number,
-    @Query('search') search?: string,
-    @Query() filters?: Record<string, any>,
-  ) {
-    return this.productService.getActiveProductsPagination({
-      page: Number(page) || 1,
-      limit: Number(limit) || 10,
-      search,
-      filters,
-    });
+  @ApiQuery({ name: 'dto', required: true, type: PaginateProductsDto })
+  getList(@Query() dto: PaginateProductsDto) {
+    return this.productService.getProductsPagination(dto);
   }
 
-  // =============================
-  // GET ALL PRODUCTS FOR ADMIN
-  // =============================
-  @Get('admin')
-  @Roles(UserRoleEnum.ADMIN)
-  @UseGuards(RolesGuard)
-  @ApiOperation({ summary: 'Get products with pagination & filters' })
-  @ApiResponse({
-    status: 201,
-    description: 'Products get successfully',
-  })
-  @ApiResponse({ status: 400, description: 'Bad request' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiQuery({ name: 'page', required: false, type: Number })
-  @ApiQuery({ name: 'limit', required: false, type: Number })
-  @ApiQuery({ name: 'search', required: false, type: String })
-  getProducts(
-    @Query('page') page?: number,
-    @Query('limit') limit?: number,
-    @Query('search') search?: string,
-    @Query() filters?: Record<string, any>,
-  ) {
-    return this.productService.getProductsPagination({
-      page: Number(page) || 1,
-      limit: Number(limit) || 10,
-      search,
-      filters,
-    });
-  }
-
-  // ===============================
-  // Get soft-deleted products
-  // ===============================
-  @Get('deleted')
-  @Roles(UserRoleEnum.ADMIN)
-  @UseGuards(RolesGuard)
-  @ApiOperation({
-    summary: 'Get soft-deleted products',
-    description: 'Retrieve products that were soft deleted (recycle bin)',
-  })
-  @ApiQuery({ name: 'page', required: false, example: 1 })
-  @ApiQuery({ name: 'limit', required: false, example: 10 })
-  @ApiQuery({
-    name: 'search',
-    required: false,
-    example: 'nike',
-    description: 'Search by product name or description',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'List of soft-deleted products',
-  })
-  async getSoftDeletedProducts(
-    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
-    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
-    @Query('search') search?: string,
-  ) {
-    return this.productService.getSoftDeletedProductsPagination({
-      page: Number(page) || 1,
-      limit: Number(limit) || 10,
-      search,
-    });
-  }
   // =======================================
   // Permanently delete soft-deleted ones
   // =======================================
@@ -189,8 +111,6 @@ export class ProductController {
     status: 201,
     description: 'Product get successfully',
   })
-  @ApiResponse({ status: 400, description: 'Bad request' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
   getOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.productService.getProduct(id);
@@ -207,67 +127,9 @@ export class ProductController {
     status: 201,
     description: 'Product deleted successfully',
   })
-  @ApiResponse({ status: 400, description: 'Bad request' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.productService.deleteProduct(id);
-  }
-
-  // =============================
-  // GET PRODUCTS BY CATEGORY
-  // =============================
-  @Get('categories/:categoryId/products')
-  @ApiOperation({ summary: 'Get products by product (paginated)' })
-  @ApiParam({
-    name: 'categoryId',
-    description: 'category ID',
-    example: 'c1f7c8b2-1234-4abc-9abc-123456789abc',
-  })
-  @ApiQuery({ name: 'page', required: false, example: 1 })
-  @ApiQuery({ name: 'limit', required: false, example: 10 })
-  @ApiQuery({ name: 'search', required: false, example: 'shoe' })
-  @ApiResponse({ status: 200, description: 'Paginated products by product' })
-  @ApiResponse({ status: 404, description: 'Product not found' })
-  async getProductsByProduct(
-    @Param('categoryId', ParseUUIDPipe) categoryId: string,
-    @Query('page') page?: number,
-    @Query('limit') limit?: number,
-    @Query('search') search?: string,
-  ) {
-    return this.productService.getProductsByCategory(categoryId, {
-      page: page ? Number(page) : undefined,
-      limit: limit ? Number(limit) : undefined,
-      search,
-    });
-  }
-
-  // =============================
-  // GET PRODUCTS BY BRAND
-  // =============================
-  @Get('brands/:brandId/products')
-  @ApiOperation({ summary: 'Get products by brand (paginated)' })
-  @ApiParam({
-    name: 'brandId',
-    description: 'Brand ID',
-    example: 'b2e9a111-5678-4def-9def-abcdef123456',
-  })
-  @ApiQuery({ name: 'page', required: false, example: 1 })
-  @ApiQuery({ name: 'limit', required: false, example: 10 })
-  @ApiQuery({ name: 'search', required: false, example: 'nike' })
-  @ApiResponse({ status: 200, description: 'Paginated products by brand' })
-  @ApiResponse({ status: 404, description: 'Brand not found' })
-  async getProductsByBrand(
-    @Param('brandId', ParseUUIDPipe) brandId: string,
-    @Query('page') page?: number,
-    @Query('limit') limit?: number,
-    @Query('search') search?: string,
-  ) {
-    return this.productService.getProductsByBrand(brandId, {
-      page: page ? Number(page) : undefined,
-      limit: limit ? Number(limit) : undefined,
-      search,
-    });
   }
 
   // =============================
@@ -281,30 +143,8 @@ export class ProductController {
     status: 201,
     description: 'Product deleted successfully',
   })
-  @ApiResponse({ status: 400, description: 'Bad request' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
   restoreProduct(@Param('id', ParseUUIDPipe) id: string) {
     return this.productService.restoreProduct(id);
-  }
-
-  // =======================================
-  // Permanently delete 1 soft-deleted one
-  // =======================================
-  @Delete('deleted/:id')
-  @Roles(UserRoleEnum.ADMIN)
-  @UseGuards(RolesGuard)
-  @ApiOperation({
-    summary: 'Permanently delete 1 soft-deleted product',
-    description: 'Hard delete 1 product that is currently soft deleted',
-  })
-  @ApiResponse({
-    status: 204,
-    description: 'Soft-deleted product permanently removed',
-  })
-  async hardDeleteOneSoftDeletedProduct(
-    @Param('id', ParseUUIDPipe) id: string,
-  ) {
-    return await this.productService.removeOneSoftDeletedProduct(id);
   }
 }

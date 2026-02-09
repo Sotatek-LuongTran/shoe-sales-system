@@ -25,6 +25,7 @@ import { RolesGuard } from 'src/shared/guards/role.guard';
 import { ProductVariantService } from './product-variant.service';
 import { CreateVariantDto } from 'src/modules/product-variant/dto/create-variant.dto';
 import { UpdateVariantDto } from 'src/modules/product-variant/dto/update-vatiant.dto';
+import { PaginateVariantsDto } from './dto/paginate-variants.dto';
 
 @ApiTags('Product variants')
 @ApiBearerAuth('access-token')
@@ -44,8 +45,6 @@ export class ProductVariantController {
     status: 201,
     description: 'productVariant created successfully',
   })
-  @ApiResponse({ status: 400, description: 'Bad request' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
   create(@Body() dto: CreateVariantDto) {
     return this.productVariantService.createProductVariant(dto);
   }
@@ -61,7 +60,6 @@ export class ProductVariantController {
     status: 201,
     description: 'Product updated successfully',
   })
-  @ApiResponse({ status: 400, description: 'Bad request' })
   update(@Body() dto: UpdateVariantDto) {
     return this.productVariantService.updateProductVariant(dto);
   }
@@ -74,86 +72,16 @@ export class ProductVariantController {
     summary: 'Get variants of a product with pagination',
   })
   @ApiParam({ name: 'productId', description: 'Product ID', type: String })
-  @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
-  @ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
-  @ApiQuery({ name: 'search', required: false, type: String, example: 'red' })
-  @ApiQuery({
-    name: 'sortBy',
-    required: false,
-    type: String,
-    example: 'createdAt',
-  })
-  @ApiQuery({
-    name: 'sortOrder',
-    required: false,
-    enum: ['ASC', 'DESC'],
-    example: 'DESC',
-  })
+  @ApiQuery({ name: 'dto', required: true, type: PaginateVariantsDto })
   @ApiResponse({
     status: 200,
     description: 'Paginated list of product variants',
   })
-  @ApiResponse({ status: 404, description: 'Product not found' })
-  async getActiveVariantsByProduct(
-    @Param('productId', new ParseUUIDPipe()) productId: string,
-    @Query('page') page?: number,
-    @Query('limit') limit?: number,
-    @Query('search') search?: string,
-    @Query('sortBy') sortBy?: string,
-    @Query('sortOrder') sortOrder?: 'ASC' | 'DESC',
-  ) {
-    return this.productVariantService.getVariantsByProduct(productId, {
-      page: page ? Number(page) : undefined,
-      limit: limit ? Number(limit) : undefined,
-      search,
-      sortBy,
-      sortOrder,
-    });
-  }
-
-  // =============================
-  // GET ALL PRODUCT VARIANTS OF A PRODUCT
-  // =============================
-  @Get(':productId/variants/admin')
-  @ApiOperation({
-    summary: 'Get variants of a product with pagination',
-  })
-  @ApiParam({ name: 'productId', description: 'Product ID', type: String })
-  @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
-  @ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
-  @ApiQuery({ name: 'search', required: false, type: String, example: 'red' })
-  @ApiQuery({
-    name: 'sortBy',
-    required: false,
-    type: String,
-    example: 'createdAt',
-  })
-  @ApiQuery({
-    name: 'sortOrder',
-    required: false,
-    enum: ['ASC', 'DESC'],
-    example: 'DESC',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Paginated list of product variants',
-  })
-  @ApiResponse({ status: 404, description: 'Product not found' })
   async getVariantsByProduct(
     @Param('productId', new ParseUUIDPipe()) productId: string,
-    @Query('page') page?: number,
-    @Query('limit') limit?: number,
-    @Query('search') search?: string,
-    @Query('sortBy') sortBy?: string,
-    @Query('sortOrder') sortOrder?: 'ASC' | 'DESC',
+    @Query() dto: PaginateVariantsDto,
   ) {
-    return this.productVariantService.getVariantsByProduct(productId, {
-      page: page ? Number(page) : undefined,
-      limit: limit ? Number(limit) : undefined,
-      search,
-      sortBy,
-      sortOrder,
-    });
+    return this.productVariantService.getVariantsByProductPagination(productId, dto);
   }
 
   // =============================
@@ -165,8 +93,6 @@ export class ProductVariantController {
     status: 201,
     description: 'ProductVariant get successfully',
   })
-  @ApiResponse({ status: 400, description: 'Bad request' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
   getOne(@Param('id') id: string) {
     return this.productVariantService.getProductVariant(id);
@@ -183,8 +109,6 @@ export class ProductVariantController {
     status: 201,
     description: 'ProductVariant deleted successfully',
   })
-  @ApiResponse({ status: 400, description: 'Bad request' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.productVariantService.deleteProductVariant(id);
@@ -201,46 +125,11 @@ export class ProductVariantController {
     status: 201,
     description: 'Product variant deleted successfully',
   })
-  @ApiResponse({ status: 400, description: 'Bad request' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
   restoreProduct(@Param('id', ParseUUIDPipe) id: string) {
     return this.productVariantService.restoreProductVariant(id);
   }
 
-  // ===============================
-  // Get soft-deleted variant
-  // ===============================
-  @Get('variants/deleted')
-  @Roles(UserRoleEnum.ADMIN)
-  @UseGuards(RolesGuard)
-  @ApiOperation({
-    summary: 'Get soft-deleted variant',
-    description: 'Retrieve variants that were soft deleted (recycle bin)',
-  })
-  @ApiQuery({ name: 'page', required: false, example: 1 })
-  @ApiQuery({ name: 'limit', required: false, example: 10 })
-  @ApiQuery({
-    name: 'search',
-    required: false,
-    example: 'nike',
-    description: 'Search by product name or description',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'List of soft-deleted variant',
-  })
-  async getSoftDeletedProducts(
-    @Query('page') page?: number,
-    @Query('limit') limit?: number,
-    @Query('search') search?: string,
-  ) {
-    return this.productVariantService.getSoftDeletedVariantsPagination({
-      page: Number(page) || 1,
-      limit: Number(limit) || 10,
-      search,
-    });
-  }
   // =======================================
   // Permanently delete soft-deleted ones
   // =======================================
@@ -257,25 +146,5 @@ export class ProductVariantController {
   })
   async hardDeleteSoftDeletedProducts() {
     await this.productVariantService.removeSoftDeletedVariants();
-  }
-
-  // =======================================
-  // Permanently delete 1 soft-deleted one
-  // =======================================
-  @Delete('variants/deleted/:id')
-  @Roles(UserRoleEnum.ADMIN)
-  @UseGuards(RolesGuard)
-  @ApiOperation({
-    summary: 'Permanently delete 1 soft-deleted variant',
-    description: 'Hard delete 1 variant that is currently soft deleted',
-  })
-  @ApiResponse({
-    status: 204,
-    description: 'Soft-deleted variant permanently removed',
-  })
-  async hardDeleteOneSoftDeletedProduct(
-    @Param('id', ParseUUIDPipe) id: string,
-  ) {
-    await this.productVariantService.removeOneSoftDeletedVariant(id);
   }
 }
