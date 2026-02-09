@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { OrderEntity } from 'src/database/entities/order.entity';
-import { OrderPaymentStatus, OrderStatus } from 'src/shared/enums/order.enum';
+import { OrderPaymentStatusEnum, OrderStatusEnum } from 'src/shared/enums/order.enum';
 import { BaseRepository } from 'src/shared/modules/base/base.repository';
 import { DataSource, EntityManager, IsNull } from 'typeorm';
 
@@ -13,8 +13,8 @@ export class OrderRepository extends BaseRepository<OrderEntity> {
   createOrder(manager: EntityManager, userId: string) {
     return manager.getRepository(OrderEntity).save({
       userId,
-      status: OrderStatus.PROCESSING,
-      paymentStatus: OrderPaymentStatus.UNPAID,
+      status: OrderStatusEnum.PROCESSING,
+      paymentStatus: OrderPaymentStatusEnum.UNPAID,
     });
   }
 
@@ -45,7 +45,7 @@ export class OrderRepository extends BaseRepository<OrderEntity> {
     return this.repository.findOne({
       where: {
         user: { id: userId },
-        status: OrderStatus.PENDING,
+        status: OrderStatusEnum.PENDING,
         deletedAt: IsNull(),
       },
       relations: {

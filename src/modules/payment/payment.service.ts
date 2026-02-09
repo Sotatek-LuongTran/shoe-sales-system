@@ -4,8 +4,8 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { PaymentStatus } from 'src/shared/enums/payment.enum';
-import { OrderPaymentStatus, OrderStatus } from 'src/shared/enums/order.enum';
+import { PaymentStatusEnum } from 'src/shared/enums/payment.enum';
+import { OrderPaymentStatusEnum, OrderStatusEnum } from 'src/shared/enums/order.enum';
 import { PaymentRepository } from './repository/payment.repository';
 import { OrderRepository } from '../../shared/modules/common-order/order.repository';
 import { ProductVariantRepository } from 'src/shared/modules/common-product-variant/product-variant.repository';
@@ -34,14 +34,14 @@ export class PaymentService {
       throw new BadRequestException('You cannot pay for this order');
     }
 
-    if (order.paymentStatus === OrderPaymentStatus.PAID) {
+    if (order.paymentStatus === OrderPaymentStatusEnum.PAID) {
       throw new BadRequestException('Order already paid');
     }
 
     const payment = await this.paymentRepository.create({
       orderId,
       amount: order.totalPrice,
-      paymentStatus: PaymentStatus.PENDING,
+      paymentStatus: PaymentStatusEnum.PENDING,
     });
 
     await this.paymentRepository.save(payment);
@@ -62,7 +62,7 @@ export class PaymentService {
 
       if (!payment) throw new NotFoundException('Payment not found');
 
-      if (payment.paymentStatus !== PaymentStatus.PENDING) {
+      if (payment.paymentStatus !== PaymentStatusEnum.PENDING) {
         throw new BadRequestException('Payment already processed');
       }
 
@@ -73,13 +73,13 @@ export class PaymentService {
       const success = Math.random() > 0.2; // 80% success
 
       if (success) {
-        payment.paymentStatus = PaymentStatus.SUCCESSFUL;
-        order.status = OrderStatus.COMPLETED;
-        order.paymentStatus = OrderPaymentStatus.PAID;
+        payment.paymentStatus = PaymentStatusEnum.SUCCESSFUL;
+        order.status = OrderStatusEnum.COMPLETED;
+        order.paymentStatus = OrderPaymentStatusEnum.PAID;
       } else {
-        payment.paymentStatus = PaymentStatus.FAILED;
-        order.status = OrderStatus.CANCELLED;
-        order.paymentStatus = OrderPaymentStatus.UNPAID;
+        payment.paymentStatus = PaymentStatusEnum.FAILED;
+        order.status = OrderStatusEnum.CANCELLED;
+        order.paymentStatus = OrderPaymentStatusEnum.UNPAID;
 
         // 🔁 ROLLBACK STOCK
         for (const item of order.items) {
@@ -115,14 +115,14 @@ export class PaymentService {
       throw new ForbiddenException('Access denied');
     }
 
-    if (payment.paymentStatus !== PaymentStatus.FAILED) {
+    if (payment.paymentStatus !== PaymentStatusEnum.FAILED) {
       throw new BadRequestException('Only failed payments can be retried');
     }
 
-    payment.paymentStatus = PaymentStatus.PENDING;
+    payment.paymentStatus = PaymentStatusEnum.PENDING;
     await this.paymentRepository.save(payment);
 
-    payment.order.status = OrderStatus.PROCESSING;
+    payment.order.status = OrderStatusEnum.PROCESSING;
     await this.orderRepository.save(payment.order);
 
     return {
@@ -140,13 +140,13 @@ export class PaymentService {
 
       if (!payment) throw new NotFoundException('Payment not found');
 
-      if (payment.paymentStatus !== PaymentStatus.SUCCESSFUL) {
+      if (payment.paymentStatus !== PaymentStatusEnum.SUCCESSFUL) {
         throw new BadRequestException('Only paid payments can be refunded');
       }
 
-      payment.paymentStatus = PaymentStatus.REFUNDED;
-      payment.order.status = OrderStatus.CANCELLED;
-      payment.order.paymentStatus = OrderPaymentStatus.UNPAID;
+      payment.paymentStatus = PaymentStatusEnum.REFUNDED;
+      payment.order.status = OrderStatusEnum.CANCELLED;
+      payment.order.paymentStatus = OrderPaymentStatusEnum.UNPAID;
 
       // RESTORE STOCK
       for (const item of payment.order.items) {

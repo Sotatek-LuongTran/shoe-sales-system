@@ -20,11 +20,11 @@ import {
 } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { Roles } from 'src/shared/decorators/role.decorator';
-import { UserRole } from 'src/shared/enums/user.enum';
+import { UserRoleEnum } from 'src/shared/enums/user.enum';
 import { RolesGuard } from 'src/shared/guards/role.guard';
 import { ProductVariantService } from './product-variant.service';
-import { CreateVariantDto } from 'src/shared/dto/product-variant/create-variant.dto';
-import { UpdateVariantDto } from 'src/shared/dto/product-variant/update-vatiant.dto';
+import { CreateVariantDto } from 'src/modules/product-variant/dto/create-variant.dto';
+import { UpdateVariantDto } from 'src/modules/product-variant/dto/update-vatiant.dto';
 
 @ApiTags('Product variants')
 @ApiBearerAuth('access-token')
@@ -37,7 +37,7 @@ export class ProductVariantController {
   // CREATE PRODUCT VARIANT
   // =============================
   @Post(':productId/variants')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRoleEnum.ADMIN)
   @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Create a new productVariant' })
   @ApiResponse({
@@ -54,7 +54,7 @@ export class ProductVariantController {
   // UPDATE PRODUCT VARIANT
   // =============================
   @Patch(':productId/variants/:id')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRoleEnum.ADMIN)
   @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Update a product variant' })
   @ApiResponse({
@@ -176,7 +176,7 @@ export class ProductVariantController {
   // DELETE PRODUCT VARIANT
   // =============================
   @Delete(':productId/variants/:id')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRoleEnum.ADMIN)
   @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Soft delete a product variant' })
   @ApiResponse({
@@ -194,7 +194,7 @@ export class ProductVariantController {
   // RESTORE DELETED PRODUCT VARIANT
   // =============================
   @Patch(':productId/variants/:id/restore')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRoleEnum.ADMIN)
   @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Restore a soft-deleted a product variant' })
   @ApiResponse({
@@ -212,7 +212,7 @@ export class ProductVariantController {
   // Get soft-deleted variant
   // ===============================
   @Get('variants/deleted')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRoleEnum.ADMIN)
   @UseGuards(RolesGuard)
   @ApiOperation({
     summary: 'Get soft-deleted variant',
@@ -245,7 +245,7 @@ export class ProductVariantController {
   // Permanently delete soft-deleted ones
   // =======================================
   @Delete('variants/deleted')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRoleEnum.ADMIN)
   @UseGuards(RolesGuard)
   @ApiOperation({
     summary: 'Permanently delete soft-deleted variant',
@@ -263,7 +263,7 @@ export class ProductVariantController {
   // Permanently delete 1 soft-deleted one
   // =======================================
   @Delete('variants/deleted/:id')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRoleEnum.ADMIN)
   @UseGuards(RolesGuard)
   @ApiOperation({
     summary: 'Permanently delete 1 soft-deleted variant',

@@ -8,7 +8,7 @@ import {
   MinLength,
   IsBoolean,
 } from 'class-validator';
-import { Gender, ProductType } from 'src/shared/enums/product.enum';
+import { GenderEnum, ProductTypeEnum } from 'src/shared/enums/product.enum';
 
 export class UpdateProductDto {
   @ApiProperty({
@@ -38,19 +38,19 @@ export class UpdateProductDto {
 
   @ApiPropertyOptional({
     description: 'Type of the product',
-    enum: ProductType,
+    enum: ProductTypeEnum,
   })
-  @IsEnum(ProductType)
+  @IsEnum(ProductTypeEnum)
   @IsOptional()
-  productType?: ProductType;
+  productType?: ProductTypeEnum;
 
   @ApiPropertyOptional({
     description: 'Suitable gender',
-    enum: Gender,
+    enum: GenderEnum,
   })
-  @IsEnum(Gender)
+  @IsEnum(GenderEnum)
   @IsOptional()
-  gender?: Gender;
+  gender?: GenderEnum;
 
   @ApiPropertyOptional({
     description: 'Brand ID',

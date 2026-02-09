@@ -4,7 +4,7 @@ import { BrandEntity } from "./brand.entity";
 import { CategoryEntity } from "./category.entity";
 import { ProductVariantEntity } from "./product-variant.entity";
 import { OrderItemEntity } from "./order-item.entity";
-import { Gender, ProductType } from "../../shared/enums/product.enum";
+import { GenderEnum, ProductTypeEnum } from "../../shared/enums/product.enum";
 
 @Entity('products')
 @Index('idx_products_brand_id', ['brandId'])
@@ -17,11 +17,11 @@ export class ProductEntity extends BaseEntity{
     @Column({name:'description', type: 'text', nullable: true})
     description: string;
 
-    @Column({ name: 'product_type', type: 'enum', enum: ProductType })
-    productType: ProductType;
+    @Column({ name: 'product_type', type: 'enum', enum: ProductTypeEnum })
+    productType: ProductTypeEnum;
 
-    @Column({ name: 'gender', type: 'enum', enum: Gender })
-    gender: Gender;
+    @Column({ name: 'gender', type: 'enum', enum: GenderEnum })
+    gender: GenderEnum;
 
     @Column({ name: 'is_active', type: 'boolean', default: true})
     isActive: boolean;
@@ -55,4 +55,3 @@ export class ProductEntity extends BaseEntity{
     orderItems: OrderItemEntity[];
 }
 
-export { Gender, ProductType };

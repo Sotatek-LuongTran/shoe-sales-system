@@ -12,7 +12,7 @@ export class ProductVariantEntity extends BaseEntity {
   @Column({ name: 'variant_value', type: 'varchar', length: 100 })
   variantValue: string;
 
-  @Column({ name: 'price', type: 'numeric', precision: 12, scale: 2 })
+  @Column({ name: 'price', type: 'numeric', precision: 12, scale: 4 })
   price: number;
 
   @Column({ name: 'stock', type: 'int', default: 0 })
