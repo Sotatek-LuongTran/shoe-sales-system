@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
-import { CreateUserDto } from '../../shared/dto/user/create-user.dto';
+import { CreateUserDto } from '../user/dto/create-user.dto';
 import { AuthenticationService } from './authentication.service';
-import { LoginDto } from '../../shared/dto/user/login.dto';
+import { LoginDto } from '../user/dto/login.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { Request } from 'express';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -50,28 +50,5 @@ export class AuthenticationController {
       exp?: number;
     };
     return this.authService.logout(user.sessionKey, user.exp);
-  }
-
-  @ApiOperation({ summary: 'User get profile' })
-  @ApiResponse({ 
-    status: 201, 
-    description: 'Get user profile successfully'
-  })
-  @ApiResponse({ status: 400, description: 'Bad request' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @Get('profile')
-  @ApiBearerAuth('access-token')
-  @UseGuards(AuthGuard('jwt'))
-  async getProfile(@Req() req: Request) {
-    const user = req.user as {
-      userId: string;
-      role: string;
-      sessionKey?: string;
-      exp?: number;
-    };
-    return {
-      userId: user.userId,
-      role: user.role,
-    };
   }
 }

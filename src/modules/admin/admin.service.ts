@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { UserRepository } from 'src/shared/modules/user/user.repository';
 import * as bcrypt from 'bcrypt';
-import { CreateUserDto } from 'src/shared/dto/user/create-user.dto';
-import { UpdateUserDto } from 'src/shared/dto/user/update-user.dto';
+import { CreateUserDto } from 'src/modules/user/dto/create-user.dto';
+import { UpdateUserDto } from 'src/modules/user/dto/update-user.dto';
 
 @Injectable()
 export class AdminService {

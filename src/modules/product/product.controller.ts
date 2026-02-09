@@ -23,8 +23,8 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { ProductService } from './product.service';
-import { CreateProductDto } from 'src/modules/product/product/create-product.dto';
-import { UpdateProductDto } from 'src/modules/product/product/update-product.dto';
+import { CreateProductDto } from 'src/modules/product/dto/create-product.dto';
+import { UpdateProductDto } from 'src/modules/product/dto/update-product.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from 'src/shared/guards/role.guard';
 import { UserRoleEnum } from 'src/shared/enums/user.enum';
