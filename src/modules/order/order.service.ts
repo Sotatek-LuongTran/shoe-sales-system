@@ -13,11 +13,11 @@ import { OrderRepository } from '../../shared/modules/common-order/order.reposit
 import { OrderItemRepository } from './repository/order-item.repository';
 import { UserRepository } from 'src/shared/modules/user/user.repository';
 import { AddToPendingOrderDto } from 'src/modules/order/dto/add-to-order.dto';
-import { OrderPaymentStatus, OrderStatus } from 'src/shared/enums/order.enum';
+import { OrderPaymentStatusEnum, OrderStatusEnum } from 'src/shared/enums/order.enum';
 import { ProductVariantRepository } from 'src/shared/modules/common-product-variant/product-variant.repository';
 import { ProductRepository } from 'src/shared/modules/common-product/product.repository';
 import { PaymentRepository } from '../payment/repository/payment.repository';
-import { PaymentStatus } from 'src/shared/enums/payment.enum';
+import { PaymentStatusEnum } from 'src/shared/enums/payment.enum';
 import { RemoveOrderItemDto } from 'src/modules/order/dto/remove-item.dto';
 
 @Injectable()
@@ -47,12 +47,12 @@ export class OrderService {
     const payment = await this.paymentRepository.create({
       orderId: order.id,
       amount: order.totalPrice,
-      paymentStatus: PaymentStatus.PENDING,
+      paymentStatus: PaymentStatusEnum.PENDING,
     });
 
     await this.paymentRepository.save(payment);
 
-    order.status = OrderStatus.PROCESSING;
+    order.status = OrderStatusEnum.PROCESSING;
     await this.orderRepository.save(order);
 
     return {
@@ -123,8 +123,8 @@ export class OrderService {
     if (!order) {
       order = await this.orderRepository.create({
         user,
-        status: OrderStatus.PENDING,
-        paymentStatus: OrderPaymentStatus.UNPAID,
+        status: OrderStatusEnum.PENDING,
+        paymentStatus: OrderPaymentStatusEnum.UNPAID,
         totalPrice: 0,
       });
       await this.orderRepository.save(order);
@@ -184,16 +184,16 @@ export class OrderService {
       }
 
       if (
-        order.status !== OrderStatus.PENDING &&
-        order.status !== OrderStatus.PROCESSING
+        order.status !== OrderStatusEnum.PENDING &&
+        order.status !== OrderStatusEnum.PROCESSING
       ) {
         throw new BadRequestException(
           'Order can only be cancelled when pending or processing',
         );
       }
 
-      order.status = OrderStatus.CANCELLED;
-      order.paymentStatus = OrderPaymentStatus.UNPAID; // Reset payment status
+      order.status = OrderStatusEnum.CANCELLED;
+      order.paymentStatus = OrderPaymentStatusEnum.UNPAID; // Reset payment status
 
       // ROLLBACK STOCK
       for (const item of order.items) {
@@ -223,7 +223,7 @@ export class OrderService {
       throw new BadRequestException('No pending order found');
     }
 
-    if (order.status !== OrderStatus.PENDING) {
+    if (order.status !== OrderStatusEnum.PENDING) {
       throw new BadRequestException('Cannot modify a non-pending order');
     }
 

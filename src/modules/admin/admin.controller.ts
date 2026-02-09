@@ -12,7 +12,7 @@ import { AdminService } from './admin.service';
 import { CreateUserDto } from 'src/shared/dto/user/create-user.dto';
 import { UpdateUserDto } from 'src/shared/dto/user/update-user.dto';
 import { Roles } from 'src/shared/decorators/role.decorator';
-import { UserRole } from 'src/shared/enums/user.enum';
+import { UserRoleEnum } from 'src/shared/enums/user.enum';
 import { RolesGuard } from 'src/shared/guards/role.guard';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
@@ -20,7 +20,7 @@ import { AuthGuard } from '@nestjs/passport';
 @ApiTags('Admin')
 @ApiBearerAuth('access-token')
 @UseGuards(AuthGuard('jwt'), RolesGuard)
-@Roles(UserRole.ADMIN)
+@Roles(UserRoleEnum.ADMIN)
 @Controller('admin/users')
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}

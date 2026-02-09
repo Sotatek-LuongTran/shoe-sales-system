@@ -1,7 +1,7 @@
 import { DataSource } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import { UserRole } from '../entities/user.entity';
 import { UserRepository } from '../../shared/modules/user/user.repository';
+import { UserRoleEnum } from 'src/shared/enums/user.enum';
 
 export async function seedAdmin(dataSource: DataSource) {
   const userRepo = new UserRepository(dataSource);
@@ -24,7 +24,7 @@ export async function seedAdmin(dataSource: DataSource) {
     name: 'System Admin',
     email: adminEmail,
     passwordHash: passwordHash,
-    role: UserRole.ADMIN,
+    role: UserRoleEnum.ADMIN,
     deletedAt: null,
   });
 

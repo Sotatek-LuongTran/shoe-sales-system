@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { OrderItemEntity } from 'src/database/entities/order-item.entity';
-import { Gender, ProductType } from 'src/shared/enums/product.enum';
+import { GenderEnum, ProductTypeEnum } from 'src/shared/enums/product.enum';
 import { BaseRepository } from 'src/shared/modules/base/base.repository';
 import { DataSource, EntityManager } from 'typeorm';
 
@@ -20,8 +20,8 @@ export class OrderItemRepository extends BaseRepository<OrderItemEntity> {
       price: number;
       name: string;
       description?: string;
-      productType: ProductType;
-      gender: Gender;
+      productType: ProductTypeEnum;
+      gender: GenderEnum;
     }[],
   ): Promise<OrderItemEntity[]> {
     const repo = manager.getRepository(OrderItemEntity);
