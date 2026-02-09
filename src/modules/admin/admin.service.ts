@@ -17,7 +17,7 @@ export class AdminService {
   }
 
   async findAllUsers() {
-    return this.userRepository.findAll();
+    return this.userRepository.find();
   }
 
   async findUserById(id: string) {

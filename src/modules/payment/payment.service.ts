@@ -81,10 +81,10 @@ export class PaymentService {
         order.status = OrderStatusEnum.CANCELLED;
         order.paymentStatus = OrderPaymentStatusEnum.UNPAID;
 
-        // 🔁 ROLLBACK STOCK
+        // ROLLBACK STOCK
         for (const item of order.items) {
           const variant =
-            await this.productVariantRepository.findByProductAndVariant(
+            await this.productVariantRepository.findByProductAndValue(
               item.productId,
               item.variantValue,
             );
@@ -151,7 +151,7 @@ export class PaymentService {
       // RESTORE STOCK
       for (const item of payment.order.items) {
         const variant =
-          await this.productVariantRepository.findByProductAndVariant(
+          await this.productVariantRepository.findByProductAndValue(
             item.productId,
             item.variantValue,
           );
@@ -170,6 +170,6 @@ export class PaymentService {
   }
 
   async getAllPayments() {
-    return this.paymentRepository.findAll();
+    return this.paymentRepository.find();
   }
 }

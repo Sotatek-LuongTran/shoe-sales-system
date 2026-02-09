@@ -7,6 +7,7 @@ import {
 import { CreateBrandDto } from 'src/modules/brand/dto/create-brand.dto';
 import { UpdateBrandDto } from 'src/modules/brand/dto/update-brand.dto';
 import { BrandRepository } from 'src/shared/modules/common-brand/brand.repository';
+import { PaginateBrandsDto } from './dto/paginate-brands.dto';
 
 @Injectable()
 export class BrandService {
@@ -16,7 +17,7 @@ export class BrandService {
     const existing = await this.brandRepository.findByName(createBrandDto.name);
     if (existing) throw new BadRequestException('Brand already exists');
 
-    const brand = await this.brandRepository.create(createBrandDto);
+    const brand = this.brandRepository.create(createBrandDto);
 
     return this.brandRepository.save(brand);
   }
@@ -40,23 +41,8 @@ export class BrandService {
     return this.brandRepository.save(brand);
   }
 
-  async getBrandsPagination(options: {
-    page?: number;
-    limit?: number;
-    search?: string;
-    filters?: Record<string, any>;
-  }) {
-      return this.brandRepository.getListPagination({
-        page: options.page,
-        limit: options.limit,
-        search: options.search,
-        searchFields: ['name', 'description'],
-        sortBy: 'createdAt',
-        sortOrder: 'DESC',
-        filters: {
-          deletedAt: null,
-        },
-      });
+  async getBrandsPagination(dto: PaginateBrandsDto) {
+    return this.brandRepository.findBrandsPagination(dto)
   }
 
   async getBrand(brandId: string) {
@@ -78,43 +64,5 @@ export class BrandService {
 
     brand.deletedAt = null;
     return this.brandRepository.save(brand);
-  }
-
-  async getSoftDeletedBrandsPagination(options: {
-    page?: number;
-    limit?: number;
-    search?: string;
-  }) {
-
-      return this.brandRepository.findSoftDeletedBrands(options);
-  }
-
-  async removeOneSoftDeletedBrand(brandId: string) {
-    const brand = await this.brandRepository.findById(brandId);
-
-    if (!brand) {
-      throw new NotFoundException('Category not found');
-    }
-
-    await this.brandRepository.removeOneSoftDeletedBrand(brandId);
-
-    return {
-      message: 'Category permanently deleted',
-      brandId,
-    };
-  }
-
-  async removeSoftDeletedBrands() {
-    const brands = await this.brandRepository.findSoftDeletedBrands(
-      {},
-    );
-    if (!brands.data.length) {
-      throw new NotFoundException('The list is empty');
-    }
-
-    await this.brandRepository.removeSoftDeletedBrands();
-    return {
-      message: 'Brands permanently deleted'
-    }
   }
 }

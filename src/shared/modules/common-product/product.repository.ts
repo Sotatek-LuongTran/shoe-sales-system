@@ -16,7 +16,6 @@ export class ProductRepository extends BaseRepository<ProductEntity> {
   ): Promise<Pagination<ProductEntity>> {
     const page = dto.page ?? 1;
     const limit = dto.limit ?? 10;
-    const search = dto.search ?? '';
 
     const qb = this.createQueryBuilder('product')
       .leftJoin('product.variants', 'variant')
