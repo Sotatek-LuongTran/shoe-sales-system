@@ -1,4 +1,4 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, DeleteDateColumn, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
 import { BaseEntity } from '../../shared/modules/base/base.entity';
 import { OrderEntity } from './order.entity';
 import { PaymentStatusEnum } from '../../shared/enums/payment.enum';
@@ -14,7 +14,8 @@ export class PaymentEntity extends BaseEntity {
   @Column({ name: 'payment_status', type: 'enum', enum: PaymentStatusEnum })
   paymentStatus: PaymentStatusEnum;
 
-  @Column({ name: 'deleted_at', type: 'timestamp', nullable: true })
+  // @Column({ name: 'deleted_at', type: 'timestamp', nullable: true })
+  @DeleteDateColumn()
   deletedAt: Date | null;
 
   @Column({ name: 'order_id', type: 'uuid' })

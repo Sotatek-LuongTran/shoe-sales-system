@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToOne, OneToMany, JoinColumn, Index } from "typeorm";
+import { Column, Entity, ManyToOne, OneToMany, JoinColumn, Index, DeleteDateColumn } from "typeorm";
 import { BaseEntity } from "../../shared/modules/base/base.entity";
 import { BrandEntity } from "./brand.entity";
 import { CategoryEntity } from "./category.entity";
@@ -9,7 +9,6 @@ import { GenderEnum, ProductTypeEnum } from "../../shared/enums/product.enum";
 @Entity('products')
 @Index('idx_products_brand_id', ['brandId'])
 @Index('idx_products_category_id', ['categoryId'])
-@Index('idx_products_brand_id_category_id_is_active_deleted_at', ['brandId', 'categoryId', 'isActive', 'deletedAt'])
 export class ProductEntity extends BaseEntity{
     @Column({name:'name', type: 'varchar', length: 255})
     name: string;
@@ -26,7 +25,8 @@ export class ProductEntity extends BaseEntity{
     @Column({ name: 'is_active', type: 'boolean', default: true})
     isActive: boolean;
 
-    @Column({ name: 'deleted_at', type: 'timestamp', nullable: true })
+    // @Column({ name: 'deleted_at', type: 'timestamp', nullable: true })
+    @DeleteDateColumn()
     deletedAt: Date | null;
 
     @Column({ name: 'brand_id', type: 'uuid' })

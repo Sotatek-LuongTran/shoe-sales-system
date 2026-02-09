@@ -23,10 +23,6 @@ export class ProductVariantService {
     );
     if (!product) throw new NotFoundException('Product not found');
 
-    if (product.deletedAt) {
-      throw new NotFoundException('Product variant currently unavailable');
-    }
-
     const variant = await this.productVariantRepository.create({
       variantValue: createVariantDto.variantValue,
       price: createVariantDto.price,
@@ -44,10 +40,6 @@ export class ProductVariantService {
     );
     if (!variant) throw new NotFoundException('Product variant not found');
 
-    if (variant.deletedAt) {
-      throw new NotFoundException('Product variant currently unavailable');
-    }
-
     Object.assign(variant, UpdateVariantDto);
 
     return this.productVariantRepository.save(variant);
@@ -56,9 +48,6 @@ export class ProductVariantService {
   async deleteProductVariant(id: string) {
     const variant = await this.productVariantRepository.findById(id);
     if (!variant) throw new NotFoundException('Product variant not found');
-    if (variant.deletedAt) {
-      throw new BadRequestException('Product variant has already unactivated');
-    }
 
     variant.deletedAt = new Date(Date.now());
 
@@ -84,12 +73,12 @@ export class ProductVariantService {
       throw new NotFoundException('Product not found');
     }
 
-    if (product.brand?.deletedAt) {
-      throw new NotFoundException('Product brand is unavailable');
+    if (!product.brand.id) {
+      throw new NotFoundException('Product brand not found');
     }
 
-    if (product.category?.deletedAt) {
-      throw new NotFoundException('Product category is unavailable');
+    if (!product.category.id) {
+      throw new NotFoundException('Product category not found');
     }
 
     return this.productVariantRepository.getListPagination({
@@ -128,12 +117,12 @@ export class ProductVariantService {
       throw new NotFoundException('Product not found');
     }
 
-    if (product.brand?.deletedAt) {
-      throw new NotFoundException('Product brand is unavailable');
+    if (!product.brand.id) {
+      throw new NotFoundException('Product brand not found');
     }
 
-    if (product.category?.deletedAt) {
-      throw new NotFoundException('Product category is unavailable');
+    if (!product.category.id) {
+      throw new NotFoundException('Product category not found');
     }
 
     return this.productVariantRepository.getListPagination({
@@ -156,10 +145,6 @@ export class ProductVariantService {
     const variant = await this.productVariantRepository.findById(id);
     if (!variant) throw new NotFoundException('Product variant not found');
 
-    if (variant.deletedAt) {
-      throw new NotFoundException('Product variant currently unavailable');
-    }
-
     return variant;
   }
 
@@ -173,10 +158,6 @@ export class ProductVariantService {
       throw new NotFoundException('Product variant not found');
     }
 
-    if (!variant.deletedAt) {
-      throw new BadRequestException('Product variant is not deleted');
-    }
-
     variant.deletedAt = null;
     return this.productVariantRepository.save(variant);
   }
@@ -186,12 +167,7 @@ export class ProductVariantService {
     limit?: number;
     search?: string;
   }) {
-    try {
       return this.productVariantRepository.findSoftDeletedVariants(options);
-    } catch (error) {
-      console.error('Error fetching paginated product variants:', error);
-      throw new InternalServerErrorException('Failed to fetch product variants');
-    }
   }
 
   async removeOneSoftDeletedVariant(productId: string) {
