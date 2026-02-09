@@ -4,12 +4,14 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
+import { IPaginationOptions, Pagination } from 'nestjs-typeorm-paginate';
 import { ProductEntity } from 'src/database/entities/product.entity';
 import { CreateProductDto } from 'src/modules/product/dto/create-product.dto';
 import { UpdateProductDto } from 'src/modules/product/dto/update-product.dto';
 import { BrandRepository } from 'src/shared/modules/common-brand/brand.repository';
 import { CategoryRepository } from 'src/shared/modules/common-category/category.repository';
 import { ProductRepository } from 'src/shared/modules/common-product/product.repository';
+import { PaginateProductsDto } from './dto/paginate-products.dto';
 
 @Injectable()
 export class ProductService {
@@ -33,7 +35,7 @@ export class ProductService {
       throw new NotFoundException('Category not exists');
     }
 
-    const product = await this.productRepository.create({
+    const product = this.productRepository.create({
       name,
       description,
       productType,
@@ -68,53 +70,8 @@ export class ProductService {
     return this.productRepository.save(product);
   }
 
-  async getActiveProductsPagination(options: {
-    page?: number;
-    limit?: number;
-    search?: string;
-    filters?: {
-      gender?: string;
-      productType?: string;
-      brandId?: string;
-      categoryId?: string;
-      isActive?: boolean;
-      minPrice?: number;
-      maxPrice?: number;
-    };
-  }) {
-      return this.productRepository.findProductsPaginationWithPriceRange({
-        page: options.page,
-        limit: options.limit,
-        search: options.search,
-        filters: {
-          ...options.filters,
-          isActive: options.filters?.isActive ?? true,
-        },
-      });
-  }
-
-  async getProductsPagination(options: {
-    page?: number;
-    limit?: number;
-    search?: string;
-    filters?: {
-      gender?: string;
-      productType?: string;
-      brandId?: string;
-      categoryId?: string;
-      isActive?: boolean;
-      minPrice?: number;
-      maxPrice?: number;
-    };
-  }) {
-      return this.productRepository.getListPagination({
-        page: options.page,
-        limit: options.limit,
-        search: options.search,
-        filters: {
-          ...options.filters,
-        },
-      });
+  async getProductsPagination(dto: PaginateProductsDto): Promise<Pagination<ProductEntity>> {
+    return this.productRepository.findProductsPagination(dto);
   }
 
   async getProduct(id: string) {
@@ -144,64 +101,6 @@ export class ProductService {
 
     return this.productRepository.save(product);
   }
-
-  async getProductsByCategory(
-    categoryId: string,
-    options?: {
-      page?: number;
-      limit?: number;
-      search?: string;
-      minPrice?: number;
-      maxPrice?: number;
-    },
-  ) {
-    // Validate category existence (cheap + clear error)
-    const exists = await this.categoryRepository.findById(categoryId);
-    if (!exists) {
-      throw new NotFoundException('Category not found');
-    }
-
-    return this.productRepository.findProductsPaginationWithPriceRange({
-      page: options?.page,
-      limit: options?.limit,
-      search: options?.search,
-      filters: {
-        categoryId,
-        minPrice: options?.minPrice,
-        maxPrice: options?.maxPrice,
-        isActive: true,
-      },
-    });
-  }
-
-  async getProductsByBrand(
-    brandId: string,
-    options?: {
-      page?: number;
-      limit?: number;
-      search?: string;
-      minPrice?: number;
-      maxPrice?: number;
-    },
-  ) {
-    const exists = await this.brandRepository.findById(brandId);
-    if (!exists) {
-      throw new NotFoundException('Brand not found');
-    }
-
-    return this.productRepository.findProductsPaginationWithPriceRange({
-      page: options?.page,
-      limit: options?.limit,
-      search: options?.search,
-      filters: {
-        brandId,
-        minPrice: options?.minPrice,
-        maxPrice: options?.maxPrice,
-        isActive: true,
-      },
-    });
-  }
-
   async restoreProduct(productId: string) {
     const product = await this.productRepository.findOne({
       where: { id: productId },
@@ -225,44 +124,7 @@ export class ProductService {
     return this.productRepository.save(product);
   }
 
-  async getSoftDeletedProductsPagination(options: {
-    page?: number;
-    limit?: number;
-    search?: string;
-  }) {
-      return this.productRepository.findSoftDeletedProducts(options);
-  }
-
-  async removeOneSoftDeletedProduct(productId: string) {
-    const product = await this.productRepository.findById(productId);
-
-    if (!product) {
-      throw new NotFoundException('Product not found');
-    }
-
-    if (!product.deletedAt) {
-      throw new BadRequestException(
-        'Product must be soft deleted before permanent removal',
-      );
-    }
-
-    await this.productRepository.delete(productId);
-
-    return {
-      message: 'Product permanently deleted',
-      productId,
-    };
-  }
-
   async removeSoftDeletedProducts() {
-    const products = await this.productRepository.findSoftDeletedProducts({})
-    if (!products.data.length) {
-      throw new NotFoundException('The list is empty')
-    }
-
-    await this.productRepository.removeSoftDeletedProducts()
-    return {
-      message: 'Products permanently deleted'
-    }
+    await this.productRepository.removeSoftDeletedProducts();
   }
 }
