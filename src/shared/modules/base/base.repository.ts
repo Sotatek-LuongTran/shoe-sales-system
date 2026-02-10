@@ -10,6 +10,6 @@ export abstract class BaseRepository<T extends BaseEntity> extends Repository<T>
   }
 
   async findById(id: string): Promise<T | null> {
-    return this.findOne({ where: { id } as any });
+    return this.findOne({ where: { id, isActive: true  } as any });
   }
 }

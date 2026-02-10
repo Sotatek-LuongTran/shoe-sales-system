@@ -9,7 +9,7 @@ import {
   UseGuards,
   ParseUUIDPipe,
 } from '@nestjs/common';
-import { AdminService } from './admin.service';
+import { AdminUserService } from './admin-user.service';
 import { CreateUserDto } from 'src/modules/user/dto/create-user.dto';
 import { UpdateUserDto } from 'src/modules/user/dto/update-user.dto';
 import { Roles } from 'src/shared/decorators/role.decorator';
@@ -23,8 +23,8 @@ import { AuthGuard } from '@nestjs/passport';
 @UseGuards(AuthGuard('jwt'), RolesGuard)
 @Roles(UserRoleEnum.ADMIN)
 @Controller('admin/users')
-export class AdminController {
-  constructor(private readonly adminService: AdminService) {}
+export class AdminUserController {
+  constructor(private readonly adminUserService: AdminUserService) {}
 
   @Post()
   @ApiOperation({ summary: 'Create an user' })
@@ -32,10 +32,8 @@ export class AdminController {
     status: 201,
     description: 'User created successfully',
   })
-  @ApiResponse({ status: 400, description: 'Bad request' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
   createUser(@Body() createUserDto: CreateUserDto) {
-    return this.adminService.createUser(createUserDto);
+    return this.adminUserService.createUser(createUserDto);
   }
 
   @Get()
@@ -44,10 +42,8 @@ export class AdminController {
     status: 201,
     description: 'Users get successfully',
   })
-  @ApiResponse({ status: 400, description: 'Bad request' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
   findAllUsers() {
-    return this.adminService.findAllUsers();
+    return this.adminUserService.findAllUsers();
   }
 
   @Get(':id')
@@ -56,10 +52,8 @@ export class AdminController {
     status: 201,
     description: 'User get successfully',
   })
-  @ApiResponse({ status: 400, description: 'Bad request' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
   findUserById(@Param('id', ParseUUIDPipe) id: string) {
-    return this.adminService.findUserById(id);
+    return this.adminUserService.findUserById(id);
   }
 
   @Put(':id')
@@ -68,10 +62,8 @@ export class AdminController {
     status: 201,
     description: 'User updated successfully',
   })
-  @ApiResponse({ status: 400, description: 'Bad request' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
   updateUser(@Param('id', ParseUUIDPipe) id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.adminService.updateUser(id, updateUserDto);
+    return this.adminUserService.updateUser(id, updateUserDto);
   }
 
   @Delete(':id')
@@ -80,9 +72,7 @@ export class AdminController {
     status: 201,
     description: 'User deleted successfully',
   })
-  @ApiResponse({ status: 400, description: 'Bad request' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
   deleteUser(@Param('id', ParseUUIDPipe) id: string) {
-    return this.adminService.deleteUser(id);
+    return this.adminUserService.deleteUser(id);
   }
 }
