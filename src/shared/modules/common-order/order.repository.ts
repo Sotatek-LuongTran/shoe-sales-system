@@ -23,23 +23,31 @@ export class OrderRepository extends BaseRepository<OrderEntity> {
     });
   }
 
-  async findOrdersByUser(userId: string) {
-    return this.find({
-      where: { userId },
-      relations: ['items'],
-      order: { createdAt: 'DESC' },
-    });
-  }
+  // async findOrdersByUser(userId: string) {
+  //   return this.find({
+  //     where: { userId },
+  //     relations: ['items'],
+  //     order: { createdAt: 'DESC' },
+  //   });
+  // }
 
-  async findById(orderId: string, relations: string[] = []) {
-    const order = await this.findOne({
-      where: { id: orderId },
-      relations: [...relations],
-    });
-    return order;
-  }
+  // async findOrdersByUserPagination(
+  //   userId: string,
+  //   dto: PaginateOrdersDto,
+  // ): Promise<Pagination<OrderEntity>> {
+  //   const page = dto.page ?? 1;
+  //   const limit = dto.limit ?? 10;
 
-  async findOrdersPagination(dto: PaginateOrdersDto): Promise<Pagination<OrderEntity>> {
+  //   const qb = this.createQueryBuilder('order')
+  //     .leftJoin('order.orderItems', 'item')
+  //     .leftJoin('order.user', 'user')
+  //     .where('user.id ILIKE :userId', {userId: `%${userId}%`});
+  //   return paginate(qb, { page, limit });
+  // }
+
+  async findOrdersPagination(
+    dto: PaginateOrdersDto,
+  ): Promise<Pagination<OrderEntity>> {
     const page = dto.page ?? 1;
     const limit = dto.limit ?? 10;
 
@@ -47,6 +55,11 @@ export class OrderRepository extends BaseRepository<OrderEntity> {
       'order.orderItems',
       'item',
     );
+    if (dto.userId) {
+      qb.leftJoin('order.user', 'user').where('user.id ILIKE :userId', {
+        userId: `%${dto.userId}%`,
+      });
+    }
     return paginate(qb, { page, limit });
   }
 
@@ -60,6 +73,18 @@ export class OrderRepository extends BaseRepository<OrderEntity> {
       relations: {
         items: true,
         user: true,
+      },
+    });
+  }
+
+  async findOrderWithItems(id: string) {
+    return this.findOne({
+      where: {
+        id,
+        status: OrderStatusEnum.PENDING,
+      },
+      relations: {
+        items: true,
       },
     });
   }

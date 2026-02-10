@@ -25,13 +25,7 @@ export class ProductVariantResponseDto extends ResponseDto {
     example: '10',
   })
   stock: number;
-
-  @Expose()
-  @ApiProperty({
-    description: 'Id of the product',
-  })
-  product: ProductResponseDto;
-
+  
   constructor(productVariant: ProductVariantEntity) {
     super(productVariant.id);
     Object.assign(this, {

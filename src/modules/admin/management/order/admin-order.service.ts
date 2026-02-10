@@ -10,13 +10,6 @@ export class AdminOrderService {
   ) {}
 
   async getAllOrders(dto: PaginateOrdersDto) {
-    const orders = await this.orderRepository.findOrdersPagination(dto);
-
-    return {
-      ...orders,
-      items: orders.items.map(
-        order => new OrderResponseDto(order)
-      )
-    }
+    return this.orderRepository.findOrdersPagination(dto);
   }
 }

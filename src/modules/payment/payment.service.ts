@@ -13,6 +13,8 @@ import { PaymentEntity } from 'src/database/entities/payment.entity';
 import { OrderEntity } from 'src/database/entities/order.entity';
 import { DataSource } from 'typeorm';
 import { PaymentResponseDto } from 'src/shared/dto/payment/payment-response.dto';
+import { PaginatePaymentsDto } from 'src/shared/dto/payment/paginate-payments.dto';
+import { UserRepository } from 'src/shared/modules/user/user.repository';
 
 @Injectable()
 export class PaymentService {
@@ -20,6 +22,7 @@ export class PaymentService {
     private readonly paymentRepository: PaymentRepository,
     private readonly orderRepository: OrderRepository,
     private readonly productVariantRepository: ProductVariantRepository,
+    private readonly userRepository: UserRepository,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -63,7 +66,7 @@ export class PaymentService {
         throw new BadRequestException('Payment already processed');
       }
 
-      const order = await this.orderRepository.findById(payment.orderId, ['items']);
+      const order = await this.orderRepository.findOrderWithItems(payment.orderId);
 
       if (!order) throw new NotFoundException('Order is missing');
       // Fake payment result
@@ -119,9 +122,25 @@ export class PaymentService {
     payment.order.status = OrderStatusEnum.PROCESSING;
     await this.orderRepository.save(payment.order);
 
+    return new PaymentResponseDto(payment)
+  }
+
+  async getMyPaymentsPagination(userId: string, dto: PaginatePaymentsDto) {
+    if (!dto.userId || dto.userId !== userId) {
+      throw new NotFoundException()
+    }
+    const user = this.userRepository.findById(dto.userId)
+    if (!user) {
+      throw new NotFoundException()
+    }
+
+    const payments = await this.paymentRepository.findPaymentsPagination(dto)
+
     return {
-      message: 'Payment retry initiated',
-      paymentId: payment.id,
-    };
+      ...payments,
+      items: payments.items.map(
+        item => new PaymentResponseDto(item)
+      )
+    }
   }
 }

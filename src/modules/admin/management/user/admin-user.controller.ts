@@ -17,6 +17,7 @@ import { UserRoleEnum } from 'src/shared/enums/user.enum';
 import { RolesGuard } from 'src/shared/guards/role.guard';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
+import { UserResponseDto } from 'src/shared/dto/user/user-response.dto';
 
 @ApiTags('Admin')
 @ApiBearerAuth('access-token')
@@ -31,6 +32,7 @@ export class AdminUserController {
   @ApiResponse({
     status: 201,
     description: 'User created successfully',
+    type: UserResponseDto,
   })
   createUser(@Body() createUserDto: CreateUserDto) {
     return this.adminUserService.createUser(createUserDto);
@@ -41,6 +43,7 @@ export class AdminUserController {
   @ApiResponse({
     status: 201,
     description: 'Users get successfully',
+    type: UserResponseDto,
   })
   findAllUsers() {
     return this.adminUserService.findAllUsers();
@@ -51,6 +54,7 @@ export class AdminUserController {
   @ApiResponse({
     status: 201,
     description: 'User get successfully',
+    type: UserResponseDto,
   })
   findUserById(@Param('id', ParseUUIDPipe) id: string) {
     return this.adminUserService.findUserById(id);
@@ -61,6 +65,7 @@ export class AdminUserController {
   @ApiResponse({
     status: 201,
     description: 'User updated successfully',
+    type: UserResponseDto,
   })
   updateUser(@Param('id', ParseUUIDPipe) id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.adminUserService.updateUser(id, updateUserDto);

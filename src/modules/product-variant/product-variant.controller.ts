@@ -20,6 +20,8 @@ import { PaginateVariantsDto } from '../../shared/dto/product-variant/paginate-v
 import { RolesGuard } from 'src/shared/guards/role.guard';
 import { UserRoleEnum } from 'src/shared/enums/user.enum';
 import { Roles } from 'src/shared/decorators/role.decorator';
+import { ProductVariantResponseDto } from 'src/shared/dto/product-variant/product-variant-response.dto';
+import { PaginationVariantResponseDto } from 'src/shared/dto/product-variant/pagination-variant-response';
 
 @ApiTags('Product variants')
 @ApiBearerAuth('access-token')
@@ -41,6 +43,7 @@ export class ProductVariantController {
   @ApiResponse({
     status: 200,
     description: 'Paginated list of product variants',
+    type: PaginationVariantResponseDto,
   })
   async getVariantsByProduct(
     @Param('productId', new ParseUUIDPipe()) productId: string,
@@ -60,6 +63,7 @@ export class ProductVariantController {
   @ApiResponse({
     status: 201,
     description: 'ProductVariant get successfully',
+    type: ProductVariantResponseDto,
   })
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
   getOne(@Param('id') id: string) {
