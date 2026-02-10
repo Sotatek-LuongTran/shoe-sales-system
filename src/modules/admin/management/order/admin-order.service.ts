@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PaginateOrdersDto } from 'src/modules/order/dto/paginate-order.dto';
+import { PaginateOrdersDto } from 'src/modules/admin/management/order/dto/paginate-order.dto';
 import { OrderRepository } from 'src/shared/modules/common-order/order.repository';
 
 @Injectable()

@@ -38,7 +38,7 @@ export class PaymentService {
       throw new BadRequestException('Order already paid');
     }
 
-    const payment = await this.paymentRepository.create({
+    const payment = this.paymentRepository.create({
       orderId,
       amount: order.totalPrice,
       paymentStatus: PaymentStatusEnum.PENDING,
@@ -129,47 +129,5 @@ export class PaymentService {
       message: 'Payment retry initiated',
       paymentId: payment.id,
     };
-  }
-
-  async refundPayment(paymentId: string) {
-    return this.dataSource.transaction(async (manager) => {
-      const payment = await manager.getRepository(PaymentEntity).findOne({
-        where: { id: paymentId },
-        relations: ['order', 'order.items'],
-      });
-
-      if (!payment) throw new NotFoundException('Payment not found');
-
-      if (payment.paymentStatus !== PaymentStatusEnum.SUCCESSFUL) {
-        throw new BadRequestException('Only paid payments can be refunded');
-      }
-
-      payment.paymentStatus = PaymentStatusEnum.REFUNDED;
-      payment.order.status = OrderStatusEnum.CANCELLED;
-      payment.order.paymentStatus = OrderPaymentStatusEnum.UNPAID;
-
-      // RESTORE STOCK
-      for (const item of payment.order.items) {
-        const variant =
-          await this.productVariantRepository.findByProductAndValue(
-            item.productId,
-            item.variantValue,
-          );
-
-        if (variant) {
-          variant.stock += item.quantity;
-          await manager.getRepository(variant.constructor).save(variant);
-        }
-      }
-
-      await manager.getRepository(PaymentEntity).save(payment);
-      await manager.getRepository(OrderEntity).save(payment.order);
-
-      return { message: 'Refund successful' };
-    });
-  }
-
-  async getAllPayments() {
-    return this.paymentRepository.find();
   }
 }

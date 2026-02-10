@@ -18,6 +18,13 @@ import { AdminOrderService } from './management/order/admin-order.service';
 import { AdminPaymentService } from './management/payment/admin-payment.service';
 import { AdminProductService } from './management/product/admin-product.service';
 import { AdminProductVariantService } from './management/product-variant/admin-variant.service';
+import { AdminCategoryController } from './management/category/admin-category.controller';
+import { AdminOrderController } from './management/order/admin-order.controller';
+import { AdminPaymentController } from './management/payment/admin-payment.controller';
+import { AdminProductController } from './management/product/admin-product.controller';
+import { AdminProductVariantController } from './management/product-variant/admin-variant.controller';
+import { AdminAuthController } from './admin-auth.controller';
+import { AdminAuthService } from './admin-auth.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([UserEntity])],
@@ -33,14 +40,24 @@ import { AdminProductVariantService } from './management/product-variant/admin-v
     PaymentRepository,
 
     //services
-    AdminUserService, 
+    AdminUserService,
     AdminBrandService,
     AdminCategoryService,
     AdminOrderService,
     AdminPaymentService,
     AdminProductService,
     AdminProductVariantService,
+    AdminAuthService,
   ],
-  controllers: [AdminUserController, AdminBrandController],
+  controllers: [
+    AdminUserController,
+    AdminBrandController,
+    AdminCategoryController,
+    AdminOrderController,
+    AdminPaymentController,
+    AdminProductController,
+    AdminProductVariantController,
+    AdminAuthController,
+  ],
 })
 export class AdminModule {}

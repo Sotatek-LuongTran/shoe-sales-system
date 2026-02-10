@@ -1,9 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Pagination } from 'nestjs-typeorm-paginate';
 import { ProductEntity } from 'src/database/entities/product.entity';
-import { CreateProductDto } from 'src/modules/product/dto/create-product.dto';
-import { PaginateProductsDto } from 'src/modules/product/dto/paginate-products.dto';
-import { UpdateProductDto } from 'src/modules/product/dto/update-product.dto';
+import { CreateProductDto } from 'src/modules/admin/management/product/dto/create-product.dto';
+import { PaginateProductsDto } from 'src/modules/admin/management/product/dto/paginate-products.dto';
+import { UpdateProductDto } from 'src/modules/admin/management/product/dto/update-product.dto';
 import { BrandRepository } from 'src/shared/modules/common-brand/brand.repository';
 import { CategoryRepository } from 'src/shared/modules/common-category/category.repository';
 import { ProductRepository } from 'src/shared/modules/common-product/product.repository';

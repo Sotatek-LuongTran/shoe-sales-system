@@ -7,7 +7,7 @@ import { UserRoleEnum } from 'src/shared/enums/user.enum';
 import { Roles } from 'src/shared/decorators/role.decorator';
 import { Request } from 'express';
 
-@ApiTags('Products')
+@ApiTags('Users')
 @ApiBearerAuth('access-token')
 @Controller('users')
 @UseGuards(AuthGuard('jwt'), RolesGuard)

@@ -4,9 +4,9 @@ import { Roles } from 'src/shared/decorators/role.decorator';
 import { UserRoleEnum } from 'src/shared/enums/user.enum';
 import { RolesGuard } from 'src/shared/guards/role.guard';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { CreateProductDto } from 'src/modules/product/dto/create-product.dto';
-import { PaginateProductsDto } from 'src/modules/product/dto/paginate-products.dto';
-import { UpdateProductDto } from 'src/modules/product/dto/update-product.dto';
+import { CreateProductDto } from 'src/modules/admin/management/product/dto/create-product.dto';
+import { PaginateProductsDto } from 'src/modules/admin/management/product/dto/paginate-products.dto';
+import { UpdateProductDto } from 'src/modules/admin/management/product/dto/update-product.dto';
 import { AuthGuard } from '@nestjs/passport';
 
 @Controller('admin/products')

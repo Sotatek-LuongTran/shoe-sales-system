@@ -16,7 +16,7 @@ import {
 } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { ProductVariantService } from './product-variant.service';
-import { PaginateVariantsDto } from './dto/paginate-variants.dto';
+import { PaginateVariantsDto } from '../admin/management/product-variant/dto/paginate-variants.dto';
 import { RolesGuard } from 'src/shared/guards/role.guard';
 import { UserRoleEnum } from 'src/shared/enums/user.enum';
 import { Roles } from 'src/shared/decorators/role.decorator';

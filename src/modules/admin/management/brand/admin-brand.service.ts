@@ -3,9 +3,9 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateBrandDto } from 'src/modules/brand/dto/create-brand.dto';
-import { PaginateBrandsDto } from 'src/modules/brand/dto/paginate-brands.dto';
-import { UpdateBrandDto } from 'src/modules/brand/dto/update-brand.dto';
+import { CreateBrandDto } from 'src/modules/admin/management/brand/dto/create-brand.dto';
+import { PaginateBrandsDto } from 'src/modules/admin/management/brand/dto/paginate-brands.dto';
+import { UpdateBrandDto } from 'src/modules/admin/management/brand/dto/update-brand.dto';
 import { BrandRepository } from 'src/shared/modules/common-brand/brand.repository';
 
 @Injectable()

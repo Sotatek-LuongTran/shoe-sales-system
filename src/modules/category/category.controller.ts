@@ -19,9 +19,9 @@ import { Roles } from 'src/shared/decorators/role.decorator';
 import { UserRoleEnum } from 'src/shared/enums/user.enum';
 import { RolesGuard } from 'src/shared/guards/role.guard';
 import { CategoryService } from './category.service';
-import { PaginateCategoriesDto } from './dto/paginate-categories.dto';
+import { PaginateCategoriesDto } from '../admin/management/category/dto/paginate-categories.dto';
 
-@ApiTags('categories')
+@ApiTags('Categories')
 @ApiBearerAuth('access-token')
 @UseGuards(AuthGuard('jwt'), RolesGuard)
 @Roles(UserRoleEnum.USER)

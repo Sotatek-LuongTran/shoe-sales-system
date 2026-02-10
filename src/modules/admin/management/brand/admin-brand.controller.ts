@@ -11,13 +11,13 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { CreateBrandDto } from 'src/modules/brand/dto/create-brand.dto';
-import { UpdateBrandDto } from 'src/modules/brand/dto/update-brand.dto';
+import { CreateBrandDto } from 'src/modules/admin/management/brand/dto/create-brand.dto';
+import { UpdateBrandDto } from 'src/modules/admin/management/brand/dto/update-brand.dto';
 import { Roles } from 'src/shared/decorators/role.decorator';
 import { UserRoleEnum } from 'src/shared/enums/user.enum';
 import { RolesGuard } from 'src/shared/guards/role.guard';
 import { AdminBrandService } from './admin-brand.service';
-import { PaginateBrandsDto } from 'src/modules/brand/dto/paginate-brands.dto';
+import { PaginateBrandsDto } from 'src/modules/admin/management/brand/dto/paginate-brands.dto';
 import { AuthGuard } from '@nestjs/passport';
 
 @Controller('admins/brands')

@@ -20,8 +20,8 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
-import { CreateVariantDto } from 'src/modules/product-variant/dto/create-variant.dto';
-import { UpdateVariantDto } from 'src/modules/product-variant/dto/update-vatiant.dto';
+import { CreateVariantDto } from 'src/modules/admin/management/product-variant/dto/create-variant.dto';
+import { UpdateVariantDto } from 'src/modules/admin/management/product-variant/dto/update-vatiant.dto';
 
 @Controller('admin/product-variants')
 @ApiBearerAuth('access-token')
