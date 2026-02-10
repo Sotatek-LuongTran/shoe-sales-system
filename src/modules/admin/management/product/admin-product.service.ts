@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { Pagination } from 'nestjs-typeorm-paginate';
 import { ProductEntity } from 'src/database/entities/product.entity';
 import { CreateProductDto } from 'src/modules/admin/management/product/dto/create-product.dto';
-import { PaginateProductsDto } from 'src/modules/admin/management/product/dto/paginate-products.dto';
+import { PaginateProductsDto } from 'src/shared/dto/product/paginate-products.dto';
 import { UpdateProductDto } from 'src/modules/admin/management/product/dto/update-product.dto';
 import { BrandRepository } from 'src/shared/modules/common-brand/brand.repository';
 import { CategoryRepository } from 'src/shared/modules/common-category/category.repository';
@@ -73,18 +73,13 @@ export class AdminProductService {
   }
 
   async getProduct(id: string) {
-    const product = await this.productRepository.findProductWithPriceRange(id);
+    const product = await this.productRepository.findProductWithVariants(id);
 
-    if (!product.entities.length) {
+    if (!product) {
       throw new NotFoundException('No product found');
     }
 
     return {
-      ...product.entities[0],
-      priceRange: {
-        min: Number(product.raw[0].minprice),
-        max: Number(product.raw[0].maxprice),
-      },
     };
   }
 

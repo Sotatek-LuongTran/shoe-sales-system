@@ -3,7 +3,7 @@ import { DataSource, IsNull } from 'typeorm';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CategoryEntity } from 'src/database/entities/category.entity';
 import { ProductEntity } from 'src/database/entities/product.entity';
-import { PaginateCategoriesDto } from 'src/modules/admin/management/category/dto/paginate-categories.dto';
+import { PaginateCategoriesDto } from 'src/shared/dto/category/paginate-categories.dto';
 import { paginate } from 'nestjs-typeorm-paginate';
 
 @Injectable()

@@ -17,7 +17,7 @@ import { Roles } from 'src/shared/decorators/role.decorator';
 import { UserRoleEnum } from 'src/shared/enums/user.enum';
 import { RolesGuard } from 'src/shared/guards/role.guard';
 import { AdminBrandService } from './admin-brand.service';
-import { PaginateBrandsDto } from 'src/modules/admin/management/brand/dto/paginate-brands.dto';
+import { PaginateBrandsDto } from 'src/shared/dto/brand/paginate-brands.dto';
 import { AuthGuard } from '@nestjs/passport';
 
 @Controller('admins/brands')

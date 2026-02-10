@@ -19,7 +19,8 @@ import { AuthGuard } from '@nestjs/passport';
 import { Roles } from 'src/shared/decorators/role.decorator';
 import { UserRoleEnum } from 'src/shared/enums/user.enum';
 import { RolesGuard } from 'src/shared/guards/role.guard';
-import { PaginateBrandsDto } from '../admin/management/brand/dto/paginate-brands.dto';
+import { PaginateBrandsDto } from '../../shared/dto/brand/paginate-brands.dto';
+import { BrandResponseDto } from 'src/shared/dto/brand/brand-response.dto';
 
 @ApiTags('Brands')
 @ApiBearerAuth('access-token')
@@ -37,6 +38,7 @@ export class BrandController {
   @ApiResponse({
     status: 201,
     description: 'Brands get successfully',
+    type: BrandResponseDto
   })
   @ApiQuery({ name: 'dto', required: true, type: PaginateBrandsDto })
   getList(@Query('dto') dto: PaginateBrandsDto) {
@@ -51,6 +53,7 @@ export class BrandController {
   @ApiResponse({
     status: 201,
     description: 'Brand get successfully',
+    type: BrandResponseDto
   })
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
   getOne(@Param('id', ParseUUIDPipe) id: string) {

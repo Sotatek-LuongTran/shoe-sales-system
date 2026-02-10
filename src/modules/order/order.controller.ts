@@ -22,6 +22,7 @@ import { RolesGuard } from 'src/shared/guards/role.guard';
 import { Roles } from 'src/shared/decorators/role.decorator';
 import { AuthGuard } from '@nestjs/passport';
 import { RemoveOrderItemDto } from 'src/modules/order/dto/remove-item.dto';
+import { OrderResponseDto } from 'src/shared/dto/order/order-response.dto';
 
 @ApiTags('Orders')
 @ApiBearerAuth('access-token')
@@ -36,7 +37,11 @@ export class OrderController {
   // =========================
   @Post()
   @ApiOperation({ summary: 'Create order from items' })
-  @ApiResponse({ status: 201, description: 'Order created successfully' })
+  @ApiResponse({
+    status: 201,
+    description: 'Order created successfully',
+    type: OrderResponseDto,
+  })
   async checkoutOrder(@Req() req: any) {
     return this.orderService.checkoutOrder(req.user.userId);
   }
@@ -46,7 +51,11 @@ export class OrderController {
   // =========================
   @Post('pending/add-item')
   @ApiOperation({ summary: 'Add product to pending order (cart)' })
-  @ApiResponse({ status: 200, description: 'Product added to pending order' })
+  @ApiResponse({
+    status: 200,
+    description: 'Product added to pending order',
+    type: OrderResponseDto,
+  })
   async addToPendingOrder(@Req() req: any, @Body() dto: AddToPendingOrderDto) {
     return this.orderService.addProductToPendingOrder(req.user.userId, dto);
   }
@@ -56,7 +65,7 @@ export class OrderController {
   // =========================
   @Get('me')
   @ApiOperation({ summary: 'Get my orders' })
-  @ApiResponse({ status: 200, description: 'Order get successfully' })
+  @ApiResponse({ status: 200, description: 'Order get successfully', type: OrderResponseDto, })
   async getMyOrders(@Req() req: any) {
     return this.orderService.getMyOrders(req.user.userId);
   }
@@ -66,6 +75,7 @@ export class OrderController {
   // =========================
   @Get(':id')
   @ApiOperation({ summary: 'Get order by id (owner only)' })
+  @ApiResponse({ status: 200, description: 'Order get successfully', type: OrderResponseDto, })
   async getOrderById(@Req() req: any, @Param('id', ParseUUIDPipe) id: string) {
     return this.orderService.getOrderById(id, req.user.userId);
   }
@@ -75,6 +85,7 @@ export class OrderController {
   // =========================
   @Delete(':id/cancel')
   @ApiOperation({ summary: 'Cancel order by id (owner only)' })
+  @ApiResponse({ status: 200, description: 'Order cancelled successfully'})
   async cancelOrder(@Req() req: any, @Param('id', ParseUUIDPipe) id: string) {
     return this.orderService.cancelOrder(id, req.user.userId);
   }
