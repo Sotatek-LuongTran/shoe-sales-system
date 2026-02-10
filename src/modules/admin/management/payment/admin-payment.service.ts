@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { OrderEntity } from 'src/database/entities/order.entity';
 import { PaymentEntity } from 'src/database/entities/payment.entity';
-import { PaginatePaymentsDto } from 'src/modules/payment/dto/paginate-payments.dto';
+import { PaginatePaymentsDto } from 'src/modules/admin/management/payment/dto/paginate-payments.dto';
 import { PaymentRepository } from 'src/modules/payment/repository/payment.repository';
 import { OrderPaymentStatusEnum, OrderStatusEnum } from 'src/shared/enums/order.enum';
 import { PaymentStatusEnum } from 'src/shared/enums/payment.enum';

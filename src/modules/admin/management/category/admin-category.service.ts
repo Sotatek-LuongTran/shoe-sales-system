@@ -3,9 +3,9 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateCategoryDto } from 'src/modules/category/dto/create-category.dto';
-import { PaginateCategoriesDto } from 'src/modules/category/dto/paginate-categories.dto';
-import { UpdateCategoryDto } from 'src/modules/category/dto/update-category';
+import { CreateCategoryDto } from 'src/modules/admin/management/category/dto/create-category.dto';
+import { PaginateCategoriesDto } from 'src/modules/admin/management/category/dto/paginate-categories.dto';
+import { UpdateCategoryDto } from 'src/modules/admin/management/category/dto/update-category';
 import { CategoryRepository } from 'src/shared/modules/common-category/category.repository';
 
 @Injectable()

@@ -5,7 +5,7 @@ import {
 import { Pagination } from 'nestjs-typeorm-paginate';
 import { ProductEntity } from 'src/database/entities/product.entity';
 import { ProductRepository } from 'src/shared/modules/common-product/product.repository';
-import { PaginateProductsDto } from './dto/paginate-products.dto';
+import { PaginateProductsDto } from '../admin/management/product/dto/paginate-products.dto';
 
 @Injectable()
 export class ProductService {

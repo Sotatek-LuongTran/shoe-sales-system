@@ -3,7 +3,7 @@ import { ProductEntity } from 'src/database/entities/product.entity';
 import { DataSource, IsNull } from 'typeorm';
 import { BaseRepository } from '../base/base.repository';
 import { paginate, Pagination } from 'nestjs-typeorm-paginate';
-import { PaginateProductsDto } from 'src/modules/product/dto/paginate-products.dto';
+import { PaginateProductsDto } from 'src/modules/admin/management/product/dto/paginate-products.dto';
 
 @Injectable()
 export class ProductRepository extends BaseRepository<ProductEntity> {

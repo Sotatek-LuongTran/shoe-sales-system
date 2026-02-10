@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PaymentEntity } from 'src/database/entities/payment.entity';
 import { BaseRepository } from 'src/shared/modules/base/base.repository';
 import { DataSource } from 'typeorm';
-import { PaginatePaymentsDto } from '../dto/paginate-payments.dto';
+import { PaginatePaymentsDto } from '../../admin/management/payment/dto/paginate-payments.dto';
 import { paginate, Pagination } from 'nestjs-typeorm-paginate';
 
 @Injectable()

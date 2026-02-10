@@ -3,7 +3,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { BrandRepository } from 'src/shared/modules/common-brand/brand.repository';
-import { PaginateBrandsDto } from './dto/paginate-brands.dto';
+import { PaginateBrandsDto } from '../admin/management/brand/dto/paginate-brands.dto';
 
 @Injectable()
 export class BrandService {

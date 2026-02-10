@@ -19,7 +19,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { Roles } from 'src/shared/decorators/role.decorator';
 import { UserRoleEnum } from 'src/shared/enums/user.enum';
 import { RolesGuard } from 'src/shared/guards/role.guard';
-import { PaginateBrandsDto } from './dto/paginate-brands.dto';
+import { PaginateBrandsDto } from '../admin/management/brand/dto/paginate-brands.dto';
 
 @ApiTags('Brands')
 @ApiBearerAuth('access-token')

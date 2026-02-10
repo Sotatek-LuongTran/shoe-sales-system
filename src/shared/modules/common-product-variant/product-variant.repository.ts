@@ -2,7 +2,7 @@ import { BaseRepository } from '../base/base.repository';
 import { DataSource, IsNull } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { ProductVariantEntity } from 'src/database/entities/product-variant.entity';
-import { PaginateVariantsDto } from 'src/modules/product-variant/dto/paginate-variants.dto';
+import { PaginateVariantsDto } from 'src/modules/admin/management/product-variant/dto/paginate-variants.dto';
 import { paginate, Pagination } from 'nestjs-typeorm-paginate';
 import { groupBy } from 'rxjs';
 

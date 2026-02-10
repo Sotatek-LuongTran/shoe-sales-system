@@ -4,7 +4,7 @@ import {
 } from '@nestjs/common';
 import { ProductVariantRepository } from 'src/shared/modules/common-product-variant/product-variant.repository';
 import { ProductRepository } from 'src/shared/modules/common-product/product.repository';
-import { PaginateVariantsDto } from './dto/paginate-variants.dto';
+import { PaginateVariantsDto } from '../admin/management/product-variant/dto/paginate-variants.dto';
 
 @Injectable()
 export class ProductVariantService {

@@ -3,7 +3,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CategoryRepository } from 'src/shared/modules/common-category/category.repository';
-import { PaginateCategoriesDto } from './dto/paginate-categories.dto';
+import { PaginateCategoriesDto } from '../admin/management/category/dto/paginate-categories.dto';
 
 @Injectable()
 export class CategoryService {
