@@ -5,7 +5,7 @@ import { CreateUserDto } from 'src/modules/user/dto/create-user.dto';
 import { UpdateUserDto } from 'src/modules/user/dto/update-user.dto';
 
 @Injectable()
-export class AdminService {
+export class AdminUserService {
   constructor(private readonly userRepository: UserRepository) {}
 
   async createUser(createUserDto: CreateUserDto) {
@@ -45,6 +45,5 @@ export class AdminService {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
     await this.userRepository.delete(id);
-    return { message: 'User deleted successfully' };
   }
 }

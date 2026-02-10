@@ -87,10 +87,6 @@ export class OrderService {
     return order;
   }
 
-  async getAllOrders() {
-    return this.orderRepository.findAllOrders();
-  }
-
   async addProductToPendingOrder(userId: string, dto: AddToPendingOrderDto) {
     const user = await this.userRepository.findById(userId);
     if (!user) throw new NotFoundException('User not found');

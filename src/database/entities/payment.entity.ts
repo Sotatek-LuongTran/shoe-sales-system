@@ -5,8 +5,6 @@ import { PaymentStatusEnum } from '../../shared/enums/payment.enum';
 
 @Entity('payments')
 @Index('idx_payments_order_id', ['orderId'])
-@Index('idx_payments_payment_status', ['paymentStatus'])
-@Index('idx_payments_deleted_at', ['deletedAt'])
 export class PaymentEntity extends BaseEntity {
   @Column({ name: 'amount', type: 'numeric', precision: 12, scale: 2 })
   amount: number;

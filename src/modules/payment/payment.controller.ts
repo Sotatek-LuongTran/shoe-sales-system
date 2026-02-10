@@ -56,29 +56,4 @@ export class PaymentController {
   async retryPayment(@Param('paymentId', ParseUUIDPipe) paymentId: string, @Req() req: any) {
     return this.paymentService.retryPayment(paymentId, req.user.userId);
   }
-
-  // =========================
-  // REFUND PAYMENT
-  // =========================
-  @Post('refund/:paymentId')
-  @UseGuards(RolesGuard)
-  @Roles(UserRoleEnum.ADMIN)
-  @ApiOperation({ summary: 'Admin refund payment' })
-  @ApiResponse({ status: 200, description: 'Payment refunded successfully' })
-  @ApiResponse({ status: 400, description: 'Bad request' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async refund(@Param('paymentId', ParseUUIDPipe) paymentId: string) {
-    return this.paymentService.refundPayment(paymentId);
-  }
-
-  @Get()
-  @UseGuards(RolesGuard)
-  @Roles(UserRoleEnum.ADMIN)
-  @ApiOperation({ summary: 'Admin: get all payments' })
-  @ApiResponse({ status: 200, description: 'Payments get successfully' })
-  @ApiResponse({ status: 400, description: 'Bad request' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async getAllPayments() {
-    return this.paymentService.getAllPayments();
-  }
 }

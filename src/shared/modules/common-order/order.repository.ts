@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
+import { paginate, Pagination } from 'nestjs-typeorm-paginate';
 import { OrderEntity } from 'src/database/entities/order.entity';
+import { PaginateOrdersDto } from 'src/modules/order/dto/paginate-order.dto';
 import {
   OrderPaymentStatusEnum,
   OrderStatusEnum,
@@ -37,11 +39,15 @@ export class OrderRepository extends BaseRepository<OrderEntity> {
     return order;
   }
 
-  async findAllOrders() {
-    return this.find({
-      relations: ['items', 'user'],
-      order: { createdAt: 'DESC' },
-    });
+  async findOrdersPagination(dto: PaginateOrdersDto): Promise<Pagination<OrderEntity>> {
+    const page = dto.page ?? 1;
+    const limit = dto.limit ?? 10;
+
+    const qb = this.createQueryBuilder('order').leftJoin(
+      'order.orderItems',
+      'item',
+    );
+    return paginate(qb, { page, limit });
   }
 
   async findPendingOrderByUser(userId: string) {
