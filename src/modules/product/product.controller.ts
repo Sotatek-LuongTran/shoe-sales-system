@@ -19,13 +19,13 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { ProductService } from './product.service';
-import { CreateProductDto } from 'src/modules/admin/management/product/dto/create-product.dto';
-import { UpdateProductDto } from 'src/modules/admin/management/product/dto/update-product.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from 'src/shared/guards/role.guard';
 import { UserRoleEnum } from 'src/shared/enums/user.enum';
 import { Roles } from 'src/shared/decorators/role.decorator';
 import { PaginateProductsDto } from '../../shared/dto/product/paginate-products.dto';
+import { ProductResponseDto } from 'src/shared/dto/product/product-respose.dto';
+import { PaginationProductResponseDto } from 'src/shared/dto/product/pagination-product-response';
 
 @ApiTags('Products')
 @ApiBearerAuth('access-token')
@@ -43,6 +43,7 @@ export class ProductController {
   @ApiResponse({
     status: 201,
     description: 'Products get successfully',
+    type: PaginationProductResponseDto,
   })
   @ApiQuery({ name: 'dto', required: true, type: PaginateProductsDto })
   getList(@Query() dto: PaginateProductsDto) {
@@ -57,6 +58,7 @@ export class ProductController {
   @ApiResponse({
     status: 201,
     description: 'Product get successfully',
+    type: ProductResponseDto,
   })
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
   getOne(@Param('id', ParseUUIDPipe) id: string) {

@@ -21,6 +21,7 @@ import { UserRoleEnum } from 'src/shared/enums/user.enum';
 import { RolesGuard } from 'src/shared/guards/role.guard';
 import { PaginateBrandsDto } from '../../shared/dto/brand/paginate-brands.dto';
 import { BrandResponseDto } from 'src/shared/dto/brand/brand-response.dto';
+import { PaginationBrandResponseDto } from 'src/shared/dto/brand/pagination-brand-response';
 
 @ApiTags('Brands')
 @ApiBearerAuth('access-token')
@@ -38,7 +39,7 @@ export class BrandController {
   @ApiResponse({
     status: 201,
     description: 'Brands get successfully',
-    type: BrandResponseDto
+    type: PaginationBrandResponseDto,
   })
   @ApiQuery({ name: 'dto', required: true, type: PaginateBrandsDto })
   getList(@Query('dto') dto: PaginateBrandsDto) {

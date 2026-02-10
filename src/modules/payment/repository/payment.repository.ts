@@ -24,7 +24,14 @@ export class PaymentRepository extends BaseRepository<PaymentEntity> {
     const page = dto.page ?? 1;
     const limit = dto.limit ?? 10;
 
-    const qb = this.createQueryBuilder('payment');
+    const qb = this.createQueryBuilder('payment').leftJoin(
+      'payment.order',
+      'order',
+    );
+
+    if (dto.userId) {
+      qb.leftJoin('order.user', 'user').where('user.id ILIKE :userId', {userId: `%${dto.userId}%`})
+    }
     return paginate(qb, { page, limit });
   }
 }

@@ -21,6 +21,7 @@ import { RolesGuard } from 'src/shared/guards/role.guard';
 import { CategoryService } from './category.service';
 import { PaginateCategoriesDto } from '../../shared/dto/category/paginate-categories.dto';
 import { CategoryResponseDto } from 'src/shared/dto/category/category-response.dto';
+import { PaginationCategoryResponseDto } from 'src/shared/dto/category/pagination-category-response';
 
 @ApiTags('Categories')
 @ApiBearerAuth('access-token')
@@ -38,7 +39,7 @@ export class CategoryController {
   @ApiResponse({
     status: 201,
     description: 'Categories get successfully',
-    type: CategoryResponseDto
+    type: PaginationCategoryResponseDto,
   })
   @ApiQuery({ name: 'dto', required: true, type: PaginateCategoriesDto })
   getList(

@@ -12,7 +12,10 @@ import { OrderRepository } from '../../shared/modules/common-order/order.reposit
 import { OrderItemRepository } from './repository/order-item.repository';
 import { UserRepository } from 'src/shared/modules/user/user.repository';
 import { AddToPendingOrderDto } from 'src/modules/order/dto/add-to-order.dto';
-import { OrderPaymentStatusEnum, OrderStatusEnum } from 'src/shared/enums/order.enum';
+import {
+  OrderPaymentStatusEnum,
+  OrderStatusEnum,
+} from 'src/shared/enums/order.enum';
 import { ProductVariantRepository } from 'src/shared/modules/common-product-variant/product-variant.repository';
 import { ProductRepository } from 'src/shared/modules/common-product/product.repository';
 import { PaymentRepository } from '../payment/repository/payment.repository';
@@ -20,6 +23,7 @@ import { PaymentStatusEnum } from 'src/shared/enums/payment.enum';
 import { RemoveOrderItemDto } from 'src/modules/order/dto/remove-item.dto';
 import { CreateOrderItemDto } from './dto/create-order.dto';
 import { OrderResponseDto } from 'src/shared/dto/order/order-response.dto';
+import { PaginateOrdersDto } from 'src/shared/dto/order/paginate-order.dto';
 
 @Injectable()
 export class OrderService {
@@ -63,16 +67,19 @@ export class OrderService {
     };
   }
 
-  async getMyOrders(userId: string) {
-    console.log(userId)
+  async getOrdersByUserPagination(userId: string, dto: PaginateOrdersDto) {
+    if (!dto.userId || dto.userId !== userId) {
+      throw new NotFoundException()
+    }
     const user = await this.userRepository.findById(userId);
     if (!user) throw new NotFoundException('User not found');
+    
+    const orders = await this.orderRepository.findOrdersPagination(dto);
 
-    const orders = await this.orderRepository.findOrdersByUser(userId);
-
-    return orders.map(
-      order => new OrderResponseDto(order)
-    )
+    return {
+      ...orders,
+      items: orders.items.map((item) => new OrderResponseDto(item)),
+    };
   }
 
   async getOrderById(orderId: string, userId: string) {
@@ -105,7 +112,8 @@ export class OrderService {
     }
 
     // Validate variant
-    const variant = await this.productVariantRepository.findById(productVariantId)
+    const variant =
+      await this.productVariantRepository.findById(productVariantId);
 
     if (!variant || variant.stock < quantity) {
       throw new BadRequestException('Not enough stock');
@@ -166,7 +174,7 @@ export class OrderService {
 
     await this.orderRepository.save(order);
 
-    return new OrderResponseDto(order)
+    return new OrderResponseDto(order);
   }
 
   async cancelOrder(orderId: string, userId: string) {
@@ -174,7 +182,7 @@ export class OrderService {
     if (!user) throw new NotFoundException('User not found');
 
     return this.dataSource.transaction(async (manager) => {
-      const order = await this.orderRepository.findById(orderId, ['items']); // Load items
+      const order = await this.orderRepository.findOrderWithItems(orderId);
       if (!order) {
         throw new NotFoundException('Order not found');
       }
@@ -210,7 +218,7 @@ export class OrderService {
       }
 
       await manager.getRepository(order.constructor).save(order);
-      return new OrderResponseDto(order)
+      return new OrderResponseDto(order);
     });
   }
 

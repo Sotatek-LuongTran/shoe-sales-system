@@ -5,8 +5,15 @@ import { LoginDto } from '../user/dto/login.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { Request } from 'express';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { UserResponseDto } from 'src/shared/dto/user/user-response.dto';
+import { RolesGuard } from 'src/shared/guards/role.guard';
+import { UserRoleEnum } from 'src/shared/enums/user.enum';
+import { Roles } from 'src/shared/decorators/role.decorator';
 
 @ApiTags('Authentication')
+@ApiBearerAuth('access-token')
+@UseGuards(AuthGuard('jwt'), RolesGuard)
+@Roles(UserRoleEnum.USER)
 @Controller('auth')
 export class AuthenticationController {
   constructor(private readonly authService: AuthenticationService) {}
@@ -14,9 +21,9 @@ export class AuthenticationController {
   @ApiOperation({ summary: 'Register a new user' })
   @ApiResponse({ 
     status: 201, 
-    description: 'User registered successfully'
+    description: 'User registered successfully',
+    type: UserResponseDto,
   })
-  @ApiResponse({ status: 400, description: 'Bad request' })
   @Post('register')
   async register(@Body() createUserDto: CreateUserDto) {
     return await this.authService.register(createUserDto);
@@ -25,9 +32,9 @@ export class AuthenticationController {
   @ApiOperation({ summary: 'User login' })
   @ApiResponse({ 
     status: 201, 
-    description: 'User login successfully'
+    description: 'User login successfully',
+    type: UserResponseDto,
   })
-  @ApiResponse({ status: 400, description: 'Bad request' })
   @Post('login')
   async login(@Body() loginDto: LoginDto) {
     return await this.authService.login(loginDto);
@@ -36,9 +43,9 @@ export class AuthenticationController {
   @ApiOperation({ summary: 'User logout' })
   @ApiResponse({ 
     status: 201, 
-    description: 'User logout successfully'
+    description: 'User logout successfully',
+    type: UserResponseDto,
   })
-  @ApiResponse({ status: 400, description: 'Bad request' })
   @Post('logout')
   @ApiBearerAuth('access-token')
   @UseGuards(AuthGuard('jwt'))
