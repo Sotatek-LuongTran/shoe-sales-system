@@ -21,7 +21,7 @@ export class UserEntity extends BaseEntity {
     role: UserRoleEnum;
 
     // @Column({ name: 'deleted_at', type: 'timestamp', nullable: true })
-    @DeleteDateColumn()
+    @DeleteDateColumn({ name: 'deleted_at' })
     deletedAt: Date | null;
 
     // Relations

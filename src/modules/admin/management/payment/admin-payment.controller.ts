@@ -7,7 +7,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { PaginatePaymentsDto } from 'src/modules/admin/management/payment/dto/paginate-payments.dto';
+import { PaginatePaymentsDto } from 'src/shared/dto/payment/paginate-payments.dto';
 import { Roles } from 'src/shared/decorators/role.decorator';
 import { UserRoleEnum } from 'src/shared/enums/user.enum';
 import { RolesGuard } from 'src/shared/guards/role.guard';

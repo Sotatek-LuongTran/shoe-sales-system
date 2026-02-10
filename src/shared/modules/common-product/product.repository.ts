@@ -3,7 +3,7 @@ import { ProductEntity } from 'src/database/entities/product.entity';
 import { DataSource, IsNull } from 'typeorm';
 import { BaseRepository } from '../base/base.repository';
 import { paginate, Pagination } from 'nestjs-typeorm-paginate';
-import { PaginateProductsDto } from 'src/modules/admin/management/product/dto/paginate-products.dto';
+import { PaginateProductsDto } from 'src/shared/dto/product/paginate-products.dto';
 
 @Injectable()
 export class ProductRepository extends BaseRepository<ProductEntity> {
@@ -18,7 +18,7 @@ export class ProductRepository extends BaseRepository<ProductEntity> {
     const limit = dto.limit ?? 10;
 
     const qb = this.createQueryBuilder('product')
-      .leftJoin('product.variants', 'variant')
+      .leftJoinAndSelect('product.variants', 'variant')
       .leftJoinAndSelect('product.brand', 'brand')
       .leftJoinAndSelect('product.category', 'category');
 
@@ -33,7 +33,6 @@ export class ProductRepository extends BaseRepository<ProductEntity> {
     } else if (!dto.includeDeleted) {
       qb.andWhere('product.isActive = true');
     }
-    qb.groupBy('product.id');
     if (dto.search) {
       qb.andWhere(
         '(product.name ILIKE :search OR product.description ILIKE :search)',
@@ -84,19 +83,13 @@ export class ProductRepository extends BaseRepository<ProductEntity> {
     return paginate(qb, { page, limit });
   }
 
-  async findProductWithPriceRange(id: string) {
-    const product = await this.createQueryBuilder('product')
-      .leftJoin('product.variants', 'variant')
-      .select([
-        'product',
-        'MIN(variant.price) AS minPrice',
-        'MAX(variant.price) AS maxPrice',
-      ])
-      .where('product.id = :id', { id })
-      .groupBy('product.id')
-      .getRawAndEntities();
-
-    return product;
+  async findProductWithVariants(id: string) {
+    return this.findOne({
+      where: {
+        id,
+      },
+      relations: ['variants', 'brand', 'category']
+    });
   }
 
   async findOneWithBrandAndCategory(id: string) {

@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateVariantDto } from 'src/modules/admin/management/product-variant/dto/create-variant.dto';
-import { PaginateVariantsDto } from 'src/modules/admin/management/product-variant/dto/paginate-variants.dto';
+import { PaginateVariantsDto } from 'src/shared/dto/product-variant/paginate-variants.dto';
 import { UpdateVariantDto } from 'src/modules/admin/management/product-variant/dto/update-vatiant.dto';
 import { ProductVariantRepository } from 'src/shared/modules/common-product-variant/product-variant.repository';
 import { ProductRepository } from 'src/shared/modules/common-product/product.repository';

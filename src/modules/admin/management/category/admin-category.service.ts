@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CreateCategoryDto } from 'src/modules/admin/management/category/dto/create-category.dto';
-import { PaginateCategoriesDto } from 'src/modules/admin/management/category/dto/paginate-categories.dto';
+import { PaginateCategoriesDto } from 'src/shared/dto/category/paginate-categories.dto';
 import { UpdateCategoryDto } from 'src/modules/admin/management/category/dto/update-category';
 import { CategoryRepository } from 'src/shared/modules/common-category/category.repository';
 

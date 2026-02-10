@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CreateBrandDto } from 'src/modules/admin/management/brand/dto/create-brand.dto';
-import { PaginateBrandsDto } from 'src/modules/admin/management/brand/dto/paginate-brands.dto';
+import { PaginateBrandsDto } from 'src/shared/dto/brand/paginate-brands.dto';
 import { UpdateBrandDto } from 'src/modules/admin/management/brand/dto/update-brand.dto';
 import { BrandRepository } from 'src/shared/modules/common-brand/brand.repository';
 

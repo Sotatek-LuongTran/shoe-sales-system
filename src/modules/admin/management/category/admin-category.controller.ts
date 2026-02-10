@@ -17,7 +17,7 @@ import { RolesGuard } from 'src/shared/guards/role.guard';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateCategoryDto } from 'src/modules/admin/management/category/dto/create-category.dto';
 import { UpdateCategoryDto } from 'src/modules/admin/management/category/dto/update-category';
-import { PaginateCategoriesDto } from 'src/modules/admin/management/category/dto/paginate-categories.dto';
+import { PaginateCategoriesDto } from 'src/shared/dto/category/paginate-categories.dto';
 import { AuthGuard } from '@nestjs/passport';
 
 @Controller('admin/categories')

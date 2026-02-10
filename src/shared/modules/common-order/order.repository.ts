@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { paginate, Pagination } from 'nestjs-typeorm-paginate';
 import { OrderEntity } from 'src/database/entities/order.entity';
-import { PaginateOrdersDto } from 'src/modules/admin/management/order/dto/paginate-order.dto';
+import { PaginateOrdersDto } from 'src/shared/dto/order/paginate-order.dto';
 import {
   OrderPaymentStatusEnum,
   OrderStatusEnum,

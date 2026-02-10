@@ -4,10 +4,9 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import {
-  CreateOrderDto,
-  CreateOrderItemDto,
-} from 'src/modules/order/dto/create-order.dto';
+// import {
+//   CreateOrderItemDto,
+// } from 'src/modules/order/dto/create-order.dto';
 import { DataSource } from 'typeorm';
 import { OrderRepository } from '../../shared/modules/common-order/order.repository';
 import { OrderItemRepository } from './repository/order-item.repository';
@@ -19,6 +18,8 @@ import { ProductRepository } from 'src/shared/modules/common-product/product.rep
 import { PaymentRepository } from '../payment/repository/payment.repository';
 import { PaymentStatusEnum } from 'src/shared/enums/payment.enum';
 import { RemoveOrderItemDto } from 'src/modules/order/dto/remove-item.dto';
+import { CreateOrderItemDto } from './dto/create-order.dto';
+import { OrderResponseDto } from 'src/shared/dto/order/order-response.dto';
 
 @Injectable()
 export class OrderService {
@@ -67,7 +68,11 @@ export class OrderService {
     const user = await this.userRepository.findById(userId);
     if (!user) throw new NotFoundException('User not found');
 
-    return this.orderRepository.findOrdersByUser(userId);
+    const orders = await this.orderRepository.findOrdersByUser(userId);
+
+    return orders.map(
+      order => new OrderResponseDto(order)
+    )
   }
 
   async getOrderById(orderId: string, userId: string) {
@@ -84,7 +89,7 @@ export class OrderService {
       throw new ForbiddenException('Access denied');
     }
 
-    return order;
+    return new OrderResponseDto(order);
   }
 
   async addProductToPendingOrder(userId: string, dto: AddToPendingOrderDto) {
@@ -159,7 +164,9 @@ export class OrderService {
     const items = await this.orderItemRepository.findByOrderId(order.id);
     order.totalPrice = items.reduce((sum, i) => sum + Number(i.finalPrice), 0);
 
-    return this.orderRepository.save(order);
+    await this.orderRepository.save(order);
+
+    return new OrderResponseDto(order)
   }
 
   async cancelOrder(orderId: string, userId: string) {
@@ -203,7 +210,7 @@ export class OrderService {
       }
 
       await manager.getRepository(order.constructor).save(order);
-      return order;
+      return new OrderResponseDto(order)
     });
   }
 
@@ -260,10 +267,5 @@ export class OrderService {
     );
 
     await this.orderRepository.save(order);
-
-    return {
-      message: 'Item removed from order successfully',
-      order,
-    };
   }
 }

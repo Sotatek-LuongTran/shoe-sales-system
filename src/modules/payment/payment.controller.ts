@@ -14,7 +14,8 @@ import { Roles } from 'src/shared/decorators/role.decorator';
 
 @ApiTags('Payments')
 @ApiBearerAuth('access-token')
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(AuthGuard('jwt'), RolesGuard)
+@Roles(UserRoleEnum.USER)
 @Controller('payments')
 export class PaymentController {
   constructor(private readonly paymentService: PaymentService) {}
@@ -26,8 +27,6 @@ export class PaymentController {
   @ApiOperation({ summary: 'Create payment for an order (fake)' })
   @ApiParam({ name: 'orderId', type: String })
   @ApiResponse({ status: 201, description: 'Payment created' })
-  @ApiResponse({ status: 400, description: 'Invalid order' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
   async createPayment(@Param('orderId', ParseUUIDPipe) orderId: string, @Req() req: any) {
     return this.paymentService.createPayment(orderId, req.user.userId);
   }
@@ -39,8 +38,6 @@ export class PaymentController {
   @ApiOperation({ summary: 'Confirm payment (simulate success/failure)' })
   @ApiParam({ name: 'paymentId', type: String })
   @ApiResponse({ status: 200, description: 'Payment processed' })
-  @ApiResponse({ status: 400, description: 'Payment already processed' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
   async confirmPayment(@Param('paymentId', ParseUUIDPipe) paymentId: string) {
     return this.paymentService.confirmPayment(paymentId);
   }
@@ -51,8 +48,6 @@ export class PaymentController {
   @Post('retry/:paymentId')
   @ApiOperation({ summary: 'Retry failed payment' })
   @ApiResponse({ status: 200, description: 'Payment retried successfully' })
-  @ApiResponse({ status: 400, description: 'Bad request' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
   async retryPayment(@Param('paymentId', ParseUUIDPipe) paymentId: string, @Req() req: any) {
     return this.paymentService.retryPayment(paymentId, req.user.userId);
   }

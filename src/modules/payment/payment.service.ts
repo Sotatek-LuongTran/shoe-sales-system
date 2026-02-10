@@ -12,6 +12,7 @@ import { ProductVariantRepository } from 'src/shared/modules/common-product-vari
 import { PaymentEntity } from 'src/database/entities/payment.entity';
 import { OrderEntity } from 'src/database/entities/order.entity';
 import { DataSource } from 'typeorm';
+import { PaymentResponseDto } from 'src/shared/dto/payment/payment-response.dto';
 
 @Injectable()
 export class PaymentService {
@@ -46,11 +47,7 @@ export class PaymentService {
 
     await this.paymentRepository.save(payment);
 
-    return {
-      paymentId: payment.id,
-      amount: payment.amount,
-      message: 'Payment created (fake)',
-    };
+    return new PaymentResponseDto(payment)
   }
 
   /**
@@ -99,10 +96,7 @@ export class PaymentService {
       await this.paymentRepository.save(payment);
       await this.orderRepository.save(order);
 
-      return {
-        paymentStatus: payment.paymentStatus,
-        orderStatus: order.status,
-      };
+      return new PaymentResponseDto(payment)
     });
   }
 

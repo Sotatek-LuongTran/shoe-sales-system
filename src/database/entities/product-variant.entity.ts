@@ -21,7 +21,7 @@ export class ProductVariantEntity extends BaseEntity {
   isActive: boolean;
 
   // @Column({ name: 'deleted_at', type: 'timestamp', nullable: true })
-  @DeleteDateColumn()
+  @DeleteDateColumn({ name: 'deleted_at' })
   deletedAt: Date | null;
 
   @Column({ name: 'product_id', type: 'uuid' })

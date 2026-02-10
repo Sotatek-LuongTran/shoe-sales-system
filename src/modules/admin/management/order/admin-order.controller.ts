@@ -10,7 +10,7 @@ import { Roles } from 'src/shared/decorators/role.decorator';
 import { UserRoleEnum } from 'src/shared/enums/user.enum';
 import { RolesGuard } from 'src/shared/guards/role.guard';
 import { AdminOrderService } from './admin-order.service';
-import { PaginateOrdersDto } from 'src/modules/admin/management/order/dto/paginate-order.dto';
+import { PaginateOrdersDto } from 'src/shared/dto/order/paginate-order.dto';
 
 @Controller('admin/orders')
 @ApiBearerAuth('access-token')
