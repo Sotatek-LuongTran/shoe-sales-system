@@ -7,6 +7,7 @@ import { ProductEntity } from 'src/database/entities/product.entity';
 import { ProductRepository } from 'src/shared/modules/common-product/product.repository';
 import { PaginateProductsDto } from '../../shared/dto/product/paginate-products.dto';
 import { ProductResponseDto } from 'src/shared/dto/product/product-respose.dto';
+import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
 
 @Injectable()
 export class ProductService {
@@ -29,7 +30,10 @@ export class ProductService {
     const product = await this.productRepository.findProductWithVariants(id);
 
     if (!product) {
-      throw new NotFoundException('No product found');
+      throw new NotFoundException({
+        errorCode: ErrorCodeEnum.PRODUCT_NOT_FOUND,
+        statusCode: 404,
+      });
     }
 
     return new ProductResponseDto(product)

@@ -5,6 +5,7 @@ import { UpdateVariantDto } from 'src/modules/admin/management/product-variant/d
 import { ProductVariantRepository } from 'src/shared/modules/common-product-variant/product-variant.repository';
 import { ProductRepository } from 'src/shared/modules/common-product/product.repository';
 import { AdminVariantResponseDto } from './dto/admin-variant-response.dto';
+import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
 
 @Injectable()
 export class AdminProductVariantService {
@@ -17,7 +18,11 @@ export class AdminProductVariantService {
     const product = await this.productRepository.findById(
       createVariantDto.productId,
     );
-    if (!product) throw new NotFoundException('Product not found');
+    if (!product)
+      throw new NotFoundException({
+        errorCode: ErrorCodeEnum.PRODUCT_NOT_FOUND,
+        statusCode: 404,
+      });
 
     const variant = this.productVariantRepository.create({
       variantValue: createVariantDto.variantValue,
@@ -36,7 +41,11 @@ export class AdminProductVariantService {
     const variant = await this.productVariantRepository.findById(
       updateVariantDto.id,
     );
-    if (!variant) throw new NotFoundException('Product variant not found');
+    if (!variant)
+      throw new NotFoundException({
+        errorCode: ErrorCodeEnum.PRODUCT_VARIANT_NOT_FOUND,
+        statusCode: 404,
+      });
 
     Object.assign(variant, UpdateVariantDto);
 
@@ -46,7 +55,11 @@ export class AdminProductVariantService {
 
   async deleteProductVariant(id: string) {
     const variant = await this.productVariantRepository.findById(id);
-    if (!variant) throw new NotFoundException('Product variant not found');
+    if (!variant)
+      throw new NotFoundException({
+        errorCode: ErrorCodeEnum.PRODUCT_VARIANT_NOT_FOUND,
+        statusCode: 404,
+      });
 
     variant.deletedAt = new Date(Date.now());
 
@@ -60,18 +73,30 @@ export class AdminProductVariantService {
     const product =
       await this.productRepository.findOneWithBrandAndCategory(productId);
     if (!product) {
-      throw new NotFoundException('Product not found');
+      throw new NotFoundException({
+        errorCode: ErrorCodeEnum.PRODUCT_NOT_FOUND,
+        statusCode: 404,
+      });
     }
 
     if (!product.brand.id) {
-      throw new NotFoundException('Product brand not found');
+      throw new NotFoundException({
+        errorCode: ErrorCodeEnum.BRAND_NOT_FOUND,
+        statusCode: 404,
+      });
     }
 
     if (!product.category.id) {
-      throw new NotFoundException('Product category not found');
+      throw new NotFoundException({
+        errorCode: ErrorCodeEnum.CATEGORY_NOT_FOUND,
+        statusCode: 404,
+      });
     }
 
-    const variants = await this.productVariantRepository.findVariantsPagination(productId, dto);
+    const variants = await this.productVariantRepository.findVariantsPagination(
+      productId,
+      dto,
+    );
 
     return {
       ...variants,
@@ -81,7 +106,11 @@ export class AdminProductVariantService {
 
   async getProductVariant(id: string) {
     const variant = await this.productVariantRepository.findById(id);
-    if (!variant) throw new NotFoundException('Product variant not found');
+    if (!variant)
+      throw new NotFoundException({
+        errorCode: ErrorCodeEnum.PRODUCT_VARIANT_NOT_FOUND,
+        statusCode: 404,
+      });
 
     return new AdminVariantResponseDto(variant);
   }
@@ -93,12 +122,15 @@ export class AdminProductVariantService {
     });
 
     if (!variant) {
-      throw new NotFoundException('Product variant not found');
+      throw new NotFoundException({
+        errorCode: ErrorCodeEnum.PRODUCT_VARIANT_NOT_FOUND,
+        statusCode: 404,
+      });
     }
 
     variant.deletedAt = null;
     await this.productVariantRepository.save(variant);
-    return new AdminVariantResponseDto(variant)
+    return new AdminVariantResponseDto(variant);
   }
 
   async removeSoftDeletedVariants() {

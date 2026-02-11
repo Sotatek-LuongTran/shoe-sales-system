@@ -1,13 +1,21 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { OrderEntity } from 'src/database/entities/order.entity';
 import { PaymentEntity } from 'src/database/entities/payment.entity';
 import { PaginatePaymentsDto } from 'src/shared/dto/payment/paginate-payments.dto';
 import { PaymentRepository } from 'src/modules/payment/repository/payment.repository';
-import { OrderPaymentStatusEnum, OrderStatusEnum } from 'src/shared/enums/order.enum';
+import {
+  OrderPaymentStatusEnum,
+  OrderStatusEnum,
+} from 'src/shared/enums/order.enum';
 import { PaymentStatusEnum } from 'src/shared/enums/payment.enum';
 import { ProductVariantRepository } from 'src/shared/modules/common-product-variant/product-variant.repository';
 import { DataSource } from 'typeorm';
 import { PaymentResponseDto } from 'src/shared/dto/payment/payment-response.dto';
+import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
 
 @Injectable()
 export class AdminPaymentService {
@@ -33,10 +41,17 @@ export class AdminPaymentService {
         relations: ['order', 'order.items'],
       });
 
-      if (!payment) throw new NotFoundException('Payment not found');
+      if (!payment)
+        throw new NotFoundException({
+          errorCode: ErrorCodeEnum.PAYMENT_NOT_FOUND,
+          statusCode: 404,
+        });
 
       if (payment.paymentStatus !== PaymentStatusEnum.SUCCESSFUL) {
-        throw new BadRequestException('Only paid payments can be refunded');
+        throw new BadRequestException({
+          errorCode: ErrorCodeEnum.PAYMENT_INVALID_STATUS,
+          statusCode: 400,
+        });
       }
 
       payment.paymentStatus = PaymentStatusEnum.REFUNDED;

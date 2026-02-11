@@ -8,6 +8,7 @@ import { PaginateBrandsDto } from 'src/shared/dto/brand/paginate-brands.dto';
 import { UpdateBrandDto } from 'src/modules/admin/management/brand/dto/update-brand.dto';
 import { BrandRepository } from 'src/shared/modules/common-brand/brand.repository';
 import { AdminBrandResponseDto } from './dto/admin-brand-response.dto';
+import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
 
 @Injectable()
 export class AdminBrandService {
@@ -25,7 +26,11 @@ export class AdminBrandService {
 
   async createBrand(createBrandDto: CreateBrandDto) {
     const existing = await this.brandRepository.findByName(createBrandDto.name);
-    if (existing) throw new BadRequestException('Brand already exists');
+    if (existing)
+      throw new BadRequestException({
+        errorCode: ErrorCodeEnum.BRAND_ALREADY_EXIST,
+        statusCode: 400,
+      });
 
     const brand = this.brandRepository.create(createBrandDto);
 
@@ -36,7 +41,11 @@ export class AdminBrandService {
 
   async updateBrand(updateBrandDto: UpdateBrandDto) {
     const brand = await this.brandRepository.findById(updateBrandDto.id);
-    if (!brand) throw new NotFoundException('Brand not found');
+    if (!brand)
+      throw new NotFoundException({
+        errorCode: ErrorCodeEnum.BRAND_NOT_FOUND,
+        statusCode: 404,
+      });
 
     Object.assign(brand, updateBrandDto);
 
@@ -47,7 +56,11 @@ export class AdminBrandService {
 
   async deleteBrand(brandId: string) {
     const brand = await this.brandRepository.findById(brandId);
-    if (!brand) throw new NotFoundException('No brand found');
+    if (!brand)
+      throw new NotFoundException({
+        errorCode: ErrorCodeEnum.BRAND_NOT_FOUND,
+        statusCode: 404,
+      });
 
     brand.deletedAt = new Date(Date.now());
 
@@ -58,7 +71,10 @@ export class AdminBrandService {
     const brand = await this.brandRepository.findDeletedBrand(brandId);
 
     if (!brand) {
-      throw new NotFoundException('Brand not found');
+      throw new NotFoundException({
+        errorCode: ErrorCodeEnum.BRAND_NOT_FOUND,
+        statusCode: 404,
+      });
     }
 
     brand.deletedAt = null;
