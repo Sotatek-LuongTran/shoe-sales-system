@@ -11,6 +11,7 @@ import { AuthGuard } from '@nestjs/passport';
 import {
   ApiBearerAuth,
   ApiOperation,
+  ApiParam,
   ApiQuery,
   ApiResponse,
   ApiTags,
@@ -55,6 +56,7 @@ export class AdminPaymentController {
     description: 'Payment refunded successfully',
     type: PaymentResponseDto,
   })
+  @ApiParam({name: 'paymentId', required: true, type: 'string', format: 'uuid' })
   async refund(@Param('paymentId', ParseUUIDPipe) paymentId: string) {
     return this.adminPaymentService.refundPayment(paymentId);
   }

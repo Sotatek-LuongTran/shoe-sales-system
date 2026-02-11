@@ -76,6 +76,7 @@ export class PaymentController {
     description: 'Payment retried successfully',
     type: PaymentResponseDto,
   })
+  @ApiParam({name: 'paymentId', type: 'string', format: 'uuid'})
   async retryPayment(
     @Param('paymentId', ParseUUIDPipe) paymentId: string,
     @Req() req: any,
