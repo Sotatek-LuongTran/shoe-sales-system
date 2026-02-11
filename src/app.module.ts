@@ -12,6 +12,8 @@ import { PaymentModule } from './modules/payment/payment.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { UserModule } from './modules/user/user.module';
 import { PassportModule } from '@nestjs/passport';
+import { APP_FILTER } from '@nestjs/core';
+import { CatchEverythingFilter } from './shared/filters/catch-everything.filter';
 @Module({
   imports: [
     PassportModule,
@@ -29,6 +31,12 @@ import { PassportModule } from '@nestjs/passport';
     PaymentModule,
     AdminModule,
     UserModule,
+  ],
+  providers: [
+    {
+      provide: APP_FILTER,
+      useClass: CatchEverythingFilter,
+    },
   ],
 })
 export class AppModule {}
