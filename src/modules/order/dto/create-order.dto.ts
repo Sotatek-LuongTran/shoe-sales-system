@@ -14,7 +14,7 @@ import {
   MinLength,
   ValidateNested,
 } from 'class-validator';
-import { Gender, ProductType } from 'src/shared/enums/product.enum';
+import { GenderEnum, ProductTypeEnum } from 'src/shared/enums/product.enum';
 
 export class CreateOrderItemDto {
   @ApiProperty({
@@ -74,19 +74,19 @@ export class CreateOrderItemDto {
 
   @ApiProperty({
     description: 'Type of the product',
-    enum: ProductType,
-    example: ProductType.SHOE,
+    enum: ProductTypeEnum,
+    example: ProductTypeEnum.SHOE,
   })
-  @IsEnum(ProductType)
-  productType: ProductType;
+  @IsEnum(ProductTypeEnum)
+  productType: ProductTypeEnum;
 
   @ApiProperty({
     description: 'The suitable gender for the product',
-    enum: Gender,
-    example: Gender.UNISEX,
+    enum: GenderEnum,
+    example: GenderEnum.UNISEX,
   })
-  @IsEnum(Gender)
-  gender: Gender;
+  @IsEnum(GenderEnum)
+  gender: GenderEnum;
 }
 
 export class CreateOrderDto {

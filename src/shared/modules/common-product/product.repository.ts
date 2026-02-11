@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { BaseRepository } from '../base/base.repository';
 import { ProductEntity } from 'src/database/entities/product.entity';
 import { DataSource, IsNull } from 'typeorm';
+import { BaseRepository } from '../base/base.repository';
+import { paginate, Pagination } from 'nestjs-typeorm-paginate';
+import { PaginateProductsDto } from 'src/shared/dto/product/paginate-products.dto';
 
 @Injectable()
 export class ProductRepository extends BaseRepository<ProductEntity> {
@@ -9,86 +11,68 @@ export class ProductRepository extends BaseRepository<ProductEntity> {
     super(datasource, ProductEntity);
   }
 
-  async findProductsPaginationWithPriceRange(options: {
-    page?: number;
-    limit?: number;
-    search?: string;
-    filters?: {
-      gender?: string;
-      productType?: string;
-      brandId?: string;
-      categoryId?: string;
-      isActive?: boolean;
-      minPrice?: number;
-      maxPrice?: number;
-    };
-  }) {
-    const { page = 1, limit = 10, search, filters = {} } = options;
+  async findProductsPagination(
+    dto: PaginateProductsDto,
+  ): Promise<Pagination<ProductEntity>> {
+    const page = dto.page ?? 1;
+    const limit = dto.limit ?? 10;
 
-    const qb = this.repository
-      .createQueryBuilder('product')
-      .leftJoin('product.variants', 'variant')
-      .select([
-        'product.id AS id',
-        'product.name AS name',
-        'product.description AS description',
-        'product.gender AS gender',
-        'product.productType AS productType',
-        'product.createdAt AS createdAt',
-        'MIN(variant.price) AS minPrice',
-        'MAX(variant.price) AS maxPrice',
-      ])
-      .leftJoin('product.brand', 'brand')
-      .leftJoin('product.category', 'category')
-      .where('product.isActive = :isActive', {
-        isActive: filters.isActive ?? true,
-      })
-      .andWhere('product.deletedAt IS NULL')
-      .andWhere('brand.deletedAt IS NULL')
-      .andWhere('category.deletedAt IS NULL')
-      .groupBy('product.id');
+    const qb = this.createQueryBuilder('product')
+      .leftJoinAndSelect('product.variants', 'variant')
+      .leftJoinAndSelect('product.brand', 'brand')
+      .leftJoinAndSelect('product.category', 'category');
 
-    // Search
-    if (search) {
+    if (dto.includeDeleted) {
+      qb.withDeleted();
+    }
+
+    if (dto.isActive !== undefined) {
+      qb.andWhere('product.isActive = :isActive', {
+        isActive: dto.isActive,
+      });
+    } else if (!dto.includeDeleted) {
+      qb.andWhere('product.isActive = true');
+    }
+    if (dto.search) {
       qb.andWhere(
         '(product.name ILIKE :search OR product.description ILIKE :search)',
-        { search: `%${search}%` },
+        { search: `%${dto.search}%` },
       );
     }
 
     // Filters
-    if (filters.gender) {
-      qb.andWhere('product.gender = :gender', { gender: filters.gender });
+    if (dto.gender) {
+      qb.andWhere('product.gender = :gender', { gender: dto.gender });
     }
 
-    if (filters.productType) {
+    if (dto.productType) {
       qb.andWhere('product.productType = :productType', {
-        productType: filters.productType,
+        productType: dto.productType,
       });
     }
 
-    if (filters.brandId) {
+    if (dto.brandId) {
       qb.andWhere('product.brandId = :brandId', {
-        brandId: filters.brandId,
+        brandId: dto.brandId,
       });
     }
 
-    if (filters.categoryId) {
+    if (dto.categoryId) {
       qb.andWhere('product.categoryId = :categoryId', {
-        categoryId: filters.categoryId,
+        categoryId: dto.categoryId,
       });
     }
 
     // Price range filtering (AGGREGATE → HAVING)
-    if (filters.minPrice !== undefined) {
+    if (dto.minPrice !== undefined) {
       qb.having('MIN(variant.price) >= :minPrice', {
-        minPrice: filters.minPrice,
+        minPrice: dto.minPrice,
       });
     }
 
-    if (filters.maxPrice !== undefined) {
+    if (dto.maxPrice !== undefined) {
       qb.andHaving('MAX(variant.price) <= :maxPrice', {
-        maxPrice: filters.maxPrice,
+        maxPrice: dto.maxPrice,
       });
     }
 
@@ -96,49 +80,20 @@ export class ProductRepository extends BaseRepository<ProductEntity> {
       .skip((page - 1) * limit)
       .take(limit);
 
-    const [raw, total] = await Promise.all([qb.getRawMany(), qb.getCount()]);
-
-    return {
-      data: raw.map((row) => ({
-        id: row.id,
-        name: row.name,
-        description: row.description,
-        gender: row.gender,
-        productType: row.producttype,
-        priceRange: {
-          min: Number(row.minprice),
-          max: Number(row.maxprice),
-        },
-        deleteAt: row.deleteAt,
-        createdAt: row.createdat,
-      })),
-      meta: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
-      },
-    };
+    return paginate(qb, { page, limit });
   }
 
-  async findProductWithPriceRange(id: string) {
-    const product = await this.repository
-      .createQueryBuilder('product')
-      .leftJoin('product.variants', 'variant')
-      .select([
-        'product',
-        'MIN(variant.price) AS minPrice',
-        'MAX(variant.price) AS maxPrice',
-      ])
-      .where('product.id = :id', { id })
-      .groupBy('product.id')
-      .getRawAndEntities();
-
-    return product;
+  async findProductWithVariants(id: string) {
+    return this.findOne({
+      where: {
+        id,
+      },
+      relations: ['variants', 'brand', 'category']
+    });
   }
 
   async findOneWithBrandAndCategory(id: string) {
-    return await this.repository.findOne({
+    return await this.findOne({
       where: {
         id: id,
         deletedAt: IsNull(),
@@ -147,47 +102,8 @@ export class ProductRepository extends BaseRepository<ProductEntity> {
     });
   }
 
-  async findSoftDeletedProducts(options: {
-    page?: number;
-    limit?: number;
-    search?: string;
-  }) {
-    const { page = 1, limit = 10, search } = options;
-
-    const qb = this.repository
-      .createQueryBuilder('product')
-      .withDeleted()
-      .leftJoin('product.brand', 'brand', 'brand.deletedAt IS NULL')
-      .leftJoin('product.category', 'category', 'category.deletedAt IS NULL')
-      .where('product.deletedAt IS NOT NULL');
-
-    if (search) {
-      qb.andWhere(
-        '(product.name ILIKE :search OR product.description ILIKE :search)',
-        { search: `%${search}%` },
-      );
-    }
-
-    qb.orderBy('product.deletedAt', 'DESC')
-      .skip((page - 1) * limit)
-      .take(limit);
-
-    const [data, total] = await qb.getManyAndCount();
-
-    return {
-      data,
-      meta: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
-      },
-    };
-  }
-
   async removeSoftDeletedProducts(): Promise<void> {
-    await this.repository
-      .createQueryBuilder()
+    await this.createQueryBuilder()
       .delete()
       .from(ProductEntity)
       .where('deleted_at IS NOT NULL')

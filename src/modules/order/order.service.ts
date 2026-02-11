@@ -4,21 +4,27 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import {
-  CreateOrderDto,
-  CreateOrderItemDto,
-} from 'src/shared/dto/order/create-order.dto';
+// import {
+//   CreateOrderItemDto,
+// } from 'src/modules/order/dto/create-order.dto';
 import { DataSource } from 'typeorm';
 import { OrderRepository } from '../../shared/modules/common-order/order.repository';
 import { OrderItemRepository } from './repository/order-item.repository';
 import { UserRepository } from 'src/shared/modules/user/user.repository';
-import { AddToPendingOrderDto } from 'src/shared/dto/order/add-to-order.dto';
-import { OrderPaymentStatus, OrderStatus } from 'src/shared/enums/order.enum';
+import { AddToPendingOrderDto } from 'src/modules/order/dto/add-to-order.dto';
+import {
+  OrderPaymentStatusEnum,
+  OrderStatusEnum,
+} from 'src/shared/enums/order.enum';
 import { ProductVariantRepository } from 'src/shared/modules/common-product-variant/product-variant.repository';
 import { ProductRepository } from 'src/shared/modules/common-product/product.repository';
 import { PaymentRepository } from '../payment/repository/payment.repository';
-import { PaymentStatus } from 'src/shared/enums/payment.enum';
-import { RemoveOrderItemDto } from 'src/shared/dto/order/remove-item.dto';
+import { PaymentStatusEnum } from 'src/shared/enums/payment.enum';
+import { RemoveOrderItemDto } from 'src/modules/order/dto/remove-item.dto';
+import { CreateOrderItemDto } from './dto/create-order.dto';
+import { OrderResponseDto } from 'src/shared/dto/order/order-response.dto';
+import { PaginateOrdersDto } from 'src/shared/dto/order/paginate-order.dto';
+import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
 
 @Injectable()
 export class OrderService {
@@ -36,23 +42,29 @@ export class OrderService {
     const order = await this.orderRepository.findPendingOrderByUser(userId);
 
     if (!order) {
-      throw new BadRequestException('No pending order found');
+      throw new BadRequestException({
+        errorCode: ErrorCodeEnum.ORDER_PENDING_NOT_FOUND,
+        statusCode: 404,
+      });
     }
 
     if (order.items.length === 0) {
-      throw new BadRequestException('Order is empty');
+      throw new BadRequestException({
+        errorCode: ErrorCodeEnum.ORDER_EMPTY,
+        statusCode: 404,
+      });
     }
 
     // create payment
-    const payment = await this.paymentRepository.create({
+    const payment = this.paymentRepository.create({
       orderId: order.id,
       amount: order.totalPrice,
-      paymentStatus: PaymentStatus.PENDING,
+      paymentStatus: PaymentStatusEnum.PENDING,
     });
 
     await this.paymentRepository.save(payment);
 
-    order.status = OrderStatus.PROCESSING;
+    order.status = OrderStatusEnum.PROCESSING;
     await this.orderRepository.save(order);
 
     return {
@@ -62,55 +74,80 @@ export class OrderService {
     };
   }
 
-  async getMyOrders(userId: string) {
-    console.log(userId)
+  async getOrdersByUserPagination(userId: string, dto: PaginateOrdersDto) {
+    if (!dto.userId || dto.userId !== userId) {
+      throw new NotFoundException();
+    }
     const user = await this.userRepository.findById(userId);
-    if (!user) throw new NotFoundException('User not found');
+    if (!user)
+      throw new NotFoundException({
+        errorCode: ErrorCodeEnum.USER_NOT_FOUND,
+        statusCode: 404,
+      });
 
-    return this.orderRepository.findOrdersByUser(userId);
+    const orders = await this.orderRepository.findOrdersPagination(dto);
+
+    return {
+      ...orders,
+      items: orders.items.map((item) => new OrderResponseDto(item)),
+    };
   }
 
   async getOrderById(orderId: string, userId: string) {
     const user = await this.userRepository.findById(userId);
-    if (!user) throw new NotFoundException('User not found');
+    if (!user)
+      throw new NotFoundException({
+        errorCode: ErrorCodeEnum.USER_NOT_FOUND,
+        statusCode: 404,
+      });
 
     const order = await this.orderRepository.findById(orderId);
 
     if (!order) {
-      throw new NotFoundException('Order not found');
+      throw new NotFoundException({
+        errorCode: ErrorCodeEnum.ORDER_NOT_FOUND,
+        statusCode: 404,
+      });
     }
 
     if (order.userId !== userId) {
-      throw new ForbiddenException('Access denied');
+      throw new ForbiddenException({
+        errorCode: ErrorCodeEnum.ORDER_ACCESS_DENIED,
+        statusCode: 403,
+      });
     }
 
-    return order;
-  }
-
-  async getAllOrders() {
-    return this.orderRepository.findAllOrders();
+    return new OrderResponseDto(order);
   }
 
   async addProductToPendingOrder(userId: string, dto: AddToPendingOrderDto) {
     const user = await this.userRepository.findById(userId);
-    if (!user) throw new NotFoundException('User not found');
+    if (!user)
+      throw new NotFoundException({
+        errorCode: ErrorCodeEnum.USER_NOT_FOUND,
+        statusCode: 404,
+      });
 
-    const { productId, variantValue, quantity } = dto;
+    const { productId, productVariantId, quantity } = dto;
 
     // Validate product
     const product = await this.productRepository.findById(productId);
     if (!product || !product.isActive) {
-      throw new BadRequestException('Product not available');
+      throw new BadRequestException({
+        errorCode: ErrorCodeEnum.PRODUCT_NOT_AVAILABLE,
+        statusCode: 400,
+      });
     }
 
     // Validate variant
-    const variant = await this.productVariantRepository.findByProductAndVariant(
-      productId,
-      variantValue,
-    );
+    const variant =
+      await this.productVariantRepository.findById(productVariantId);
 
     if (!variant || variant.stock < quantity) {
-      throw new BadRequestException('Not enough stock');
+      throw new BadRequestException({
+        errorCode: ErrorCodeEnum.PRODUCT_VARIANT_OUT_OF_STOCK,
+        statusCode: 400,
+      });
     }
 
     variant.stock -= quantity;
@@ -121,10 +158,10 @@ export class OrderService {
     let order = await this.orderRepository.findPendingOrderByUser(userId);
 
     if (!order) {
-      order = await this.orderRepository.create({
+      order = this.orderRepository.create({
         user,
-        status: OrderStatus.PENDING,
-        paymentStatus: OrderPaymentStatus.UNPAID,
+        status: OrderStatusEnum.PENDING,
+        paymentStatus: OrderPaymentStatusEnum.UNPAID,
         totalPrice: 0,
       });
       await this.orderRepository.save(order);
@@ -133,7 +170,7 @@ export class OrderService {
     let item = await this.orderItemRepository.findItemInOrder(
       order.id,
       productId,
-      variantValue,
+      variant.variantValue,
     );
 
     const price = Number(variant.price);
@@ -144,7 +181,7 @@ export class OrderService {
     } else {
       const createItemDto: CreateOrderItemDto = {
         productId,
-        variantValue,
+        variantValue: variant.variantValue,
         quantity,
         price,
         name: product.name,
@@ -153,7 +190,7 @@ export class OrderService {
         gender: product.gender,
       };
 
-      item = await this.orderItemRepository.create({
+      item = this.orderItemRepository.create({
         orderId: order.id,
         ...createItemDto,
         finalPrice: price * quantity,
@@ -166,39 +203,52 @@ export class OrderService {
     const items = await this.orderItemRepository.findByOrderId(order.id);
     order.totalPrice = items.reduce((sum, i) => sum + Number(i.finalPrice), 0);
 
-    return this.orderRepository.save(order);
+    await this.orderRepository.save(order);
+
+    return new OrderResponseDto(order);
   }
 
   async cancelOrder(orderId: string, userId: string) {
     const user = await this.userRepository.findById(userId);
-    if (!user) throw new NotFoundException('User not found');
+    if (!user)
+      throw new NotFoundException({
+        errorCode: ErrorCodeEnum.USER_EMAIL_ALREADY_USED,
+        statusCode: 404,
+      });
 
     return this.dataSource.transaction(async (manager) => {
-      const order = await this.orderRepository.findById(orderId, ['items']); // Load items
+      const order = await this.orderRepository.findOrderWithItems(orderId);
       if (!order) {
-        throw new NotFoundException('Order not found');
+        throw new NotFoundException({
+          errorCode: ErrorCodeEnum.ORDER_NOT_FOUND,
+          statusCode: 400,
+        });
       }
 
       if (order.userId !== userId) {
-        throw new ForbiddenException('Access denied');
+        throw new ForbiddenException({
+          errorCode: ErrorCodeEnum.ORDER_ACCESS_DENIED,
+          statusCode: 403,
+        });
       }
 
       if (
-        order.status !== OrderStatus.PENDING &&
-        order.status !== OrderStatus.PROCESSING
+        order.status !== OrderStatusEnum.PENDING &&
+        order.status !== OrderStatusEnum.PROCESSING
       ) {
-        throw new BadRequestException(
-          'Order can only be cancelled when pending or processing',
-        );
+        throw new BadRequestException({
+          errorCode: ErrorCodeEnum.ORDER_INVALID_STATUS,
+          statusCode: 400,
+        });
       }
 
-      order.status = OrderStatus.CANCELLED;
-      order.paymentStatus = OrderPaymentStatus.UNPAID; // Reset payment status
+      order.status = OrderStatusEnum.CANCELLED;
+      order.paymentStatus = OrderPaymentStatusEnum.UNPAID; // Reset payment status
 
       // ROLLBACK STOCK
       for (const item of order.items) {
         const variant =
-          await this.productVariantRepository.findByProductAndVariant(
+          await this.productVariantRepository.findByProductAndValue(
             item.productId,
             item.variantValue,
           );
@@ -210,7 +260,7 @@ export class OrderService {
       }
 
       await manager.getRepository(order.constructor).save(order);
-      return order;
+      return new OrderResponseDto(order);
     });
   }
 
@@ -220,11 +270,17 @@ export class OrderService {
     const order = await this.orderRepository.findPendingOrderByUser(userId);
 
     if (!order) {
-      throw new BadRequestException('No pending order found');
+      throw new NotFoundException({
+        errorCode: ErrorCodeEnum.ORDER_PENDING_NOT_FOUND,
+        statusCode: 400,
+      });
     }
 
-    if (order.status !== OrderStatus.PENDING) {
-      throw new BadRequestException('Cannot modify a non-pending order');
+    if (order.status !== OrderStatusEnum.PENDING) {
+      throw new BadRequestException({
+        errorCode: ErrorCodeEnum.ORDER_INVALID_STATUS,
+        statusCode: 400,
+      });
     }
 
     // Find item in order
@@ -235,11 +291,14 @@ export class OrderService {
     );
 
     if (!item) {
-      throw new NotFoundException('Item not found in order');
+      throw new NotFoundException({
+        errorCode: ErrorCodeEnum.ORDER_EMPTY,
+        statusCode: 404,
+      });
     }
 
     // Restore stock
-    const variant = await this.productVariantRepository.findByProductAndVariant(
+    const variant = await this.productVariantRepository.findByProductAndValue(
       productId,
       variantValue,
     );
@@ -267,10 +326,5 @@ export class OrderService {
     );
 
     await this.orderRepository.save(order);
-
-    return {
-      message: 'Item removed from order successfully',
-      order,
-    };
   }
 }

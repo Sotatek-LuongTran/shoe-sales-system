@@ -1,6 +1,11 @@
 import { Injectable } from '@nestjs/common';
+import { paginate, Pagination } from 'nestjs-typeorm-paginate';
 import { OrderEntity } from 'src/database/entities/order.entity';
-import { OrderPaymentStatus, OrderStatus } from 'src/shared/enums/order.enum';
+import { PaginateOrdersDto } from 'src/shared/dto/order/paginate-order.dto';
+import {
+  OrderPaymentStatusEnum,
+  OrderStatusEnum,
+} from 'src/shared/enums/order.enum';
 import { BaseRepository } from 'src/shared/modules/base/base.repository';
 import { DataSource, EntityManager, IsNull } from 'typeorm';
 
@@ -13,44 +18,73 @@ export class OrderRepository extends BaseRepository<OrderEntity> {
   createOrder(manager: EntityManager, userId: string) {
     return manager.getRepository(OrderEntity).save({
       userId,
-      status: OrderStatus.PROCESSING,
-      paymentStatus: OrderPaymentStatus.UNPAID,
+      status: OrderStatusEnum.PROCESSING,
+      paymentStatus: OrderPaymentStatusEnum.UNPAID,
     });
   }
 
-  async findOrdersByUser(userId: string) {
-    return this.repository.find({
-      where: { userId },
-      relations: ['items'],
-      order: { createdAt: 'DESC' },
-    });
-  }
+  // async findOrdersByUser(userId: string) {
+  //   return this.find({
+  //     where: { userId },
+  //     relations: ['items'],
+  //     order: { createdAt: 'DESC' },
+  //   });
+  // }
 
-  async findById(orderId: string, relations: string[] = []) {
-    const order = await this.repository.findOne({
-      where: { id: orderId },
-      relations: [...relations],
-    });
-    return order;
-  }
+  // async findOrdersByUserPagination(
+  //   userId: string,
+  //   dto: PaginateOrdersDto,
+  // ): Promise<Pagination<OrderEntity>> {
+  //   const page = dto.page ?? 1;
+  //   const limit = dto.limit ?? 10;
 
-  async findAllOrders() {
-    return this.repository.find({
-      relations: ['items', 'user'],
-      order: { createdAt: 'DESC' },
-    });
+  //   const qb = this.createQueryBuilder('order')
+  //     .leftJoin('order.orderItems', 'item')
+  //     .leftJoin('order.user', 'user')
+  //     .where('user.id ILIKE :userId', {userId: `%${userId}%`});
+  //   return paginate(qb, { page, limit });
+  // }
+
+  async findOrdersPagination(
+    dto: PaginateOrdersDto,
+  ): Promise<Pagination<OrderEntity>> {
+    const page = dto.page ?? 1;
+    const limit = dto.limit ?? 10;
+
+    const qb = this.createQueryBuilder('order').leftJoin(
+      'order.orderItems',
+      'item',
+    );
+    if (dto.userId) {
+      qb.leftJoin('order.user', 'user').where('user.id ILIKE :userId', {
+        userId: `%${dto.userId}%`,
+      });
+    }
+    return paginate(qb, { page, limit });
   }
 
   async findPendingOrderByUser(userId: string) {
-    return this.repository.findOne({
+    return this.findOne({
       where: {
         user: { id: userId },
-        status: OrderStatus.PENDING,
+        status: OrderStatusEnum.PENDING,
         deletedAt: IsNull(),
       },
       relations: {
         items: true,
         user: true,
+      },
+    });
+  }
+
+  async findOrderWithItems(id: string) {
+    return this.findOne({
+      where: {
+        id,
+        status: OrderStatusEnum.PENDING,
+      },
+      relations: {
+        items: true,
       },
     });
   }

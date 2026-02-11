@@ -4,14 +4,18 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { PaymentStatus } from 'src/shared/enums/payment.enum';
-import { OrderPaymentStatus, OrderStatus } from 'src/shared/enums/order.enum';
+import { PaymentStatusEnum } from 'src/shared/enums/payment.enum';
+import { OrderPaymentStatusEnum, OrderStatusEnum } from 'src/shared/enums/order.enum';
 import { PaymentRepository } from './repository/payment.repository';
 import { OrderRepository } from '../../shared/modules/common-order/order.repository';
 import { ProductVariantRepository } from 'src/shared/modules/common-product-variant/product-variant.repository';
 import { PaymentEntity } from 'src/database/entities/payment.entity';
 import { OrderEntity } from 'src/database/entities/order.entity';
 import { DataSource } from 'typeorm';
+import { PaymentResponseDto } from 'src/shared/dto/payment/payment-response.dto';
+import { PaginatePaymentsDto } from 'src/shared/dto/payment/paginate-payments.dto';
+import { UserRepository } from 'src/shared/modules/user/user.repository';
+import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
 
 @Injectable()
 export class PaymentService {
@@ -19,6 +23,7 @@ export class PaymentService {
     private readonly paymentRepository: PaymentRepository,
     private readonly orderRepository: OrderRepository,
     private readonly productVariantRepository: ProductVariantRepository,
+    private readonly userRepository: UserRepository,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -28,29 +33,34 @@ export class PaymentService {
   async createPayment(orderId: string, userId: string) {
     const order = await this.orderRepository.findById(orderId);
 
-    if (!order) throw new NotFoundException('Order not found');
+    if (!order) throw new NotFoundException({
+      errorCode: ErrorCodeEnum.ORDER_NOT_FOUND,
+      statusCode: 404,
+    });
 
     if (order.userId !== userId) {
-      throw new BadRequestException('You cannot pay for this order');
+      throw new ForbiddenException({
+        errorCode: ErrorCodeEnum.ORDER_ACCESS_DENIED,
+        statusCode: 403,
+      });
     }
 
-    if (order.paymentStatus === OrderPaymentStatus.PAID) {
-      throw new BadRequestException('Order already paid');
+    if (order.paymentStatus === OrderPaymentStatusEnum.PAID) {
+      throw new BadRequestException({
+        errorCode: ErrorCodeEnum.ORDER_ALREADY_PAID,
+        statusCode: 400,
+      });
     }
 
-    const payment = await this.paymentRepository.create({
+    const payment = this.paymentRepository.create({
       orderId,
       amount: order.totalPrice,
-      paymentStatus: PaymentStatus.PENDING,
+      paymentStatus: PaymentStatusEnum.PENDING,
     });
 
     await this.paymentRepository.save(payment);
 
-    return {
-      paymentId: payment.id,
-      amount: payment.amount,
-      message: 'Payment created (fake)',
-    };
+    return new PaymentResponseDto(payment)
   }
 
   /**
@@ -60,31 +70,40 @@ export class PaymentService {
     return this.dataSource.transaction(async (manager) => {
       const payment = await this.paymentRepository.findByIdWithOrder(paymentId);
 
-      if (!payment) throw new NotFoundException('Payment not found');
+      if (!payment) throw new NotFoundException({
+        errorCode: ErrorCodeEnum.PAYMENT_NOT_FOUND,
+        statusCode: 404,
+      });
 
-      if (payment.paymentStatus !== PaymentStatus.PENDING) {
-        throw new BadRequestException('Payment already processed');
+      if (payment.paymentStatus !== PaymentStatusEnum.PENDING) {
+        throw new BadRequestException({
+          errorCode: ErrorCodeEnum.PAYMENT_ALREADY_PROCESSED,
+          statusCode: 400,
+        });
       }
 
-      const order = await this.orderRepository.findById(payment.orderId, ['items']);
+      const order = await this.orderRepository.findOrderWithItems(payment.orderId);
 
-      if (!order) throw new NotFoundException('Order is missing');
+      if (!order) throw new NotFoundException({
+        errorCode: ErrorCodeEnum.ORDER_NOT_FOUND,
+        statusCode: 404,
+      });
       // Fake payment result
       const success = Math.random() > 0.2; // 80% success
 
       if (success) {
-        payment.paymentStatus = PaymentStatus.SUCCESSFUL;
-        order.status = OrderStatus.COMPLETED;
-        order.paymentStatus = OrderPaymentStatus.PAID;
+        payment.paymentStatus = PaymentStatusEnum.SUCCESSFUL;
+        order.status = OrderStatusEnum.COMPLETED;
+        order.paymentStatus = OrderPaymentStatusEnum.PAID;
       } else {
-        payment.paymentStatus = PaymentStatus.FAILED;
-        order.status = OrderStatus.CANCELLED;
-        order.paymentStatus = OrderPaymentStatus.UNPAID;
+        payment.paymentStatus = PaymentStatusEnum.FAILED;
+        order.status = OrderStatusEnum.CANCELLED;
+        order.paymentStatus = OrderPaymentStatusEnum.UNPAID;
 
-        // 🔁 ROLLBACK STOCK
+        // ROLLBACK STOCK
         for (const item of order.items) {
           const variant =
-            await this.productVariantRepository.findByProductAndVariant(
+            await this.productVariantRepository.findByProductAndValue(
               item.productId,
               item.variantValue,
             );
@@ -99,77 +118,57 @@ export class PaymentService {
       await this.paymentRepository.save(payment);
       await this.orderRepository.save(order);
 
-      return {
-        paymentStatus: payment.paymentStatus,
-        orderStatus: order.status,
-      };
+      return new PaymentResponseDto(payment)
     });
   }
 
   async retryPayment(paymentId: string, userId: string) {
     const payment = await this.paymentRepository.findByIdWithOrder(paymentId);
 
-    if (!payment) throw new NotFoundException('Payment not found');
+    if (!payment) throw new NotFoundException({
+      errorCode: ErrorCodeEnum.PAYMENT_NOT_FOUND,
+      statusCode: 404,
+    });
 
     if (payment.order.userId !== userId) {
-      throw new ForbiddenException('Access denied');
+      throw new ForbiddenException({
+        errorCode: ErrorCodeEnum.ORDER_ACCESS_DENIED,
+        statusCode: 403,
+      });
     }
 
-    if (payment.paymentStatus !== PaymentStatus.FAILED) {
-      throw new BadRequestException('Only failed payments can be retried');
+    if (payment.paymentStatus !== PaymentStatusEnum.FAILED) {
+      throw new BadRequestException({
+        errorCode: ErrorCodeEnum.PAYMENT_INVALID_STATUS,
+        statusCode: 404,
+      });
     }
 
-    payment.paymentStatus = PaymentStatus.PENDING;
+    payment.paymentStatus = PaymentStatusEnum.PENDING;
     await this.paymentRepository.save(payment);
 
-    payment.order.status = OrderStatus.PROCESSING;
+    payment.order.status = OrderStatusEnum.PROCESSING;
     await this.orderRepository.save(payment.order);
 
+    return new PaymentResponseDto(payment)
+  }
+
+  async getMyPaymentsPagination(userId: string, dto: PaginatePaymentsDto) {
+    if (!dto.userId || dto.userId !== userId) {
+      throw new NotFoundException()
+    }
+    const user = this.userRepository.findById(dto.userId)
+    if (!user) {
+      throw new NotFoundException()
+    }
+
+    const payments = await this.paymentRepository.findPaymentsPagination(dto)
+
     return {
-      message: 'Payment retry initiated',
-      paymentId: payment.id,
-    };
-  }
-
-  async refundPayment(paymentId: string) {
-    return this.dataSource.transaction(async (manager) => {
-      const payment = await manager.getRepository(PaymentEntity).findOne({
-        where: { id: paymentId },
-        relations: ['order', 'order.items'],
-      });
-
-      if (!payment) throw new NotFoundException('Payment not found');
-
-      if (payment.paymentStatus !== PaymentStatus.SUCCESSFUL) {
-        throw new BadRequestException('Only paid payments can be refunded');
-      }
-
-      payment.paymentStatus = PaymentStatus.REFUNDED;
-      payment.order.status = OrderStatus.CANCELLED;
-      payment.order.paymentStatus = OrderPaymentStatus.UNPAID;
-
-      // RESTORE STOCK
-      for (const item of payment.order.items) {
-        const variant =
-          await this.productVariantRepository.findByProductAndVariant(
-            item.productId,
-            item.variantValue,
-          );
-
-        if (variant) {
-          variant.stock += item.quantity;
-          await manager.getRepository(variant.constructor).save(variant);
-        }
-      }
-
-      await manager.getRepository(PaymentEntity).save(payment);
-      await manager.getRepository(OrderEntity).save(payment.order);
-
-      return { message: 'Refund successful' };
-    });
-  }
-
-  async getAllPayments() {
-    return this.paymentRepository.findAll();
+      ...payments,
+      items: payments.items.map(
+        item => new PaymentResponseDto(item)
+      )
+    }
   }
 }

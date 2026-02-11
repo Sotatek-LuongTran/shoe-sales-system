@@ -1,20 +1,19 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, DeleteDateColumn, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
 import { BaseEntity } from '../../shared/modules/base/base.entity';
 import { OrderEntity } from './order.entity';
-import { PaymentStatus } from '../../shared/enums/payment.enum';
+import { PaymentStatusEnum } from '../../shared/enums/payment.enum';
 
 @Entity('payments')
 @Index('idx_payments_order_id', ['orderId'])
-@Index('idx_payments_payment_status', ['paymentStatus'])
-@Index('idx_payments_deleted_at', ['deletedAt'])
 export class PaymentEntity extends BaseEntity {
-  @Column({ name: 'amount', type: 'numeric', precision: 12, scale: 2 })
+  @Column({ name: 'amount', type: 'numeric', precision: 12, scale: 4 })
   amount: number;
 
-  @Column({ name: 'payment_status', type: 'enum', enum: PaymentStatus })
-  paymentStatus: PaymentStatus;
+  @Column({ name: 'payment_status', type: 'enum', enum: PaymentStatusEnum })
+  paymentStatus: PaymentStatusEnum;
 
-  @Column({ name: 'deleted_at', type: 'timestamp', nullable: true })
+  // @Column({ name: 'deleted_at', type: 'timestamp', nullable: true })
+  @DeleteDateColumn()
   deletedAt: Date | null;
 
   @Column({ name: 'order_id', type: 'uuid' })

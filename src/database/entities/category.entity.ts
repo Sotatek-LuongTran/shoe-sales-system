@@ -1,4 +1,4 @@
-import { Column, Entity, OneToMany, Index } from "typeorm";
+import { Column, Entity, OneToMany, Index, DeleteDateColumn } from "typeorm";
 import { BaseEntity } from "../../shared/modules/base/base.entity";
 import { ProductEntity } from "./product.entity";
 
@@ -11,7 +11,8 @@ export class CategoryEntity extends BaseEntity {
     @Column({name:'description', type: 'text', nullable: true})
     description: string;
 
-    @Column({ name: 'deleted_at', type: 'timestamp', nullable: true })
+    // @Column({ name: 'deleted_at', type: 'timestamp', nullable: true })
+    @DeleteDateColumn({ name: 'deleted_at' })
     deletedAt: Date | null;
 
     // Relations

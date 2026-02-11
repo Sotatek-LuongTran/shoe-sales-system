@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { OrderItemEntity } from 'src/database/entities/order-item.entity';
-import { Gender, ProductType } from 'src/shared/enums/product.enum';
+import { GenderEnum, ProductTypeEnum } from 'src/shared/enums/product.enum';
 import { BaseRepository } from 'src/shared/modules/base/base.repository';
 import { DataSource, EntityManager } from 'typeorm';
 
@@ -20,8 +20,8 @@ export class OrderItemRepository extends BaseRepository<OrderItemEntity> {
       price: number;
       name: string;
       description?: string;
-      productType: ProductType;
-      gender: Gender;
+      productType: ProductTypeEnum;
+      gender: GenderEnum;
     }[],
   ): Promise<OrderItemEntity[]> {
     const repo = manager.getRepository(OrderItemEntity);
@@ -49,7 +49,7 @@ export class OrderItemRepository extends BaseRepository<OrderItemEntity> {
     productId: string,
     variantValue: string,
   ) {
-    return this.repository.findOne({
+    return this.findOne({
       where: {
         orderId,
         productId,
@@ -59,7 +59,7 @@ export class OrderItemRepository extends BaseRepository<OrderItemEntity> {
   }
 
   async findByOrderId(orderId: string): Promise<OrderItemEntity[]> {
-    return this.repository.find({
+    return this.find({
       where: {
         orderId,
       },
@@ -70,7 +70,7 @@ export class OrderItemRepository extends BaseRepository<OrderItemEntity> {
   }
 
   async deleteByOrderId(orderId: string): Promise<void> {
-    await this.repository.delete({ orderId });
+    await this.delete({ orderId });
   }
 
   async removeItemFromOrder(
@@ -78,7 +78,7 @@ export class OrderItemRepository extends BaseRepository<OrderItemEntity> {
     productId: string,
     variantValue: string,
   ): Promise<boolean> {
-    const result = await this.repository.delete({
+    const result = await this.delete({
       orderId,
       productId,
       variantValue,

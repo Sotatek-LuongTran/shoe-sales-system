@@ -10,7 +10,7 @@ export class UserRepository extends BaseRepository<UserEntity> {
   }
 
   async findByEmail(email: string) {
-    return this.repository.findOne({
+    return this.findOne({
       where: {
         email,
       },

@@ -1,10 +1,10 @@
-export enum ProductType {
+export enum ProductTypeEnum {
     SHOE = 'shoe',
     CLOTHING = 'clothing',
     ACCESSORY = 'accessory',
 }
 
-export enum Gender {
+export enum GenderEnum {
     MALE = 'male',
     FEMALE = 'female',
     UNISEX = 'unisex',

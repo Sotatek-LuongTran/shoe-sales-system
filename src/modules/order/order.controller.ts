@@ -4,27 +4,35 @@ import {
   Delete,
   Get,
   Param,
+  ParseUUIDPipe,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
+  ApiParam,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { OrderService } from './order.service';
-import { AddToPendingOrderDto } from 'src/shared/dto/order/add-to-order.dto';
-import { UserRole } from 'src/shared/enums/user.enum';
+import { AddToPendingOrderDto } from 'src/modules/order/dto/add-to-order.dto';
+import { UserRoleEnum } from 'src/shared/enums/user.enum';
 import { RolesGuard } from 'src/shared/guards/role.guard';
 import { Roles } from 'src/shared/decorators/role.decorator';
-import { AuthGuard } from '@nestjs/passport';
-import { RemoveOrderItemDto } from 'src/shared/dto/order/remove-item.dto';
+import { RemoveOrderItemDto } from 'src/modules/order/dto/remove-item.dto';
+import { OrderResponseDto } from 'src/shared/dto/order/order-response.dto';
+import { PaginateOrdersDto } from 'src/shared/dto/order/paginate-order.dto';
+import { PaginationOrderResponseDto } from 'src/shared/dto/order/pagination-order-response';
+import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
 
 @ApiTags('Orders')
 @ApiBearerAuth('access-token')
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(UserRoleEnum.USER)
 @Controller('orders')
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
@@ -34,9 +42,11 @@ export class OrderController {
   // =========================
   @Post()
   @ApiOperation({ summary: 'Create order from items' })
-  @ApiResponse({ status: 201, description: 'Order created successfully' })
-  @ApiResponse({ status: 400, description: 'Bad request' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({
+    status: 201,
+    description: 'Order created successfully',
+    type: OrderResponseDto,
+  })
   async checkoutOrder(@Req() req: any) {
     return this.orderService.checkoutOrder(req.user.userId);
   }
@@ -46,23 +56,28 @@ export class OrderController {
   // =========================
   @Post('pending/add-item')
   @ApiOperation({ summary: 'Add product to pending order (cart)' })
-  @ApiResponse({ status: 200, description: 'Product added to pending order' })
-  @ApiResponse({ status: 400, description: 'Bad request' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({
+    status: 200,
+    description: 'Product added to pending order',
+    type: OrderResponseDto,
+  })
   async addToPendingOrder(@Req() req: any, @Body() dto: AddToPendingOrderDto) {
     return this.orderService.addProductToPendingOrder(req.user.userId, dto);
   }
 
   // =========================
-  // USER: GET MY ORDERS
+  // USER: GET ALL ORDERS
   // =========================
-  @Get('me')
-  @ApiOperation({ summary: 'Get my orders' })
-  @ApiResponse({ status: 200, description: 'Order get successfully' })
-  @ApiResponse({ status: 400, description: 'Bad request' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async getMyOrders(@Req() req: any) {
-    return this.orderService.getMyOrders(req.user.userId);
+  @Get()
+  @ApiOperation({ summary: 'get all orders' })
+  @ApiResponse({
+    status: 200,
+    description: 'Order get successfully',
+    type: PaginationOrderResponseDto,
+  })
+  @ApiQuery({ name: 'dto', required: true, type: PaginateOrdersDto })
+  async getAllOrders(@Req() req: any, @Query('dto') dto: PaginateOrdersDto) {
+    return this.orderService.getOrdersByUserPagination(req.user.userId, dto);
   }
 
   // =========================
@@ -70,23 +85,14 @@ export class OrderController {
   // =========================
   @Get(':id')
   @ApiOperation({ summary: 'Get order by id (owner only)' })
-  @ApiResponse({ status: 400, description: 'Bad request' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async getOrderById(@Req() req: any, @Param('id') id: string) {
+  @ApiResponse({
+    status: 200,
+    description: 'Order get successfully',
+    type: OrderResponseDto,
+  })
+  @ApiParam({name: 'id', type: 'string', format: 'uuid'})
+  async getOrderById(@Req() req: any, @Param('id', ParseUUIDPipe) id: string) {
     return this.orderService.getOrderById(id, req.user.userId);
-  }
-
-  // =========================
-  // ADMIN: GET ALL ORDERS
-  // =========================
-  @Get()
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles(UserRole.ADMIN)
-  @ApiOperation({ summary: 'Admin: get all orders' })
-  @ApiResponse({ status: 400, description: 'Bad request' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async getAllOrders() {
-    return this.orderService.getAllOrders();
   }
 
   // =========================
@@ -94,9 +100,9 @@ export class OrderController {
   // =========================
   @Delete(':id/cancel')
   @ApiOperation({ summary: 'Cancel order by id (owner only)' })
-  @ApiResponse({ status: 400, description: 'Bad request' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async cancelOrder(@Req() req: any, @Param('id') id: string) {
+  @ApiResponse({ status: 200, description: 'Order cancelled successfully' })
+  @ApiParam({name: 'id', type: 'string', format: 'uuid'})
+  async cancelOrder(@Req() req: any, @Param('id', ParseUUIDPipe) id: string) {
     return this.orderService.cancelOrder(id, req.user.userId);
   }
 
@@ -106,8 +112,6 @@ export class OrderController {
   @Delete('pending/item')
   @ApiOperation({ summary: 'Delete order item' })
   @ApiResponse({ status: 200, description: 'Item deleted successfully' })
-  @ApiResponse({ status: 400, description: 'Bad request' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
   async removeItem(@Req() req: any, @Body() dto: RemoveOrderItemDto) {
     return this.orderService.removeItemFromPendingOrder(req.user.userId, dto);
   }
