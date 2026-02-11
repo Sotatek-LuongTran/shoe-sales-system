@@ -7,6 +7,7 @@ import { CreateBrandDto } from 'src/modules/admin/management/brand/dto/create-br
 import { PaginateBrandsDto } from 'src/shared/dto/brand/paginate-brands.dto';
 import { UpdateBrandDto } from 'src/modules/admin/management/brand/dto/update-brand.dto';
 import { BrandRepository } from 'src/shared/modules/common-brand/brand.repository';
+import { AdminBrandResponseDto } from './dto/admin-brand-response.dto';
 
 @Injectable()
 export class AdminBrandService {
@@ -14,7 +15,12 @@ export class AdminBrandService {
 
   async getBrandsPagination(dto: PaginateBrandsDto) {
     dto.includeDeleted = true;
-    return this.brandRepository.findBrandsPagination(dto);
+    const brands = await this.brandRepository.findBrandsPagination(dto);
+
+    return {
+      ...brands,
+      items: brands.items.map((item) => new AdminBrandResponseDto(item)),
+    };
   }
 
   async createBrand(createBrandDto: CreateBrandDto) {
@@ -23,7 +29,9 @@ export class AdminBrandService {
 
     const brand = this.brandRepository.create(createBrandDto);
 
-    return this.brandRepository.save(brand);
+    await this.brandRepository.save(brand);
+
+    return new AdminBrandResponseDto(brand);
   }
 
   async updateBrand(updateBrandDto: UpdateBrandDto) {
@@ -32,7 +40,9 @@ export class AdminBrandService {
 
     Object.assign(brand, updateBrandDto);
 
-    return this.brandRepository.save(brand);
+    await this.brandRepository.save(brand);
+
+    return new AdminBrandResponseDto(brand);
   }
 
   async deleteBrand(brandId: string) {
@@ -41,20 +51,18 @@ export class AdminBrandService {
 
     brand.deletedAt = new Date(Date.now());
 
-    return this.brandRepository.save(brand);
+    await this.brandRepository.save(brand);
   }
 
   async restoreBrand(brandId: string) {
-    const brand = await this.brandRepository.findOne({
-      where: { id: brandId },
-      withDeleted: true,
-    });
+    const brand = await this.brandRepository.findDeletedBrand(brandId);
 
     if (!brand) {
       throw new NotFoundException('Brand not found');
     }
 
     brand.deletedAt = null;
-    return this.brandRepository.save(brand);
+    await this.brandRepository.save(brand);
+    return new AdminBrandResponseDto(brand);
   }
 }

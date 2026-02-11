@@ -5,8 +5,9 @@ import {
 } from '@nestjs/common';
 import { CreateCategoryDto } from 'src/modules/admin/management/category/dto/create-category.dto';
 import { PaginateCategoriesDto } from 'src/shared/dto/category/paginate-categories.dto';
-import { UpdateCategoryDto } from 'src/modules/admin/management/category/dto/update-category';
+import { UpdateCategoryDto } from 'src/modules/admin/management/category/dto/update-category.dto';
 import { CategoryRepository } from 'src/shared/modules/common-category/category.repository';
+import { AdminCategoryResponseDto } from './dto/admin-category-response.dto';
 
 @Injectable()
 export class AdminCategoryService {
@@ -20,7 +21,9 @@ export class AdminCategoryService {
 
     const category = this.categoryRepository.create(createCategoryDto);
 
-    return this.categoryRepository.save(category);
+    await this.categoryRepository.save(category);
+
+    return new AdminCategoryResponseDto(category);
   }
 
   async updateCategory(updateCategoryDto: UpdateCategoryDto) {
@@ -31,7 +34,8 @@ export class AdminCategoryService {
 
     Object.assign(category, updateCategoryDto);
 
-    return this.categoryRepository.save(category);
+    await this.categoryRepository.save(category);
+    return new AdminCategoryResponseDto(category);
   }
 
   async deleteCategory(categoryId: string) {
@@ -40,19 +44,23 @@ export class AdminCategoryService {
 
     category.deletedAt = new Date(Date.now());
 
-    return this.categoryRepository.save(category);
+    await this.categoryRepository.save(category);
   }
 
   async getCategoriesPagination(dto: PaginateCategoriesDto) {
     dto.includeDeleted = true;
-    return this.categoryRepository.findCategoriesPagination(dto);
+    const categories =
+      await this.categoryRepository.findCategoriesPagination(dto);
+
+    return {
+      ...categories,
+      items: categories.items.map((item) => new AdminCategoryResponseDto(item)),
+    };
   }
 
   async restoreCategory(categoryId: string) {
-    const category = await this.categoryRepository.findOne({
-      where: { id: categoryId },
-      withDeleted: true,
-    });
+    const category =
+      await this.categoryRepository.findDeletedCategory(categoryId);
 
     if (!category) {
       throw new NotFoundException('Category not found');

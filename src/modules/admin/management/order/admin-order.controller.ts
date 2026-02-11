@@ -4,6 +4,7 @@ import {
   ApiBearerAuth,
   ApiOperation,
   ApiQuery,
+  ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { Roles } from 'src/shared/decorators/role.decorator';
@@ -11,6 +12,7 @@ import { UserRoleEnum } from 'src/shared/enums/user.enum';
 import { RolesGuard } from 'src/shared/guards/role.guard';
 import { AdminOrderService } from './admin-order.service';
 import { PaginateOrdersDto } from 'src/shared/dto/order/paginate-order.dto';
+import { PaginationOrderResponseDto } from 'src/shared/dto/order/pagination-order-response';
 
 @Controller('admin/orders')
 @ApiBearerAuth('access-token')
@@ -25,8 +27,13 @@ export class AdminOrderController {
   // =========================
   @Get()
   @ApiOperation({ summary: 'Admin: get all orders' })
+  @ApiResponse({
+    status: 201,
+    description: 'Category deleted successfully',
+    type: PaginationOrderResponseDto,
+  })
   @ApiQuery({ name: 'dto', required: true, type: PaginateOrdersDto })
   async getAllOrders(@Query('dto') dto: PaginateOrdersDto) {
-    return this.adminOrderService.getAllOrders(dto);
+    return this.adminOrderService.getAllOrdersPagination(dto);
   }
 }

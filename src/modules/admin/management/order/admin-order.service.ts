@@ -9,7 +9,12 @@ export class AdminOrderService {
     private readonly orderRepository: OrderRepository,
   ) {}
 
-  async getAllOrders(dto: PaginateOrdersDto) {
-    return this.orderRepository.findOrdersPagination(dto);
+  async getAllOrdersPagination(dto: PaginateOrdersDto) {
+    const orders = await this.orderRepository.findOrdersPagination(dto);
+
+    return {
+      ...orders,
+      items: orders.items.map((item) => new OrderResponseDto(item)),
+    };
   }
 }

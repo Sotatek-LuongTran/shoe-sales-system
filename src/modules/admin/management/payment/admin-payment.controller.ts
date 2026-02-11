@@ -1,4 +1,12 @@
-import { Controller, Get, Param, ParseUUIDPipe, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
   ApiBearerAuth,
@@ -12,6 +20,8 @@ import { Roles } from 'src/shared/decorators/role.decorator';
 import { UserRoleEnum } from 'src/shared/enums/user.enum';
 import { RolesGuard } from 'src/shared/guards/role.guard';
 import { AdminPaymentService } from './admin-payment.service';
+import { PaymentResponseDto } from 'src/shared/dto/payment/payment-response.dto';
+import { PaginationPaymentResponseDto } from 'src/shared/dto/payment/pagination-order-response';
 
 @Controller('admin/payments')
 @ApiBearerAuth('access-token')
@@ -26,6 +36,11 @@ export class AdminPaymentController {
   // =========================
   @Get()
   @ApiOperation({ summary: 'Admin: get all payments' })
+  @ApiResponse({
+    status: 200,
+    description: 'Payment refunded successfully',
+    type: PaginationPaymentResponseDto,
+  })
   @ApiQuery({ name: 'dto', required: true, type: PaginatePaymentsDto })
   async getAllPayments(@Query('dto') dto: PaginatePaymentsDto) {
     return this.adminPaymentService.getAllPayments(dto);
@@ -35,7 +50,11 @@ export class AdminPaymentController {
   // =========================
   @Post('refund/:paymentId')
   @ApiOperation({ summary: 'Admin refund payment' })
-  @ApiResponse({ status: 200, description: 'Payment refunded successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Payment refunded successfully',
+    type: PaymentResponseDto,
+  })
   async refund(@Param('paymentId', ParseUUIDPipe) paymentId: string) {
     return this.adminPaymentService.refundPayment(paymentId);
   }

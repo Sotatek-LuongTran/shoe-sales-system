@@ -7,6 +7,7 @@ import { OrderPaymentStatusEnum, OrderStatusEnum } from 'src/shared/enums/order.
 import { PaymentStatusEnum } from 'src/shared/enums/payment.enum';
 import { ProductVariantRepository } from 'src/shared/modules/common-product-variant/product-variant.repository';
 import { DataSource } from 'typeorm';
+import { PaymentResponseDto } from 'src/shared/dto/payment/payment-response.dto';
 
 @Injectable()
 export class AdminPaymentService {
@@ -17,7 +18,12 @@ export class AdminPaymentService {
   ) {}
 
   async getAllPayments(dto: PaginatePaymentsDto) {
-    return this.paymentRepository.findPaymentsPagination(dto);
+    const payments = await this.paymentRepository.findPaymentsPagination(dto);
+
+    return {
+      ...payments,
+      items: payments.items.map((item) => new PaymentResponseDto(item)),
+    };
   }
 
   async refundPayment(paymentId: string) {
@@ -54,7 +60,7 @@ export class AdminPaymentService {
       await manager.getRepository(PaymentEntity).save(payment);
       await manager.getRepository(OrderEntity).save(payment.order);
 
-      return { message: 'Refund successful' };
+      return new PaymentResponseDto(payment);
     });
   }
 }

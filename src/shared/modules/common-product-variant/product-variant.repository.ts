@@ -15,7 +15,7 @@ export class ProductVariantRepository extends BaseRepository<ProductVariantEntit
   async findVariantsPagination(
     productId: string,
     dto: PaginateVariantsDto,
-  ): Promise<Pagination<PaginateVariantsDto>> {
+  ) {
     const page = dto.page ?? 1;
     const limit = dto.limit ?? 10;
 

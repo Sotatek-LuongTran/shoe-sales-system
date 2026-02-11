@@ -1,8 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Exclude, Expose } from 'class-transformer';
+import { ResponseDto } from '../response.dto';
 
 @Exclude()
-export class UserResponseDto {
+export class UserResponseDto extends ResponseDto {
   @Expose()
   @ApiProperty({
     description: 'Name',
