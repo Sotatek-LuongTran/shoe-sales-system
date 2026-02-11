@@ -15,6 +15,7 @@ import { DataSource } from 'typeorm';
 import { PaymentResponseDto } from 'src/shared/dto/payment/payment-response.dto';
 import { PaginatePaymentsDto } from 'src/shared/dto/payment/paginate-payments.dto';
 import { UserRepository } from 'src/shared/modules/user/user.repository';
+import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
 
 @Injectable()
 export class PaymentService {
@@ -32,14 +33,23 @@ export class PaymentService {
   async createPayment(orderId: string, userId: string) {
     const order = await this.orderRepository.findById(orderId);
 
-    if (!order) throw new NotFoundException('Order not found');
+    if (!order) throw new NotFoundException({
+      errorCode: ErrorCodeEnum.ORDER_NOT_FOUND,
+      statusCode: 404,
+    });
 
     if (order.userId !== userId) {
-      throw new BadRequestException('You cannot pay for this order');
+      throw new ForbiddenException({
+        errorCode: ErrorCodeEnum.ORDER_ACCESS_DENIED,
+        statusCode: 403,
+      });
     }
 
     if (order.paymentStatus === OrderPaymentStatusEnum.PAID) {
-      throw new BadRequestException('Order already paid');
+      throw new BadRequestException({
+        errorCode: ErrorCodeEnum.ORDER_ALREADY_PAID,
+        statusCode: 400,
+      });
     }
 
     const payment = this.paymentRepository.create({
@@ -60,15 +70,24 @@ export class PaymentService {
     return this.dataSource.transaction(async (manager) => {
       const payment = await this.paymentRepository.findByIdWithOrder(paymentId);
 
-      if (!payment) throw new NotFoundException('Payment not found');
+      if (!payment) throw new NotFoundException({
+        errorCode: ErrorCodeEnum.PAYMENT_NOT_FOUND,
+        statusCode: 404,
+      });
 
       if (payment.paymentStatus !== PaymentStatusEnum.PENDING) {
-        throw new BadRequestException('Payment already processed');
+        throw new BadRequestException({
+          errorCode: ErrorCodeEnum.PAYMENT_ALREADY_PROCESSED,
+          statusCode: 400,
+        });
       }
 
       const order = await this.orderRepository.findOrderWithItems(payment.orderId);
 
-      if (!order) throw new NotFoundException('Order is missing');
+      if (!order) throw new NotFoundException({
+        errorCode: ErrorCodeEnum.ORDER_NOT_FOUND,
+        statusCode: 404,
+      });
       // Fake payment result
       const success = Math.random() > 0.2; // 80% success
 
@@ -106,14 +125,23 @@ export class PaymentService {
   async retryPayment(paymentId: string, userId: string) {
     const payment = await this.paymentRepository.findByIdWithOrder(paymentId);
 
-    if (!payment) throw new NotFoundException('Payment not found');
+    if (!payment) throw new NotFoundException({
+      errorCode: ErrorCodeEnum.PAYMENT_NOT_FOUND,
+      statusCode: 404,
+    });
 
     if (payment.order.userId !== userId) {
-      throw new ForbiddenException('Access denied');
+      throw new ForbiddenException({
+        errorCode: ErrorCodeEnum.ORDER_ACCESS_DENIED,
+        statusCode: 403,
+      });
     }
 
     if (payment.paymentStatus !== PaymentStatusEnum.FAILED) {
-      throw new BadRequestException('Only failed payments can be retried');
+      throw new BadRequestException({
+        errorCode: ErrorCodeEnum.PAYMENT_INVALID_STATUS,
+        statusCode: 404,
+      });
     }
 
     payment.paymentStatus = PaymentStatusEnum.PENDING;

@@ -24,6 +24,7 @@ import { RemoveOrderItemDto } from 'src/modules/order/dto/remove-item.dto';
 import { CreateOrderItemDto } from './dto/create-order.dto';
 import { OrderResponseDto } from 'src/shared/dto/order/order-response.dto';
 import { PaginateOrdersDto } from 'src/shared/dto/order/paginate-order.dto';
+import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
 
 @Injectable()
 export class OrderService {
@@ -41,11 +42,17 @@ export class OrderService {
     const order = await this.orderRepository.findPendingOrderByUser(userId);
 
     if (!order) {
-      throw new BadRequestException('No pending order found');
+      throw new BadRequestException({
+        errorCode: ErrorCodeEnum.ORDER_PENDING_NOT_FOUND,
+        statusCode: 404,
+      });
     }
 
     if (order.items.length === 0) {
-      throw new BadRequestException('Order is empty');
+      throw new BadRequestException({
+        errorCode: ErrorCodeEnum.ORDER_EMPTY,
+        statusCode: 404,
+      });
     }
 
     // create payment
@@ -69,11 +76,15 @@ export class OrderService {
 
   async getOrdersByUserPagination(userId: string, dto: PaginateOrdersDto) {
     if (!dto.userId || dto.userId !== userId) {
-      throw new NotFoundException()
+      throw new NotFoundException();
     }
     const user = await this.userRepository.findById(userId);
-    if (!user) throw new NotFoundException('User not found');
-    
+    if (!user)
+      throw new NotFoundException({
+        errorCode: ErrorCodeEnum.USER_NOT_FOUND,
+        statusCode: 404,
+      });
+
     const orders = await this.orderRepository.findOrdersPagination(dto);
 
     return {
@@ -84,16 +95,26 @@ export class OrderService {
 
   async getOrderById(orderId: string, userId: string) {
     const user = await this.userRepository.findById(userId);
-    if (!user) throw new NotFoundException('User not found');
+    if (!user)
+      throw new NotFoundException({
+        errorCode: ErrorCodeEnum.USER_NOT_FOUND,
+        statusCode: 404,
+      });
 
     const order = await this.orderRepository.findById(orderId);
 
     if (!order) {
-      throw new NotFoundException('Order not found');
+      throw new NotFoundException({
+        errorCode: ErrorCodeEnum.ORDER_NOT_FOUND,
+        statusCode: 404,
+      });
     }
 
     if (order.userId !== userId) {
-      throw new ForbiddenException('Access denied');
+      throw new ForbiddenException({
+        errorCode: ErrorCodeEnum.ORDER_ACCESS_DENIED,
+        statusCode: 403,
+      });
     }
 
     return new OrderResponseDto(order);
@@ -101,14 +122,21 @@ export class OrderService {
 
   async addProductToPendingOrder(userId: string, dto: AddToPendingOrderDto) {
     const user = await this.userRepository.findById(userId);
-    if (!user) throw new NotFoundException('User not found');
+    if (!user)
+      throw new NotFoundException({
+        errorCode: ErrorCodeEnum.USER_NOT_FOUND,
+        statusCode: 404,
+      });
 
     const { productId, productVariantId, quantity } = dto;
 
     // Validate product
     const product = await this.productRepository.findById(productId);
     if (!product || !product.isActive) {
-      throw new BadRequestException('Product not available');
+      throw new BadRequestException({
+        errorCode: ErrorCodeEnum.PRODUCT_NOT_AVAILABLE,
+        statusCode: 400,
+      });
     }
 
     // Validate variant
@@ -116,7 +144,10 @@ export class OrderService {
       await this.productVariantRepository.findById(productVariantId);
 
     if (!variant || variant.stock < quantity) {
-      throw new BadRequestException('Not enough stock');
+      throw new BadRequestException({
+        errorCode: ErrorCodeEnum.PRODUCT_VARIANT_OUT_OF_STOCK,
+        statusCode: 400,
+      });
     }
 
     variant.stock -= quantity;
@@ -179,25 +210,36 @@ export class OrderService {
 
   async cancelOrder(orderId: string, userId: string) {
     const user = await this.userRepository.findById(userId);
-    if (!user) throw new NotFoundException('User not found');
+    if (!user)
+      throw new NotFoundException({
+        errorCode: ErrorCodeEnum.USER_EMAIL_ALREADY_USED,
+        statusCode: 404,
+      });
 
     return this.dataSource.transaction(async (manager) => {
       const order = await this.orderRepository.findOrderWithItems(orderId);
       if (!order) {
-        throw new NotFoundException('Order not found');
+        throw new NotFoundException({
+          errorCode: ErrorCodeEnum.ORDER_NOT_FOUND,
+          statusCode: 400,
+        });
       }
 
       if (order.userId !== userId) {
-        throw new ForbiddenException('Access denied');
+        throw new ForbiddenException({
+          errorCode: ErrorCodeEnum.ORDER_ACCESS_DENIED,
+          statusCode: 403,
+        });
       }
 
       if (
         order.status !== OrderStatusEnum.PENDING &&
         order.status !== OrderStatusEnum.PROCESSING
       ) {
-        throw new BadRequestException(
-          'Order can only be cancelled when pending or processing',
-        );
+        throw new BadRequestException({
+          errorCode: ErrorCodeEnum.ORDER_INVALID_STATUS,
+          statusCode: 400,
+        });
       }
 
       order.status = OrderStatusEnum.CANCELLED;
@@ -228,11 +270,17 @@ export class OrderService {
     const order = await this.orderRepository.findPendingOrderByUser(userId);
 
     if (!order) {
-      throw new BadRequestException('No pending order found');
+      throw new NotFoundException({
+        errorCode: ErrorCodeEnum.ORDER_PENDING_NOT_FOUND,
+        statusCode: 400,
+      });
     }
 
     if (order.status !== OrderStatusEnum.PENDING) {
-      throw new BadRequestException('Cannot modify a non-pending order');
+      throw new BadRequestException({
+        errorCode: ErrorCodeEnum.ORDER_INVALID_STATUS,
+        statusCode: 400,
+      });
     }
 
     // Find item in order
@@ -243,7 +291,10 @@ export class OrderService {
     );
 
     if (!item) {
-      throw new NotFoundException('Item not found in order');
+      throw new NotFoundException({
+        errorCode: ErrorCodeEnum.ORDER_EMPTY,
+        statusCode: 404,
+      });
     }
 
     // Restore stock

@@ -8,6 +8,7 @@ import { PaginateCategoriesDto } from 'src/shared/dto/category/paginate-categori
 import { UpdateCategoryDto } from 'src/modules/admin/management/category/dto/update-category.dto';
 import { CategoryRepository } from 'src/shared/modules/common-category/category.repository';
 import { AdminCategoryResponseDto } from './dto/admin-category-response.dto';
+import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
 
 @Injectable()
 export class AdminCategoryService {
@@ -17,7 +18,11 @@ export class AdminCategoryService {
     const existing = await this.categoryRepository.findByName(
       createCategoryDto.name,
     );
-    if (existing) throw new BadRequestException('Category already exists');
+    if (existing)
+      throw new BadRequestException({
+        errorCode: ErrorCodeEnum.CATEGORY_ALREADY_EXIST,
+        statusCode: 400,
+      });
 
     const category = this.categoryRepository.create(createCategoryDto);
 
@@ -30,7 +35,11 @@ export class AdminCategoryService {
     const category = await this.categoryRepository.findById(
       updateCategoryDto.id,
     );
-    if (!category) throw new NotFoundException('category not found');
+    if (!category)
+      throw new NotFoundException({
+        errorCode: ErrorCodeEnum.CATEGORY_NOT_FOUND,
+        statusCode: 404,
+      });
 
     Object.assign(category, updateCategoryDto);
 
@@ -40,7 +49,11 @@ export class AdminCategoryService {
 
   async deleteCategory(categoryId: string) {
     const category = await this.categoryRepository.findById(categoryId);
-    if (!category) throw new NotFoundException('No product found');
+    if (!category)
+      throw new NotFoundException({
+        errorCode: ErrorCodeEnum.CATEGORY_NOT_FOUND,
+        statusCode: 404,
+      });
 
     category.deletedAt = new Date(Date.now());
 
@@ -63,7 +76,10 @@ export class AdminCategoryService {
       await this.categoryRepository.findDeletedCategory(categoryId);
 
     if (!category) {
-      throw new NotFoundException('Category not found');
+      throw new NotFoundException({
+        errorCode: ErrorCodeEnum.CATEGORY_NOT_FOUND,
+        statusCode: 404,
+      });
     }
 
     category.deletedAt = null;
