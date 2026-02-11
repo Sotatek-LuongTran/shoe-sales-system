@@ -7,6 +7,7 @@ import { UpdateProductDto } from 'src/modules/admin/management/product/dto/updat
 import { BrandRepository } from 'src/shared/modules/common-brand/brand.repository';
 import { CategoryRepository } from 'src/shared/modules/common-category/category.repository';
 import { ProductRepository } from 'src/shared/modules/common-product/product.repository';
+import { AdminProductResponseDto } from './dto/admin-product-response.dto';
 
 @Injectable()
 export class AdminProductService {
@@ -40,10 +41,11 @@ export class AdminProductService {
       isActive: true,
     });
 
-    return this.productRepository.save(product);
+    await this.productRepository.save(product);
+    return new AdminProductResponseDto(product);
   }
 
-  async updateProduct(dto: UpdateProductDto): Promise<ProductEntity> {
+  async updateProduct(dto: UpdateProductDto) {
     const product = await this.productRepository.findById(dto.id);
 
     if (!product) {
@@ -62,14 +64,19 @@ export class AdminProductService {
 
     Object.assign(product, dto);
 
-    return this.productRepository.save(product);
+    await this.productRepository.save(product);
+    return new AdminProductResponseDto(product);
   }
 
   async getProductsPagination(
     dto: PaginateProductsDto,
-  ): Promise<Pagination<ProductEntity>> {
+  ) {
     dto.includeDeleted = true;
-    return this.productRepository.findProductsPagination(dto);
+    const products = await this.productRepository.findProductsPagination(dto);
+    return {
+      ...products,
+      items: products.items.map((item) => new AdminProductResponseDto(item)),
+    };
   }
 
   async getProduct(id: string) {
@@ -79,8 +86,7 @@ export class AdminProductService {
       throw new NotFoundException('No product found');
     }
 
-    return {
-    };
+    return new AdminProductResponseDto(product);
   }
 
   async deleteProduct(id: string) {
@@ -92,7 +98,7 @@ export class AdminProductService {
 
     product.deletedAt = new Date(); // or new Date(Date.now())
 
-    return this.productRepository.save(product);
+    await this.productRepository.save(product);
   }
 
   async restoreProduct(productId: string) {
@@ -115,7 +121,8 @@ export class AdminProductService {
       }
     }
 
-    return this.productRepository.save(product);
+    await this.productRepository.save(product);
+    return new AdminProductResponseDto(product);
   }
 
   async removeSoftDeletedProducts() {

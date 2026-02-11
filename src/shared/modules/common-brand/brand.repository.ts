@@ -34,4 +34,11 @@ export class BrandRepository extends BaseRepository<BrandEntity> {
     }
     return paginate(qb, { page, limit });
   }
+
+  async findDeletedBrand(brandId: string) {
+    return this.findOne({
+      where: { id: brandId },
+      withDeleted: true,
+    });
+  }
 }

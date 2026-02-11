@@ -34,4 +34,11 @@ export class CategoryRepository extends BaseRepository<CategoryEntity> {
     }
     return paginate(qb, { page, limit });
   }
+
+  async findDeletedCategory(categoryId: string) {
+    return this.findOne({
+      where: { id: categoryId },
+      withDeleted: true,
+    });
+  }
 }

@@ -19,6 +19,8 @@ import { RolesGuard } from 'src/shared/guards/role.guard';
 import { AdminBrandService } from './admin-brand.service';
 import { PaginateBrandsDto } from 'src/shared/dto/brand/paginate-brands.dto';
 import { AuthGuard } from '@nestjs/passport';
+import { AdminPaginationBrandResponseDto } from './dto/admin-pag-brand-response.dto';
+import { AdminBrandResponseDto } from './dto/admin-brand-response.dto';
 
 @Controller('admins/brands')
 @ApiBearerAuth('access-token')
@@ -38,6 +40,7 @@ export class AdminBrandController {
   @ApiResponse({
     status: 201,
     description: 'Brands get successfully',
+    type: AdminPaginationBrandResponseDto,
   })
   @ApiQuery({ name: 'dto', required: true, type: PaginateBrandsDto })
   getList(@Query('dto') dto: PaginateBrandsDto) {
@@ -52,6 +55,7 @@ export class AdminBrandController {
   @ApiResponse({
     status: 201,
     description: 'Brand created successfully',
+    type: AdminBrandResponseDto,
   })
   create(@Body() dto: CreateBrandDto) {
     return this.adminBrandService.createBrand(dto);
@@ -65,6 +69,7 @@ export class AdminBrandController {
   @ApiResponse({
     status: 201,
     description: 'Brand updated successfully',
+    type: AdminBrandResponseDto,
   })
   update(@Body() dto: UpdateBrandDto) {
     return this.adminBrandService.updateBrand(dto);
@@ -92,6 +97,7 @@ export class AdminBrandController {
   @ApiResponse({
     status: 201,
     description: 'Brand deleted successfully',
+    type: AdminBrandResponseDto,
   })
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
   restoreBrand(@Param('id', ParseUUIDPipe) id: string) {

@@ -4,6 +4,7 @@ import { PaginateVariantsDto } from 'src/shared/dto/product-variant/paginate-var
 import { UpdateVariantDto } from 'src/modules/admin/management/product-variant/dto/update-vatiant.dto';
 import { ProductVariantRepository } from 'src/shared/modules/common-product-variant/product-variant.repository';
 import { ProductRepository } from 'src/shared/modules/common-product/product.repository';
+import { AdminVariantResponseDto } from './dto/admin-variant-response.dto';
 
 @Injectable()
 export class AdminProductVariantService {
@@ -26,7 +27,9 @@ export class AdminProductVariantService {
       isActive: true,
     });
 
-    return this.productVariantRepository.save(variant);
+    await this.productVariantRepository.save(variant);
+
+    return new AdminVariantResponseDto(variant);
   }
 
   async updateProductVariant(updateVariantDto: UpdateVariantDto) {
@@ -37,7 +40,8 @@ export class AdminProductVariantService {
 
     Object.assign(variant, UpdateVariantDto);
 
-    return this.productVariantRepository.save(variant);
+    await this.productVariantRepository.save(variant);
+    return new AdminVariantResponseDto(variant);
   }
 
   async deleteProductVariant(id: string) {
@@ -46,7 +50,7 @@ export class AdminProductVariantService {
 
     variant.deletedAt = new Date(Date.now());
 
-    return this.productVariantRepository.save(variant);
+    await this.productVariantRepository.save(variant);
   }
 
   async getVariantsByProductPagination(
@@ -67,14 +71,19 @@ export class AdminProductVariantService {
       throw new NotFoundException('Product category not found');
     }
 
-    return this.productVariantRepository.findVariantsPagination(productId, dto);
+    const variants = await this.productVariantRepository.findVariantsPagination(productId, dto);
+
+    return {
+      ...variants,
+      items: variants.items.map((item) => new AdminVariantResponseDto(item)),
+    };
   }
 
   async getProductVariant(id: string) {
     const variant = await this.productVariantRepository.findById(id);
     if (!variant) throw new NotFoundException('Product variant not found');
 
-    return variant;
+    return new AdminVariantResponseDto(variant);
   }
 
   async restoreProductVariant(variantId: string) {
@@ -88,7 +97,8 @@ export class AdminProductVariantService {
     }
 
     variant.deletedAt = null;
-    return this.productVariantRepository.save(variant);
+    await this.productVariantRepository.save(variant);
+    return new AdminVariantResponseDto(variant)
   }
 
   async removeSoftDeletedVariants() {

@@ -8,6 +8,8 @@ import { CreateProductDto } from 'src/modules/admin/management/product/dto/creat
 import { PaginateProductsDto } from 'src/shared/dto/product/paginate-products.dto';
 import { UpdateProductDto } from 'src/modules/admin/management/product/dto/update-product.dto';
 import { AuthGuard } from '@nestjs/passport';
+import { AdminProductResponseDto } from './dto/admin-product-response.dto';
+import { AdminPaginationProductResponseDto } from './dto/admin-pag-product-response.dto';
 
 @Controller('admin/products')
 @ApiBearerAuth('access-token')
@@ -26,6 +28,7 @@ export class AdminProductController {
   @ApiResponse({
     status: 201,
     description: 'Product created successfully',
+    type: AdminProductResponseDto,
   })
   create(@Body() dto: CreateProductDto) {
     return this.adminProductService.createProduct(dto);
@@ -39,6 +42,7 @@ export class AdminProductController {
   @ApiResponse({
     status: 201,
     description: 'Products get successfully',
+    type: AdminPaginationProductResponseDto,
   })
   @ApiQuery({ name: 'dto', required: true, type: PaginateProductsDto })
   getList(@Query() dto: PaginateProductsDto) {
@@ -70,6 +74,7 @@ export class AdminProductController {
   @ApiResponse({
     status: 201,
     description: 'Product updated successfully',
+    type: AdminProductResponseDto,
   })
   update(@Body() dto: UpdateProductDto) {
     return this.adminProductService.updateProduct(dto);
@@ -83,6 +88,7 @@ export class AdminProductController {
   @ApiResponse({
     status: 201,
     description: 'Product get successfully',
+    type: AdminProductResponseDto,
   })
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
   getOne(@Param('id', ParseUUIDPipe) id: string) {
