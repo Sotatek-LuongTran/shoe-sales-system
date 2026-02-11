@@ -13,6 +13,7 @@ import {
 import {
   ApiBearerAuth,
   ApiOperation,
+  ApiParam,
   ApiQuery,
   ApiResponse,
   ApiTags,
@@ -89,6 +90,7 @@ export class OrderController {
     description: 'Order get successfully',
     type: OrderResponseDto,
   })
+  @ApiParam({name: 'id', type: 'string', format: 'uuid'})
   async getOrderById(@Req() req: any, @Param('id', ParseUUIDPipe) id: string) {
     return this.orderService.getOrderById(id, req.user.userId);
   }
@@ -99,6 +101,7 @@ export class OrderController {
   @Delete(':id/cancel')
   @ApiOperation({ summary: 'Cancel order by id (owner only)' })
   @ApiResponse({ status: 200, description: 'Order cancelled successfully' })
+  @ApiParam({name: 'id', type: 'string', format: 'uuid'})
   async cancelOrder(@Req() req: any, @Param('id', ParseUUIDPipe) id: string) {
     return this.orderService.cancelOrder(id, req.user.userId);
   }

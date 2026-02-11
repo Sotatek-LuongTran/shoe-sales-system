@@ -11,9 +11,6 @@ import { UserRoleEnum } from 'src/shared/enums/user.enum';
 import { Roles } from 'src/shared/decorators/role.decorator';
 
 @ApiTags('Authentication')
-@ApiBearerAuth('access-token')
-@UseGuards(AuthGuard('jwt'), RolesGuard)
-@Roles(UserRoleEnum.USER)
 @Controller('auth')
 export class AuthenticationController {
   constructor(private readonly authService: AuthenticationService) {}
@@ -48,7 +45,8 @@ export class AuthenticationController {
   })
   @Post('logout')
   @ApiBearerAuth('access-token')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(UserRoleEnum.USER)
   async logout(@Req() req: Request) {
     const user = req.user as {
       userId: string;

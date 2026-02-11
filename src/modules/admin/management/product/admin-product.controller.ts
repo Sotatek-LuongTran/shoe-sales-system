@@ -70,7 +70,6 @@ export class AdminProductController {
   // =============================
   @Patch(':id')
   @ApiOperation({ summary: 'Update a product' })
-  @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
   @ApiResponse({
     status: 201,
     description: 'Product updated successfully',
