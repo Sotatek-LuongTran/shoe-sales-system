@@ -23,8 +23,9 @@ import { AdminOrderController } from './management/order/admin-order.controller'
 import { AdminPaymentController } from './management/payment/admin-payment.controller';
 import { AdminProductController } from './management/product/admin-product.controller';
 import { AdminProductVariantController } from './management/product-variant/admin-variant.controller';
-import { AdminAuthController } from './admin-auth.controller';
-import { AdminAuthService } from './admin-auth.service';
+import { AdminAuthController } from './auth/admin-auth.controller';
+import { AdminAuthService } from './auth/admin-auth.service';
+import { JwtService } from '@nestjs/jwt';
 
 @Module({
   imports: [TypeOrmModule.forFeature([UserEntity])],
@@ -47,6 +48,7 @@ import { AdminAuthService } from './admin-auth.service';
     AdminPaymentService,
     AdminProductService,
     AdminProductVariantService,
+    JwtService,
     AdminAuthService,
   ],
   controllers: [

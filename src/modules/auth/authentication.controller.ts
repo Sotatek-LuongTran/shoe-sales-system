@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
-import { CreateUserDto } from '../user/dto/create-user.dto';
+import { CreateUserDto } from './dto/create-user.dto';
 import { AuthenticationService } from './authentication.service';
-import { LoginDto } from '../user/dto/login.dto';
+import { LoginDto } from './dto/login.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { UserResponseDto } from 'src/shared/dto/user/user-response.dto';
 import { AuthGuard } from '@nestjs/passport';
