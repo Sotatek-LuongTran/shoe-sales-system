@@ -22,10 +22,11 @@ import { RolesGuard } from 'src/shared/guards/role.guard';
 import { PaginateBrandsDto } from '../../shared/dto/brand/paginate-brands.dto';
 import { BrandResponseDto } from 'src/shared/dto/brand/brand-response.dto';
 import { PaginationBrandResponseDto } from 'src/shared/dto/brand/pagination-brand-response';
+import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
 
 @ApiTags('Brands')
 @ApiBearerAuth('access-token')
-@UseGuards(AuthGuard('jwt'), RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRoleEnum.USER)
 @Controller('brands')
 export class BrandController {

@@ -28,12 +28,12 @@ import { UpdateVariantDto } from 'src/modules/admin/management/product-variant/d
 import { AdminVariantResponseDto } from './dto/admin-variant-response.dto';
 import { AdminPaginationVariantResponseDto } from './dto/admin-pag-variant-response.dto';
 import { PaginateVariantsDto } from 'src/shared/dto/product-variant/paginate-variants.dto';
+import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
 
 @Controller('admin/products')
 @ApiBearerAuth('access-token')
-@UseGuards(AuthGuard('jwt'), RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRoleEnum.ADMIN)
-@UseGuards(RolesGuard)
 @ApiTags('Admin')
 export class AdminProductVariantController {
   constructor(

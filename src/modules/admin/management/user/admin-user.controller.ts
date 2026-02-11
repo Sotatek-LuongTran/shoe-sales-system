@@ -18,10 +18,11 @@ import { RolesGuard } from 'src/shared/guards/role.guard';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { UserResponseDto } from 'src/shared/dto/user/user-response.dto';
+import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
 
 @ApiTags('Admin')
 @ApiBearerAuth('access-token')
-@UseGuards(AuthGuard('jwt'), RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRoleEnum.ADMIN)
 @Controller('admin/users')
 export class AdminUserController {
@@ -72,12 +73,12 @@ export class AdminUserController {
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Delete an user' })
+  @ApiOperation({ summary: 'Deactivate an user' })
   @ApiResponse({
     status: 201,
-    description: 'User deleted successfully',
+    description: 'User deactivated successfully',
   })
-  deleteUser(@Param('id', ParseUUIDPipe) id: string) {
-    return this.adminUserService.deleteUser(id);
+  deactivateUser(@Param('id', ParseUUIDPipe) id: string) {
+    return this.adminUserService.deactivateUser(id);
   }
 }

@@ -22,10 +22,11 @@ import { UserRoleEnum } from 'src/shared/enums/user.enum';
 import { Roles } from 'src/shared/decorators/role.decorator';
 import { ProductVariantResponseDto } from 'src/shared/dto/product-variant/product-variant-response.dto';
 import { PaginationVariantResponseDto } from 'src/shared/dto/product-variant/pagination-variant-response';
+import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
 
 @ApiTags('Product variants')
 @ApiBearerAuth('access-token')
-@UseGuards(AuthGuard('jwt'), RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRoleEnum.USER)
 @Controller('products')
 export class ProductVariantController {

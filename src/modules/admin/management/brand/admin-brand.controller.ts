@@ -21,12 +21,12 @@ import { PaginateBrandsDto } from 'src/shared/dto/brand/paginate-brands.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { AdminPaginationBrandResponseDto } from './dto/admin-pag-brand-response.dto';
 import { AdminBrandResponseDto } from './dto/admin-brand-response.dto';
+import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
 
 @Controller('admins/brands')
 @ApiBearerAuth('access-token')
-@UseGuards(AuthGuard('jwt'), RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRoleEnum.ADMIN)
-@UseGuards(RolesGuard)
 @ApiTags('Admin')
 export class AdminBrandController {
   brandService: any;

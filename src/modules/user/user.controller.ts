@@ -6,11 +6,12 @@ import { RolesGuard } from 'src/shared/guards/role.guard';
 import { UserRoleEnum } from 'src/shared/enums/user.enum';
 import { Roles } from 'src/shared/decorators/role.decorator';
 import { Request } from 'express';
+import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
 
 @ApiTags('Users')
 @ApiBearerAuth('access-token')
 @Controller('users')
-@UseGuards(AuthGuard('jwt'), RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRoleEnum.USER)
 export class UserController {
   constructor(private readonly userService: UserService) {}

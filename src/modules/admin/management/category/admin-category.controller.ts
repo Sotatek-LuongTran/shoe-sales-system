@@ -21,12 +21,12 @@ import { PaginateCategoriesDto } from 'src/shared/dto/category/paginate-categori
 import { AuthGuard } from '@nestjs/passport';
 import { AdminPaginationCategoryResponseDto } from './dto/admin-pag-category-response.dto';
 import { AdminCategoryResponseDto } from './dto/admin-category-response.dto';
+import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
 
 @Controller('admin/categories')
 @ApiBearerAuth('access-token')
-@UseGuards(AuthGuard('jwt'), RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRoleEnum.ADMIN)
-@UseGuards(RolesGuard)
 @ApiTags('Admin')
 export class AdminCategoryController {
   constructor(private readonly adminCategoryService: AdminCategoryService) {}

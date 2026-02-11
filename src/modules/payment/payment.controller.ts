@@ -24,10 +24,11 @@ import { Roles } from 'src/shared/decorators/role.decorator';
 import { PaymentResponseDto } from 'src/shared/dto/payment/payment-response.dto';
 import { PaginatePaymentsDto } from 'src/shared/dto/payment/paginate-payments.dto';
 import { PaginationPaymentResponseDto } from 'src/shared/dto/payment/pagination-order-response';
+import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
 
 @ApiTags('Payments')
 @ApiBearerAuth('access-token')
-@UseGuards(AuthGuard('jwt'), RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRoleEnum.USER)
 @Controller('payments')
 export class PaymentController {
