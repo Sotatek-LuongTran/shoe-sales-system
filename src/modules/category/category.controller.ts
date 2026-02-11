@@ -22,10 +22,11 @@ import { CategoryService } from './category.service';
 import { PaginateCategoriesDto } from '../../shared/dto/category/paginate-categories.dto';
 import { CategoryResponseDto } from 'src/shared/dto/category/category-response.dto';
 import { PaginationCategoryResponseDto } from 'src/shared/dto/category/pagination-category-response';
+import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
 
 @ApiTags('Categories')
 @ApiBearerAuth('access-token')
-@UseGuards(AuthGuard('jwt'), RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRoleEnum.USER)
 @Controller('categories')
 export class CategoryController {

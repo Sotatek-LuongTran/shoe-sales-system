@@ -26,11 +26,12 @@ import { Roles } from 'src/shared/decorators/role.decorator';
 import { PaginateProductsDto } from '../../shared/dto/product/paginate-products.dto';
 import { ProductResponseDto } from 'src/shared/dto/product/product-respose.dto';
 import { PaginationProductResponseDto } from 'src/shared/dto/product/pagination-product-response';
+import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
 
 @ApiTags('Products')
 @ApiBearerAuth('access-token')
 @Controller('products')
-@UseGuards(AuthGuard('jwt'), RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRoleEnum.USER)
 export class ProductController {
   constructor(private readonly productService: ProductService) {}

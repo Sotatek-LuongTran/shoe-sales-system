@@ -10,12 +10,12 @@ import { UpdateProductDto } from 'src/modules/admin/management/product/dto/updat
 import { AuthGuard } from '@nestjs/passport';
 import { AdminProductResponseDto } from './dto/admin-product-response.dto';
 import { AdminPaginationProductResponseDto } from './dto/admin-pag-product-response.dto';
+import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
 
 @Controller('admin/products')
 @ApiBearerAuth('access-token')
-@UseGuards(AuthGuard('jwt'), RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRoleEnum.ADMIN)
-@UseGuards(RolesGuard)
 @ApiTags('Admin')
 export class AdminProductController {
     constructor(private readonly adminProductService: AdminProductService) {

@@ -13,12 +13,12 @@ import { RolesGuard } from 'src/shared/guards/role.guard';
 import { AdminOrderService } from './admin-order.service';
 import { PaginateOrdersDto } from 'src/shared/dto/order/paginate-order.dto';
 import { PaginationOrderResponseDto } from 'src/shared/dto/order/pagination-order-response';
+import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
 
 @Controller('admin/orders')
 @ApiBearerAuth('access-token')
-@UseGuards(AuthGuard('jwt'), RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRoleEnum.ADMIN)
-@UseGuards(RolesGuard)
 @ApiTags('Admin')
 export class AdminOrderController {
   constructor(private readonly adminOrderService: AdminOrderService) {}

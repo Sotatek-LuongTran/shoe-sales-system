@@ -23,15 +23,15 @@ import { AddToPendingOrderDto } from 'src/modules/order/dto/add-to-order.dto';
 import { UserRoleEnum } from 'src/shared/enums/user.enum';
 import { RolesGuard } from 'src/shared/guards/role.guard';
 import { Roles } from 'src/shared/decorators/role.decorator';
-import { AuthGuard } from '@nestjs/passport';
 import { RemoveOrderItemDto } from 'src/modules/order/dto/remove-item.dto';
 import { OrderResponseDto } from 'src/shared/dto/order/order-response.dto';
 import { PaginateOrdersDto } from 'src/shared/dto/order/paginate-order.dto';
 import { PaginationOrderResponseDto } from 'src/shared/dto/order/pagination-order-response';
+import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
 
 @ApiTags('Orders')
 @ApiBearerAuth('access-token')
-@UseGuards(AuthGuard('jwt'), RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRoleEnum.USER)
 @Controller('orders')
 export class OrderController {

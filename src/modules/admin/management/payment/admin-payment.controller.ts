@@ -23,12 +23,12 @@ import { RolesGuard } from 'src/shared/guards/role.guard';
 import { AdminPaymentService } from './admin-payment.service';
 import { PaymentResponseDto } from 'src/shared/dto/payment/payment-response.dto';
 import { PaginationPaymentResponseDto } from 'src/shared/dto/payment/pagination-order-response';
+import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
 
 @Controller('admin/payments')
 @ApiBearerAuth('access-token')
-@UseGuards(AuthGuard('jwt'), RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRoleEnum.ADMIN)
-@UseGuards(RolesGuard)
 @ApiTags('Admin')
 export class AdminPaymentController {
   constructor(private readonly adminPaymentService: AdminPaymentService) {}

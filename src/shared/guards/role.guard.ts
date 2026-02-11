@@ -9,6 +9,7 @@ import {
 import { Reflector } from '@nestjs/core';
 import { ROLES_KEY } from '../decorators/role.decorator';
 import { UserRoleEnum } from '../enums/user.enum';
+import { ErrorCodeEnum } from '../enums/error-code.enum';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -25,7 +26,10 @@ export class RolesGuard implements CanActivate {
     const { user } = context.switchToHttp().getRequest();
 
     if (!requiredRoles.includes(user.role)) {
-      throw new ForbiddenException('Forbidden resource');
+      throw new ForbiddenException({
+        errorCode: ErrorCodeEnum.AUTH_FORBIDDEN,
+        statusCode: 403
+      });
     }
 
     return true;

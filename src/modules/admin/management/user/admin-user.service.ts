@@ -3,10 +3,15 @@ import { UserRepository } from 'src/shared/modules/user/user.repository';
 import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from 'src/modules/user/dto/create-user.dto';
 import { UpdateUserDto } from 'src/modules/user/dto/update-user.dto';
+import { RedisService } from 'src/common/redis/redis.service';
+import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
 
 @Injectable()
 export class AdminUserService {
-  constructor(private readonly userRepository: UserRepository) {}
+  constructor(
+    private readonly userRepository: UserRepository,
+    private readonly redisService: RedisService,
+  ) {}
 
   async createUser(createUserDto: CreateUserDto) {
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
@@ -23,7 +28,10 @@ export class AdminUserService {
   async findUserById(id: string) {
     const user = await this.userRepository.findById(id);
     if (!user) {
-      throw new NotFoundException(`User with ID ${id} not found`);
+      throw new NotFoundException({
+        errorCode: ErrorCodeEnum.USER_NOT_FOUND,
+        status: 404,
+      });
     }
     return user;
   }
@@ -31,7 +39,10 @@ export class AdminUserService {
   async updateUser(id: string, updateUserDto: UpdateUserDto) {
     const user = await this.userRepository.findById(id);
     if (!user) {
-      throw new NotFoundException(`User with ID ${id} not found`);
+      throw new NotFoundException({
+        errorCode: ErrorCodeEnum.USER_NOT_FOUND,
+        status: 404,
+      });
     }
     if (updateUserDto.password) {
       updateUserDto.password = await bcrypt.hash(updateUserDto.password, 10);
@@ -39,11 +50,15 @@ export class AdminUserService {
     return this.userRepository.update(id, updateUserDto);
   }
 
-  async deleteUser(id: string) {
-    const user = await this.userRepository.findById(id);
+  async deactivateUser(userId: string) {
+    const user = await this.userRepository.findById(userId);
     if (!user) {
-      throw new NotFoundException(`User with ID ${id} not found`);
+      throw new NotFoundException({
+        errorCode: ErrorCodeEnum.USER_NOT_FOUND,
+        status: 404,
+      });
     }
-    await this.userRepository.delete(id);
+    await this.redisService.incr(`user:tokenVersion:${userId}`);
+    await this.redisService.del(`user:refreshToken:${userId}`); 
   }
 }

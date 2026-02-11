@@ -11,8 +11,10 @@ import { OrderModule } from './modules/order/order.module';
 import { PaymentModule } from './modules/payment/payment.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { UserModule } from './modules/user/user.module';
+import { PassportModule } from '@nestjs/passport';
 @Module({
   imports: [
+    PassportModule,
     DatabaseModule,
     ConfigModule.forRoot({
       isGlobal: true,
