@@ -22,6 +22,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { AdminPaginationCategoryResponseDto } from './dto/admin-pag-category-response.dto';
 import { AdminCategoryResponseDto } from './dto/admin-category-response.dto';
 import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
+import { ApiPaginatedResponse } from 'src/shared/decorators/api-paginated-response.decorator';
 
 @Controller('admin/categories')
 @ApiBearerAuth('access-token')
@@ -66,8 +67,8 @@ export class AdminCategoryController {
   @ApiResponse({
     status: 201,
     description: 'Categories get successfully',
-    type: AdminCategoryResponseDto,
   })
+  @ApiPaginatedResponse(AdminCategoryResponseDto)
   @ApiQuery({ name: 'dto', required: true, type: PaginateCategoriesDto })
   getList(@Query('dto') dto: PaginateCategoriesDto) {
     return this.adminCategoryService.getCategoriesPagination(dto);

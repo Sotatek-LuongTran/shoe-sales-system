@@ -5,6 +5,7 @@ import { CreateUserDto } from 'src/modules/auth/dto/create-user.dto';
 import { UpdateUserDto } from 'src/modules/admin/management/user/dto/update-user.dto';
 import { RedisService } from 'src/common/redis/redis.service';
 import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
+import { PaginateUsersDto } from 'src/shared/dto/user/paginate-user.dto';
 
 @Injectable()
 export class AdminUserService {
@@ -21,8 +22,8 @@ export class AdminUserService {
     });
   }
 
-  async findAllUsers() {
-    return this.userRepository.find();
+  async getAllUsersPagination(dto: PaginateUsersDto) {
+    return this.userRepository.findUsersPagination(dto);
   }
 
   async findUserById(id: string) {

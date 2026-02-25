@@ -7,12 +7,6 @@ import { ApiProperty } from "@nestjs/swagger";
 export class AdminPaginationBrandResponseDto {
     @Expose()
     @ApiProperty({
-        description: 'Meta of pagination'
-    })
-    meta: PaginationResponseDto;
-
-    @Expose()
-    @ApiProperty({
         description: 'List of brands'
     })
     brands: AdminBrandResponseDto[];

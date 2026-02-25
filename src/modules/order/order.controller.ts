@@ -26,8 +26,9 @@ import { Roles } from 'src/shared/decorators/role.decorator';
 import { RemoveOrderItemDto } from 'src/modules/order/dto/remove-item.dto';
 import { OrderResponseDto } from 'src/shared/dto/order/order-response.dto';
 import { PaginateOrdersDto } from 'src/shared/dto/order/paginate-order.dto';
-import { PaginationOrderResponseDto } from 'src/shared/dto/order/pagination-order-response';
 import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
+import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
+import { ApiPaginatedResponse } from 'src/shared/decorators/api-paginated-response.decorator';
 
 @ApiTags('Orders')
 @ApiBearerAuth('access-token')
@@ -72,11 +73,10 @@ export class OrderController {
   @ApiOperation({ summary: 'get all orders' })
   @ApiResponse({
     status: 200,
-    description: 'Order get successfully',
-    type: PaginationOrderResponseDto,
+    description: 'Order get successfully'
   })
-  @ApiQuery({ name: 'dto', required: true, type: PaginateOrdersDto })
-  async getAllOrders(@Req() req: any, @Query('dto') dto: PaginateOrdersDto) {
+  @ApiPaginatedResponse(OrderResponseDto)
+  async getAllOrders(@Req() req: any, @Query() dto: PaginateOrdersDto) {
     return this.orderService.getOrdersByUserPagination(req.user.userId, dto);
   }
 

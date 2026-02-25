@@ -20,7 +20,7 @@ export class PaginateProductsDto extends PaginateDto {
   @IsNumber()
   @IsPositive()
   @IsOptional()
-  minPrice?: number | undefined;
+  minPrice?: number;
 
   @ApiPropertyOptional({
     description: 'Type of the product',

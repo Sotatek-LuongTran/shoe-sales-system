@@ -23,8 +23,9 @@ import { UserRoleEnum } from 'src/shared/enums/user.enum';
 import { Roles } from 'src/shared/decorators/role.decorator';
 import { PaymentResponseDto } from 'src/shared/dto/payment/payment-response.dto';
 import { PaginatePaymentsDto } from 'src/shared/dto/payment/paginate-payments.dto';
-import { PaginationPaymentResponseDto } from 'src/shared/dto/payment/pagination-order-response';
 import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
+import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
+import { ApiPaginatedResponse } from 'src/shared/decorators/api-paginated-response.decorator';
 
 @ApiTags('Payments')
 @ApiBearerAuth('access-token')
@@ -93,10 +94,10 @@ export class PaymentController {
   @ApiResponse({
     status: 200,
     description: 'Payment get successfully',
-    type: PaginationPaymentResponseDto,
+    type: PaymentResponseDto,
   })
-  @ApiQuery({ name: 'dto', required: true, type: PaginatePaymentsDto })
-  async getAllOrders(@Req() req: any, @Query('dto') dto: PaginatePaymentsDto) {
+  @ApiPaginatedResponse(PaymentResponseDto)
+  async getAllOrders(@Req() req: any, @Query() dto: PaginatePaymentsDto) {
     return this.paymentService.getMyPaymentsPagination(req.user.userId, dto);
   }
 

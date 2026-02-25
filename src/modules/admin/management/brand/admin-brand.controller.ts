@@ -22,6 +22,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { AdminPaginationBrandResponseDto } from './dto/admin-pag-brand-response.dto';
 import { AdminBrandResponseDto } from './dto/admin-brand-response.dto';
 import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
+import { ApiPaginatedResponse } from 'src/shared/decorators/api-paginated-response.decorator';
 
 @Controller('admins/brands')
 @ApiBearerAuth('access-token')
@@ -40,8 +41,8 @@ export class AdminBrandController {
   @ApiResponse({
     status: 201,
     description: 'Brands get successfully',
-    type: AdminPaginationBrandResponseDto,
   })
+  @ApiPaginatedResponse(AdminBrandResponseDto)
   @ApiQuery({ name: 'dto', required: true, type: PaginateBrandsDto })
   getList(@Query('dto') dto: PaginateBrandsDto) {
     return this.brandService.getBrandsPagination(dto);
