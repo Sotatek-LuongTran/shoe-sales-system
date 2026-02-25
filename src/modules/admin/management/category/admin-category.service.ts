@@ -22,6 +22,7 @@ export class AdminCategoryService {
       throw new BadRequestException({
         errorCode: ErrorCodeEnum.CATEGORY_ALREADY_EXIST,
         statusCode: 400,
+        message: 'Category has already existed',
       });
 
     const category = this.categoryRepository.create(createCategoryDto);
@@ -39,12 +40,12 @@ export class AdminCategoryService {
       throw new NotFoundException({
         errorCode: ErrorCodeEnum.CATEGORY_NOT_FOUND,
         statusCode: 404,
+        message: 'Category not found',
       });
 
     Object.assign(category, updateCategoryDto);
 
     await this.categoryRepository.save(category);
-    return new AdminCategoryResponseDto(category);
   }
 
   async deleteCategory(categoryId: string) {
@@ -53,6 +54,7 @@ export class AdminCategoryService {
       throw new NotFoundException({
         errorCode: ErrorCodeEnum.CATEGORY_NOT_FOUND,
         statusCode: 404,
+        message: 'Category not found',
       });
 
     category.deletedAt = new Date(Date.now());
@@ -79,6 +81,7 @@ export class AdminCategoryService {
       throw new NotFoundException({
         errorCode: ErrorCodeEnum.CATEGORY_NOT_FOUND,
         statusCode: 404,
+        message: 'Category not found',
       });
     }
 

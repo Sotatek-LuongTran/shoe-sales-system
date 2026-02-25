@@ -29,6 +29,7 @@ export class AuthenticationService {
       throw new BadRequestException({
         errorCode: ErrorCodeEnum.AUTH_EMAIL_EXISTED,
         statusCode: 400,
+        message: 'Email already existed',
       });
     }
 
@@ -54,6 +55,7 @@ export class AuthenticationService {
       throw new UnauthorizedException({
         errorCode: ErrorCodeEnum.AUTH_INVALID_CREDENTIALS,
         statusCode: 401,
+        message: 'Invalid credentials',
       });
     }
 
@@ -66,6 +68,7 @@ export class AuthenticationService {
       throw new UnauthorizedException({
         errorCode: ErrorCodeEnum.AUTH_INVALID_CREDENTIALS,
         statusCode: 401,
+        message: 'Invalid credentials',
       });
     }
 

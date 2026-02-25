@@ -7,6 +7,8 @@ import {
   Get,
   ParseUUIDPipe,
   Query,
+  UseInterceptors,
+  ClassSerializerInterceptor,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -97,6 +99,7 @@ export class PaymentController {
     type: PaymentResponseDto,
   })
   @ApiPaginatedResponse(PaymentResponseDto)
+  @UseInterceptors(ClassSerializerInterceptor)
   async getAllOrders(@Req() req: any, @Query() dto: PaginatePaymentsDto) {
     return this.paymentService.getMyPaymentsPagination(req.user.userId, dto);
   }

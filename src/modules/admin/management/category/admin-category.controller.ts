@@ -1,5 +1,6 @@
 import {
   Body,
+  ClassSerializerInterceptor,
   Controller,
   Delete,
   Get,
@@ -9,6 +10,7 @@ import {
   Post,
   Query,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { AdminCategoryService } from './admin-category.service';
 import { Roles } from 'src/shared/decorators/role.decorator';
@@ -70,6 +72,7 @@ export class AdminCategoryController {
   })
   @ApiPaginatedResponse(AdminCategoryResponseDto)
   @ApiQuery({ name: 'dto', required: true, type: PaginateCategoriesDto })
+  @UseInterceptors(ClassSerializerInterceptor)
   getList(@Query('dto') dto: PaginateCategoriesDto) {
     return this.adminCategoryService.getCategoriesPagination(dto);
   }

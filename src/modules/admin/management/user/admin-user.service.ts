@@ -32,6 +32,7 @@ export class AdminUserService {
       throw new NotFoundException({
         errorCode: ErrorCodeEnum.USER_NOT_FOUND,
         status: 404,
+        message: 'User not found',
       });
     }
     return user;
@@ -43,6 +44,7 @@ export class AdminUserService {
       throw new NotFoundException({
         errorCode: ErrorCodeEnum.USER_NOT_FOUND,
         status: 404,
+        message: 'User not found',
       });
     }
     if (updateUserDto.password) {
@@ -57,9 +59,9 @@ export class AdminUserService {
       throw new NotFoundException({
         errorCode: ErrorCodeEnum.USER_NOT_FOUND,
         status: 404,
+        message: 'User not found',
       });
     }
     await this.redisService.incr(`user:tokenVersion:${userId}`);
-    await this.redisService.del(`user:refreshToken:${userId}`); 
   }
 }

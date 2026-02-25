@@ -25,6 +25,7 @@ export class ProductVariantService {
       throw new NotFoundException({
         errorCode: ErrorCodeEnum.PRODUCT_NOT_FOUND,
         statusCode: 404,
+        message: 'Product not found',
       });
     }
 
@@ -32,6 +33,7 @@ export class ProductVariantService {
       throw new NotFoundException({
         errorCode: ErrorCodeEnum.BRAND_NOT_FOUND,
         statusCode: 404,
+        message: 'Brand not found',
       });
     }
 
@@ -39,6 +41,7 @@ export class ProductVariantService {
       throw new NotFoundException({
         errorCode: ErrorCodeEnum.CATEGORY_NOT_FOUND,
         statusCode: 404,
+        message: 'Category not found',
       });
     }
 
@@ -50,6 +53,7 @@ export class ProductVariantService {
     if (!variant) throw new NotFoundException({
       errorCode: ErrorCodeEnum.PRODUCT_VARIANT_NOT_FOUND,
       statusCode: 404,
+      message: 'Variant not found',
     });
 
     return variant;

@@ -9,6 +9,8 @@ import {
   UseGuards,
   ParseUUIDPipe,
   Query,
+  UseInterceptors,
+  ClassSerializerInterceptor,
 } from '@nestjs/common';
 import { AdminUserService } from './admin-user.service';
 import { CreateUserDto } from 'src/modules/auth/dto/create-user.dto';
@@ -50,6 +52,7 @@ export class AdminUserController {
     description: 'Users get successfully',
   })
   @ApiPaginatedResponse(AdminUserResponseDto)
+  @UseInterceptors(ClassSerializerInterceptor)
   getList(@Query() dto: PaginateUsersDto) {
     return this.adminUserService.getAllUsersPagination(dto);
   }

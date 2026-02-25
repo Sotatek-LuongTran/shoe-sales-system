@@ -1,10 +1,12 @@
 import {
+  ClassSerializerInterceptor,
   Controller,
   Get,
   Param,
   ParseUUIDPipe,
   Query,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -41,6 +43,7 @@ export class CategoryController {
     description: 'Categories get successfully',
   })
   @ApiPaginatedResponse(CategoryResponseDto)
+  @UseInterceptors(ClassSerializerInterceptor)
   getList(
     @Query() dto: PaginateCategoriesDto,
   ) {

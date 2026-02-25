@@ -1,5 +1,6 @@
 import {
   Body,
+  ClassSerializerInterceptor,
   Controller,
   Delete,
   Get,
@@ -9,6 +10,7 @@ import {
   Post,
   Query,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -46,6 +48,7 @@ export class ProductController {
     description: 'Products get successfully'
   })
   @ApiPaginatedResponse(ProductResponseDto)
+  @UseInterceptors(ClassSerializerInterceptor)
   getList(@Query() dto: PaginateProductsDto) {
     return this.productService.getProductsPagination(dto);
   }

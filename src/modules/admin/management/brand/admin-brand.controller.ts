@@ -1,5 +1,6 @@
 import {
   Body,
+  ClassSerializerInterceptor,
   Controller,
   Delete,
   Get,
@@ -9,6 +10,7 @@ import {
   Post,
   Query,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateBrandDto } from 'src/modules/admin/management/brand/dto/create-brand.dto';
@@ -23,6 +25,7 @@ import { AdminPaginationBrandResponseDto } from './dto/admin-pag-brand-response.
 import { AdminBrandResponseDto } from './dto/admin-brand-response.dto';
 import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
 import { ApiPaginatedResponse } from 'src/shared/decorators/api-paginated-response.decorator';
+import { Reflector } from '@nestjs/core';
 
 @Controller('admins/brands')
 @ApiBearerAuth('access-token')
@@ -44,6 +47,7 @@ export class AdminBrandController {
   })
   @ApiPaginatedResponse(AdminBrandResponseDto)
   @ApiQuery({ name: 'dto', required: true, type: PaginateBrandsDto })
+  @UseInterceptors(ClassSerializerInterceptor)
   getList(@Query('dto') dto: PaginateBrandsDto) {
     return this.brandService.getBrandsPagination(dto);
   }

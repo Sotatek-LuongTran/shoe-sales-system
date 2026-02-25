@@ -26,7 +26,8 @@ export class AdminProductService {
     if (!brand) {
       throw new NotFoundException({
         errorCode: ErrorCodeEnum.BRAND_NOT_FOUND,
-        statusCode: 404
+        statusCode: 404,
+        message: 'Brand not found',
       });
     }
 
@@ -34,7 +35,8 @@ export class AdminProductService {
     if (!category) {
       throw new NotFoundException({
         errorCode: ErrorCodeEnum.CATEGORY_NOT_FOUND,
-        statusCode: 404
+        statusCode: 404,
+        message: 'Category not found',
       });
     }
 
@@ -58,7 +60,8 @@ export class AdminProductService {
     if (!product) {
       throw new NotFoundException({
         errorCode: ErrorCodeEnum.PRODUCT_NOT_FOUND,
-        statusCode: 404
+        statusCode: 404,
+        message: 'Product not found',
       });
     }
 
@@ -66,7 +69,8 @@ export class AdminProductService {
       const brand = await this.brandRepository.findById(dto.brandId);
       if (!brand) throw new NotFoundException({
         errorCode: ErrorCodeEnum.BRAND_NOT_FOUND,
-        statusCode: 404
+        statusCode: 404,
+        message: 'Brand not found',
       });
     }
 
@@ -74,14 +78,14 @@ export class AdminProductService {
       const category = await this.categoryRepository.findById(dto.categoryId);
       if (!category) throw new NotFoundException({
         errorCode: ErrorCodeEnum.CATEGORY_NOT_FOUND,
-        statusCode: 404
+        statusCode: 404,
+        message: 'Category not found',
       });
     }
 
     Object.assign(product, dto);
 
     await this.productRepository.save(product);
-    return new AdminProductResponseDto(product);
   }
 
   async getProductsPagination(
@@ -101,7 +105,8 @@ export class AdminProductService {
     if (!product) {
       throw new NotFoundException({
         errorCode: ErrorCodeEnum.PRODUCT_NOT_FOUND,
-        statusCode: 404
+        statusCode: 404,
+        message: 'Product not found',
       });
     }
 
@@ -114,7 +119,8 @@ export class AdminProductService {
     if (!product) {
       throw new NotFoundException({
         errorCode: ErrorCodeEnum.PRODUCT_NOT_FOUND,
-        statusCode: 404
+        statusCode: 404,
+        message: 'Product not found',
       });
     }
 
@@ -133,7 +139,8 @@ export class AdminProductService {
     if (!product) {
       throw new NotFoundException({
         errorCode: ErrorCodeEnum.PRODUCT_NOT_FOUND,
-        statusCode: 404
+        statusCode: 404,
+        message: 'Product not found',
       });
     }
 
@@ -147,7 +154,6 @@ export class AdminProductService {
     }
 
     await this.productRepository.save(product);
-    return new AdminProductResponseDto(product);
   }
 
   async removeSoftDeletedProducts() {

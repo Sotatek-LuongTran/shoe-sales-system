@@ -29,12 +29,28 @@ export class CatchEverythingFilter implements ExceptionFilter {
     if (exception instanceof HttpException) {
       const exceptionResponse = exception.getResponse();
 
-      responseBody = {
-        ...responseBody,
-        ...(typeof exceptionResponse === 'object'
-          ? exceptionResponse
-          : { message: exceptionResponse }),
-      };
+      if (typeof exceptionResponse === 'string') {
+        responseBody.message = exceptionResponse;
+      } else if (
+        typeof exceptionResponse === 'object' &&
+        exceptionResponse !== null
+      ) {
+        const { message, ...rest } = exceptionResponse as any;
+
+        // 👇 unwrap custom payload
+        if (typeof message === 'object' && message !== null) {
+          responseBody = {
+            ...responseBody,
+            ...message,
+          };
+        } else {
+          responseBody = {
+            ...responseBody,
+            ...rest,
+            message,
+          };
+        }
+      }
     }
 
     httpAdapter.reply(ctx.getResponse(), responseBody, httpStatus);

@@ -1,10 +1,12 @@
 import {
+  ClassSerializerInterceptor,
   Controller,
   Get,
   Param,
   ParseUUIDPipe,
   Query,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { BrandService } from './brand.service';
 import {
@@ -42,6 +44,7 @@ export class BrandController {
     description: 'Brands get successfully'
   })
   @ApiPaginatedResponse(BrandResponseDto)
+  @UseInterceptors(ClassSerializerInterceptor)
   getList(@Query() dto: PaginateBrandsDto) {
     return this.brandService.getBrandsPagination(dto);
   }

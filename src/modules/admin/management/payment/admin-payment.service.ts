@@ -45,12 +45,14 @@ export class AdminPaymentService {
         throw new NotFoundException({
           errorCode: ErrorCodeEnum.PAYMENT_NOT_FOUND,
           statusCode: 404,
+          message: 'Payment not found',
         });
 
       if (payment.paymentStatus !== PaymentStatusEnum.SUCCESSFUL) {
         throw new BadRequestException({
           errorCode: ErrorCodeEnum.PAYMENT_INVALID_STATUS,
           statusCode: 400,
+          message: 'Invalid payment status',
         });
       }
 

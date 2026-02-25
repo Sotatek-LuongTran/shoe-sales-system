@@ -17,8 +17,6 @@ async function bootstrap() {
     }),
   );
 
-  app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
-
   const config = new DocumentBuilder()
     .setTitle('Shoe Sales API')
     .setDescription('Backend API for Shoe Sales System')

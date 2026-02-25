@@ -1,5 +1,6 @@
 import {
   Body,
+  ClassSerializerInterceptor,
   Controller,
   Delete,
   Get,
@@ -9,6 +10,7 @@ import {
   Post,
   Query,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { AdminProductVariantService } from './admin-variant.service';
 import { Roles } from 'src/shared/decorators/role.decorator';
@@ -82,6 +84,7 @@ export class AdminProductVariantController {
     description: 'Paginated list of product variants'
   })
   @ApiPaginatedResponse(AdminVariantResponseDto)
+  @UseInterceptors(ClassSerializerInterceptor)
   async getVariantsByProduct(
     @Param('productId', new ParseUUIDPipe()) productId: string,
     @Query() dto: PaginateVariantsDto,

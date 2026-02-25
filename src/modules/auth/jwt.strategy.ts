@@ -38,6 +38,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException({
         errorCode: ErrorCodeEnum.AUTH_INVALID_TOKEN_STRUCTURE,
         statusCode: 401,
+        message: 'Invalid token structure',
       });
     }
 
@@ -45,6 +46,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException({
         errorCode: ErrorCodeEnum.AUTH_UNAUTHORIZED,
         statusCode: 401,
+        message: 'Unauthorized',
       });
     }
 
