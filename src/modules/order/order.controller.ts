@@ -1,5 +1,6 @@
 import {
   Body,
+  ClassSerializerInterceptor,
   Controller,
   Delete,
   Get,
@@ -9,6 +10,7 @@ import {
   Query,
   Req,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -76,6 +78,7 @@ export class OrderController {
     description: 'Order get successfully'
   })
   @ApiPaginatedResponse(OrderResponseDto)
+  @UseInterceptors(ClassSerializerInterceptor)
   async getAllOrders(@Req() req: any, @Query() dto: PaginateOrdersDto) {
     return this.orderService.getOrdersByUserPagination(req.user.userId, dto);
   }

@@ -22,6 +22,7 @@ export class AdminProductVariantService {
       throw new NotFoundException({
         errorCode: ErrorCodeEnum.PRODUCT_NOT_FOUND,
         statusCode: 404,
+        message: 'Product not found'
       });
 
     const variant = this.productVariantRepository.create({
@@ -45,12 +46,12 @@ export class AdminProductVariantService {
       throw new NotFoundException({
         errorCode: ErrorCodeEnum.PRODUCT_VARIANT_NOT_FOUND,
         statusCode: 404,
+        message: 'Variant not found',
       });
 
     Object.assign(variant, UpdateVariantDto);
 
     await this.productVariantRepository.save(variant);
-    return new AdminVariantResponseDto(variant);
   }
 
   async deleteProductVariant(id: string) {
@@ -59,6 +60,7 @@ export class AdminProductVariantService {
       throw new NotFoundException({
         errorCode: ErrorCodeEnum.PRODUCT_VARIANT_NOT_FOUND,
         statusCode: 404,
+        message: 'Variant not found',
       });
 
     variant.deletedAt = new Date(Date.now());
@@ -76,6 +78,7 @@ export class AdminProductVariantService {
       throw new NotFoundException({
         errorCode: ErrorCodeEnum.PRODUCT_NOT_FOUND,
         statusCode: 404,
+        message: 'Product not found',
       });
     }
 
@@ -83,6 +86,7 @@ export class AdminProductVariantService {
       throw new NotFoundException({
         errorCode: ErrorCodeEnum.BRAND_NOT_FOUND,
         statusCode: 404,
+        message: 'Brand not found',
       });
     }
 
@@ -90,6 +94,7 @@ export class AdminProductVariantService {
       throw new NotFoundException({
         errorCode: ErrorCodeEnum.CATEGORY_NOT_FOUND,
         statusCode: 404,
+        message: 'Category not found',
       });
     }
 
@@ -110,6 +115,7 @@ export class AdminProductVariantService {
       throw new NotFoundException({
         errorCode: ErrorCodeEnum.PRODUCT_VARIANT_NOT_FOUND,
         statusCode: 404,
+        message: 'Variant not found',
       });
 
     return new AdminVariantResponseDto(variant);
@@ -125,12 +131,12 @@ export class AdminProductVariantService {
       throw new NotFoundException({
         errorCode: ErrorCodeEnum.PRODUCT_VARIANT_NOT_FOUND,
         statusCode: 404,
+        message: 'Variant not found',
       });
     }
 
     variant.deletedAt = null;
     await this.productVariantRepository.save(variant);
-    return new AdminVariantResponseDto(variant);
   }
 
   async removeSoftDeletedVariants() {

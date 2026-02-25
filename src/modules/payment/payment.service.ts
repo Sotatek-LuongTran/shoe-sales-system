@@ -36,12 +36,14 @@ export class PaymentService {
     if (!order) throw new NotFoundException({
       errorCode: ErrorCodeEnum.ORDER_NOT_FOUND,
       statusCode: 404,
+      message: 'Order not found',
     });
 
     if (order.userId !== userId) {
       throw new ForbiddenException({
         errorCode: ErrorCodeEnum.ORDER_ACCESS_DENIED,
         statusCode: 403,
+        message: 'Access denied',
       });
     }
 
@@ -49,6 +51,7 @@ export class PaymentService {
       throw new BadRequestException({
         errorCode: ErrorCodeEnum.ORDER_ALREADY_PAID,
         statusCode: 400,
+        message: 'Order has already been paid',
       });
     }
 
@@ -73,12 +76,14 @@ export class PaymentService {
       if (!payment) throw new NotFoundException({
         errorCode: ErrorCodeEnum.PAYMENT_NOT_FOUND,
         statusCode: 404,
+        message: 'Payment not found',
       });
 
       if (payment.paymentStatus !== PaymentStatusEnum.PENDING) {
         throw new BadRequestException({
           errorCode: ErrorCodeEnum.PAYMENT_ALREADY_PROCESSED,
           statusCode: 400,
+          message: 'Paymen has already processed',
         });
       }
 
@@ -87,6 +92,7 @@ export class PaymentService {
       if (!order) throw new NotFoundException({
         errorCode: ErrorCodeEnum.ORDER_NOT_FOUND,
         statusCode: 404,
+        message: 'Order not found',
       });
       // Fake payment result
       const success = Math.random() > 0.2; // 80% success
@@ -128,12 +134,14 @@ export class PaymentService {
     if (!payment) throw new NotFoundException({
       errorCode: ErrorCodeEnum.PAYMENT_NOT_FOUND,
       statusCode: 404,
+      message: 'Payment not found',
     });
 
     if (payment.order.userId !== userId) {
       throw new ForbiddenException({
         errorCode: ErrorCodeEnum.ORDER_ACCESS_DENIED,
         statusCode: 403,
+        message: 'Access denied',
       });
     }
 
@@ -141,6 +149,7 @@ export class PaymentService {
       throw new BadRequestException({
         errorCode: ErrorCodeEnum.PAYMENT_INVALID_STATUS,
         statusCode: 404,
+        message: 'Invalid payment status',
       });
     }
 

@@ -1,10 +1,12 @@
 import {
+  ClassSerializerInterceptor,
   Controller,
   Get,
   Param,
   ParseUUIDPipe,
   Query,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -46,6 +48,7 @@ export class ProductVariantController {
     description: 'Paginated list of product variants'
   })
   @ApiPaginatedResponse(ProductVariantResponseDto)
+  @UseInterceptors(ClassSerializerInterceptor)
   async getVariantsByProduct(
     @Param('productId', new ParseUUIDPipe()) productId: string,
     @Query() dto: PaginateVariantsDto,

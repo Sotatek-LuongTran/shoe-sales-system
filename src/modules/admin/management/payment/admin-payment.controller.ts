@@ -1,4 +1,5 @@
 import {
+  ClassSerializerInterceptor,
   Controller,
   Get,
   Param,
@@ -6,6 +7,7 @@ import {
   Post,
   Query,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
@@ -43,6 +45,7 @@ export class AdminPaymentController {
     description: 'Payment refunded successfully'
   })
   @ApiPaginatedResponse(PaymentResponseDto)
+  @UseInterceptors(ClassSerializerInterceptor)
   async getAllPayments(@Query() dto: PaginatePaymentsDto) {
     return this.adminPaymentService.getAllPayments(dto);
   }

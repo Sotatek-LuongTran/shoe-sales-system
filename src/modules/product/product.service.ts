@@ -33,6 +33,7 @@ export class ProductService {
       throw new NotFoundException({
         errorCode: ErrorCodeEnum.PRODUCT_NOT_FOUND,
         statusCode: 404,
+        message: 'Product not found',
       });
     }
 

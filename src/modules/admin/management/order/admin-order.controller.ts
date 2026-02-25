@@ -1,4 +1,4 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { ClassSerializerInterceptor, Controller, Get, Query, UseGuards, UseInterceptors } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
   ApiBearerAuth,
@@ -34,6 +34,7 @@ export class AdminOrderController {
     description: 'Category deleted successfully',
   })
   @ApiPaginatedResponse(OrderResponseDto)
+  @UseInterceptors(ClassSerializerInterceptor)
   async getAllOrders(@Query() dto: PaginateOrdersDto) {
     return this.adminOrderService.getAllOrdersPagination(dto);
   }

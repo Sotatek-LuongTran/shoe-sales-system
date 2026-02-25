@@ -14,6 +14,7 @@ export class UserService {
       throw new UnauthorizedException({
         errorCode: ErrorCodeEnum.USER_NOT_FOUND,
         statusCode: 401,
+        message: 'User not found',
       });
     }
 
@@ -26,6 +27,7 @@ export class UserService {
       throw new UnauthorizedException({
         errorCode: ErrorCodeEnum.USER_OLD_PASSWORD_MISMATCH,
         statusCode: 401,
+        message: 'Old password mismatch',
       });
     }
 

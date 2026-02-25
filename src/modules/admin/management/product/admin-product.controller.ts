@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, ClassSerializerInterceptor, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, Query, UseGuards, UseInterceptors } from '@nestjs/common';
 import { AdminProductService } from './admin-product.service';
 import { Roles } from 'src/shared/decorators/role.decorator';
 import { UserRoleEnum } from 'src/shared/enums/user.enum';
@@ -45,6 +45,7 @@ export class AdminProductController {
     description: 'Products get successfully'
   })
   @ApiPaginatedResponse(AdminProductResponseDto)
+  @UseInterceptors(ClassSerializerInterceptor)
   getList(@Query() dto: PaginateProductsDto) {
     return this.adminProductService.getProductsPagination(dto);
   }

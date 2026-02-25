@@ -45,6 +45,7 @@ export class OrderService {
       throw new BadRequestException({
         errorCode: ErrorCodeEnum.ORDER_PENDING_NOT_FOUND,
         statusCode: 404,
+        message: 'No pending order found',
       });
     }
 
@@ -52,6 +53,7 @@ export class OrderService {
       throw new BadRequestException({
         errorCode: ErrorCodeEnum.ORDER_EMPTY,
         statusCode: 404,
+        message: 'Order is empty',
       });
     }
 
@@ -83,6 +85,7 @@ export class OrderService {
       throw new NotFoundException({
         errorCode: ErrorCodeEnum.USER_NOT_FOUND,
         statusCode: 404,
+        message: 'User not found',
       });
 
     const orders = await this.orderRepository.findOrdersPagination(dto);
@@ -99,6 +102,7 @@ export class OrderService {
       throw new NotFoundException({
         errorCode: ErrorCodeEnum.USER_NOT_FOUND,
         statusCode: 404,
+        message: 'User not found',
       });
 
     const order = await this.orderRepository.findById(orderId);
@@ -107,6 +111,7 @@ export class OrderService {
       throw new NotFoundException({
         errorCode: ErrorCodeEnum.ORDER_NOT_FOUND,
         statusCode: 404,
+        message: 'Order not found',
       });
     }
 
@@ -114,6 +119,7 @@ export class OrderService {
       throw new ForbiddenException({
         errorCode: ErrorCodeEnum.ORDER_ACCESS_DENIED,
         statusCode: 403,
+        message: 'Access denied',
       });
     }
 
@@ -126,6 +132,7 @@ export class OrderService {
       throw new NotFoundException({
         errorCode: ErrorCodeEnum.USER_NOT_FOUND,
         statusCode: 404,
+        message: 'User not found',
       });
 
     const { productId, productVariantId, quantity } = dto;
@@ -136,6 +143,7 @@ export class OrderService {
       throw new BadRequestException({
         errorCode: ErrorCodeEnum.PRODUCT_NOT_AVAILABLE,
         statusCode: 400,
+        message: 'Product not available',
       });
     }
 
@@ -147,6 +155,7 @@ export class OrderService {
       throw new BadRequestException({
         errorCode: ErrorCodeEnum.PRODUCT_VARIANT_OUT_OF_STOCK,
         statusCode: 400,
+        message: 'Variant out of stock',
       });
     }
 
@@ -214,6 +223,7 @@ export class OrderService {
       throw new NotFoundException({
         errorCode: ErrorCodeEnum.USER_EMAIL_ALREADY_USED,
         statusCode: 404,
+        message: 'Email already used',
       });
 
     return this.dataSource.transaction(async (manager) => {
@@ -222,6 +232,7 @@ export class OrderService {
         throw new NotFoundException({
           errorCode: ErrorCodeEnum.ORDER_NOT_FOUND,
           statusCode: 400,
+          message: 'Order not found',
         });
       }
 
@@ -229,6 +240,7 @@ export class OrderService {
         throw new ForbiddenException({
           errorCode: ErrorCodeEnum.ORDER_ACCESS_DENIED,
           statusCode: 403,
+          message: 'Access denied',
         });
       }
 
@@ -239,6 +251,7 @@ export class OrderService {
         throw new BadRequestException({
           errorCode: ErrorCodeEnum.ORDER_INVALID_STATUS,
           statusCode: 400,
+          message: 'Invalid order status',
         });
       }
 
@@ -273,6 +286,7 @@ export class OrderService {
       throw new NotFoundException({
         errorCode: ErrorCodeEnum.ORDER_PENDING_NOT_FOUND,
         statusCode: 400,
+        message: 'No pending order found',
       });
     }
 
@@ -280,6 +294,7 @@ export class OrderService {
       throw new BadRequestException({
         errorCode: ErrorCodeEnum.ORDER_INVALID_STATUS,
         statusCode: 400,
+        message: 'Invalid order status',
       });
     }
 
@@ -294,6 +309,7 @@ export class OrderService {
       throw new NotFoundException({
         errorCode: ErrorCodeEnum.ORDER_EMPTY,
         statusCode: 404,
+        message: 'OrderIsEmpty',
       });
     }
 
