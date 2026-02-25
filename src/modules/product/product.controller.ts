@@ -64,7 +64,10 @@ export class ProductController {
     type: ProductResponseDto,
   })
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
+  @UseInterceptors(ClassSerializerInterceptor)
   getOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.productService.getProduct(id);
   }
+
+  // serializer for all get fucntions
 }

@@ -52,12 +52,12 @@ export class OrderRepository extends BaseRepository<OrderEntity> {
     const limit = dto.limit ?? 10;
 
     const qb = this.createQueryBuilder('order').leftJoin(
-      'order.orderItems',
-      'item',
+      'order.items',
+      'items',
     );
     if (dto.userId) {
-      qb.leftJoin('order.user', 'user').where('user.id ILIKE :userId', {
-        userId: `%${dto.userId}%`,
+      qb.leftJoin('order.user', 'user').where('user.id = :userId', {
+        userId: dto.userId,
       });
     }
     return paginate(qb, { page, limit });
@@ -81,7 +81,7 @@ export class OrderRepository extends BaseRepository<OrderEntity> {
     return this.findOne({
       where: {
         id,
-        status: OrderStatusEnum.PENDING,
+        status: OrderStatusEnum.PROCESSING,
       },
       relations: {
         items: true,

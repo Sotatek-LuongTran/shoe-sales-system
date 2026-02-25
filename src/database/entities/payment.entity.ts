@@ -13,7 +13,7 @@ export class PaymentEntity extends BaseEntity {
   paymentStatus: PaymentStatusEnum;
 
   // @Column({ name: 'deleted_at', type: 'timestamp', nullable: true })
-  @DeleteDateColumn()
+  @DeleteDateColumn({ name: 'deleted_at'})
   deletedAt: Date | null;
 
   @Column({ name: 'order_id', type: 'uuid' })
