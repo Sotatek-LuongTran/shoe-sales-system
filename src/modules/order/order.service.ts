@@ -10,7 +10,7 @@ import {
 import { DataSource } from 'typeorm';
 import { OrderRepository } from '../../shared/modules/common-order/order.repository';
 import { OrderItemRepository } from './repository/order-item.repository';
-import { UserRepository } from 'src/shared/modules/user/user.repository';
+import { UserRepository } from 'src/shared/modules/common-user/user.repository';
 import { AddToPendingOrderDto } from 'src/modules/order/dto/add-to-order.dto';
 import {
   OrderPaymentStatusEnum,

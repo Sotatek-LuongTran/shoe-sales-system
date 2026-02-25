@@ -32,11 +32,11 @@ import { CatchEverythingFilter } from './shared/filters/catch-everything.filter'
     AdminModule,
     UserModule,
   ],
-  providers: [
-    {
-      provide: APP_FILTER,
-      useClass: CatchEverythingFilter,
-    },
-  ],
+  // providers: [
+  //   {
+  //     provide: APP_FILTER,
+  //     useClass: CatchEverythingFilter,
+  //   },
+  // ],
 })
 export class AppModule {}

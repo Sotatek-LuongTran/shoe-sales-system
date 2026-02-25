@@ -1,6 +1,6 @@
 import { DataSource } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import { UserRepository } from '../../shared/modules/user/user.repository';
+import { UserRepository } from '../../shared/modules/common-user/user.repository';
 import { UserRoleEnum } from 'src/shared/enums/user.enum';
 
 export async function seedAdmin(dataSource: DataSource) {

@@ -23,7 +23,7 @@ export class UserRepository extends BaseRepository<UserEntity> {
       qb.withDeleted();
     }
 
-    qb.orderBy('product.createdAt', 'DESC')
+    qb.orderBy('user.createdAt', 'DESC')
       .skip((page - 1) * limit)
       .take(limit);
 
@@ -35,6 +35,15 @@ export class UserRepository extends BaseRepository<UserEntity> {
       where: {
         email,
       },
+    });
+  }
+
+  async findDeletedUser(userId: string) {
+    return this.findOne({
+      where: {
+        id: userId,
+      },
+      withDeleted: true
     });
   }
 }

@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { UserRepository } from 'src/shared/modules/user/user.repository';
+import { UserRepository } from 'src/shared/modules/common-user/user.repository';
 import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from 'src/modules/auth/dto/create-user.dto';
 import { UpdateUserDto } from 'src/modules/admin/management/user/dto/update-user.dto';
@@ -62,6 +62,22 @@ export class AdminUserService {
         message: 'User not found',
       });
     }
+    user.deletedAt = new Date();
+    await this.userRepository.save(user)
     await this.redisService.incr(`user:tokenVersion:${userId}`);
+  }
+
+  async restoreUser(userId: string) {
+    const user = await this.userRepository.findDeletedUser(userId);
+    if (!user) {
+      throw new NotFoundException({
+        errorCode: ErrorCodeEnum.USER_NOT_FOUND,
+        status: 404,
+        message: 'User not found',
+      });
+    }
+    user.deletedAt = null;
+    await this.userRepository.save(user);
+    await this.redisService.decr(`user:tokenVersion:${userId}`);
   }
 }

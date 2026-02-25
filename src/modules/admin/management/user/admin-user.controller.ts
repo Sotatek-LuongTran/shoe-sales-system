@@ -88,4 +88,14 @@ export class AdminUserController {
   deactivateUser(@Param('id', ParseUUIDPipe) id: string) {
     return this.adminUserService.deactivateUser(id);
   }
+
+  @Put('restore/:id')
+  @ApiOperation({ summary: 'Restore an user' })
+  @ApiResponse({
+    status: 201,
+    description: 'User restored successfully',
+  })
+  restoreUser(@Param('id', ParseUUIDPipe) id: string) {
+    return this.adminUserService.restoreUser(id);
+  }
 }
