@@ -32,9 +32,9 @@ export class OrderEntity extends BaseEntity {
   @Column({ name: 'expires_at', type: 'timestamp' })
   expiresAt: Date;
 
-  // @Column({ name: 'deleted_at', type: 'timestamp', nullable: true })
-  @DeleteDateColumn({ name: 'deleted_at' })
-  deletedAt: Date | null;
+    // @Column({ name: 'deleted_at', type: 'timestamp', nullable: true })
+    @DeleteDateColumn({ name: 'deleted_at'})
+    deletedAt: Date | null;
 
   @Column({ name: 'user_id', type: 'uuid' })
   userId: string;

@@ -66,6 +66,10 @@ export class OrderRepository extends BaseRepository<OrderEntity> {
     if (dto.search) {
       qb.where('order.');
     }
+
+    if (dto.search) {
+      qb.where('order.');
+    }
     return paginate(qb, { page, limit });
   }
 
@@ -88,7 +92,7 @@ export class OrderRepository extends BaseRepository<OrderEntity> {
     return this.findOne({
       where: {
         id,
-        status: OrderStatusEnum.PENDING,
+        status: OrderStatusEnum.PROCESSING,
       },
       relations: {
         items: true,
