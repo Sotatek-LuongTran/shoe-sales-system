@@ -11,6 +11,7 @@ import {
   Query,
   UseInterceptors,
   ClassSerializerInterceptor,
+  Patch,
 } from '@nestjs/common';
 import { AdminUserService } from './admin-user.service';
 import { CreateUserDto } from 'src/modules/auth/dto/create-user.dto';
@@ -89,7 +90,7 @@ export class AdminUserController {
     return this.adminUserService.deactivateUser(id);
   }
 
-  @Put('restore/:id')
+  @Patch(':id')
   @ApiOperation({ summary: 'Restore an user' })
   @ApiResponse({
     status: 201,

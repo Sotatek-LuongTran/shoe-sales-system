@@ -78,7 +78,6 @@ export class AdminProductVariantController {
     summary: 'Get variants of a product with pagination',
   })
   @ApiParam({ name: 'productId', description: 'Product ID', type: String })
-  @ApiQuery({ name: 'dto', required: true, type: PaginateVariantsDto })
   @ApiResponse({
     status: 200,
     description: 'Paginated list of product variants'
