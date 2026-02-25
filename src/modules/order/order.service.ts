@@ -159,6 +159,8 @@ export class OrderService {
       });
     }
 
+
+    // Bo
     variant.stock -= quantity;
 
     await this.productVariantRepository.save(variant);

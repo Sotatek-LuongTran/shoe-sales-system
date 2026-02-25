@@ -101,9 +101,65 @@ export class AuthenticationService {
       expiresIn: this.configService.get('JWT_EXPIRES_IN'),
     });
 
+    const refreshPayload = {
+      sub: user.id,
+      tokenVersion: version,
+    };
+
+    const refreshToken = this.jwtService.sign(refreshPayload, {
+      secret:
+        this.configService.get('JWT_REFRESH_SECRET') ??
+        this.configService.get('JWT_SECRET'),
+      expiresIn: this.configService.get('JWT_REFRESH_EXPIRES_IN') ?? '7d',
+    });
+
     return {
       accessToken,
+      refreshToken,
       message: 'User logged in successfully',
     };
+  }
+
+  async refeshAccessToken(refreshToken: string) {
+    let payload: any;
+
+    try {
+      payload = this.jwtService.verify(refreshToken, {
+        secret: this.configService.get('JWT_REFRESH_SECRET'),
+      });
+    } catch {
+      throw new UnauthorizedException({
+        errorCode: ErrorCodeEnum.AUTH_INVALID_REFRESH_TOKEN,
+        statusCode: 401,
+        message: 'Invalid refresh token',
+      });
+    }
+
+    const userId = payload.sub;
+
+    const redisVersion =
+      (await this.redisService.getAsNumber(`user:tokenVersion:${userId}`)) ?? 0;
+
+    if (Number(redisVersion) !== Number(payload.tokenVersion)) {
+      throw new UnauthorizedException({
+        errorCode: ErrorCodeEnum.AUTH_TOKEN_REVOKED,
+        statusCode: 401,
+        message: 'Token revoked',
+      });
+    }
+
+    const newAccessToken = this.jwtService.sign(
+      {
+        sub: payload.sub,
+        role: payload.role,
+        tokenVersion: payload.tokenVersion,
+      },
+      {
+        secret: this.configService.get('JWT_SECRET'),
+        expiresIn: this.configService.get('JWT_EXPIRES_IN'),
+      },
+    );
+
+    return { accessToken: newAccessToken };
   }
 }

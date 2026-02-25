@@ -32,6 +32,17 @@ async function bootstrap() {
       },
       'access-token', // security name
     )
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'Authorization',
+        description: 'Paste REFRESH TOKEN here',
+        in: 'header',
+      },
+      'refresh-token',
+    )
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
