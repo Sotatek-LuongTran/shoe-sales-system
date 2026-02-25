@@ -73,7 +73,7 @@ export class AdminCategoryController {
   @ApiPaginatedResponse(AdminCategoryResponseDto)
   @ApiQuery({ name: 'dto', required: true, type: PaginateCategoriesDto })
   @UseInterceptors(ClassSerializerInterceptor)
-  getList(@Query('dto') dto: PaginateCategoriesDto) {
+  getList(@Query() dto: PaginateCategoriesDto) {
     return this.adminCategoryService.getCategoriesPagination(dto);
   }
 

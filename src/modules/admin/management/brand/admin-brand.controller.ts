@@ -48,7 +48,7 @@ export class AdminBrandController {
   @ApiPaginatedResponse(AdminBrandResponseDto)
   @ApiQuery({ name: 'dto', required: true, type: PaginateBrandsDto })
   @UseInterceptors(ClassSerializerInterceptor)
-  getList(@Query('dto') dto: PaginateBrandsDto) {
+  getList(@Query() dto: PaginateBrandsDto) {
     return this.brandService.getBrandsPagination(dto);
   }
 
