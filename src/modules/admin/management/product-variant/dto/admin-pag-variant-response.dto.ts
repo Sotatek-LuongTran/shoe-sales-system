@@ -5,11 +5,6 @@ import { AdminVariantResponseDto } from "./admin-variant-response.dto";
 
 @Exclude()
 export class AdminPaginationVariantResponseDto {
-    @Expose()
-    @ApiProperty({
-        description: 'Meta of pagination'
-    })
-    meta: PaginationResponseDto;
 
     @Expose()
     @ApiProperty({

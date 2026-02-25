@@ -1,4 +1,4 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { ClassSerializerInterceptor, Controller, Get, Query, UseGuards, UseInterceptors } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
   ApiBearerAuth,
@@ -12,8 +12,10 @@ import { UserRoleEnum } from 'src/shared/enums/user.enum';
 import { RolesGuard } from 'src/shared/guards/role.guard';
 import { AdminOrderService } from './admin-order.service';
 import { PaginateOrdersDto } from 'src/shared/dto/order/paginate-order.dto';
-import { PaginationOrderResponseDto } from 'src/shared/dto/order/pagination-order-response';
 import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
+import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
+import { ApiPaginatedResponse } from 'src/shared/decorators/api-paginated-response.decorator';
+import { OrderResponseDto } from 'src/shared/dto/order/order-response.dto';
 
 @Controller('admin/orders')
 @ApiBearerAuth('access-token')
@@ -30,10 +32,10 @@ export class AdminOrderController {
   @ApiResponse({
     status: 201,
     description: 'Category deleted successfully',
-    type: PaginationOrderResponseDto,
   })
-  @ApiQuery({ name: 'dto', required: true, type: PaginateOrdersDto })
-  async getAllOrders(@Query('dto') dto: PaginateOrdersDto) {
+  @ApiPaginatedResponse(OrderResponseDto)
+  @UseInterceptors(ClassSerializerInterceptor)
+  async getAllOrders(@Query() dto: PaginateOrdersDto) {
     return this.adminOrderService.getAllOrdersPagination(dto);
   }
 }

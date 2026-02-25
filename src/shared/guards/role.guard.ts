@@ -28,7 +28,8 @@ export class RolesGuard implements CanActivate {
     if (!requiredRoles.includes(user.role)) {
       throw new ForbiddenException({
         errorCode: ErrorCodeEnum.AUTH_FORBIDDEN,
-        statusCode: 403
+        statusCode: 403,
+        message: 'Forbidden resource'
       });
     }
 

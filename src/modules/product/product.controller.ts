@@ -1,5 +1,6 @@
 import {
   Body,
+  ClassSerializerInterceptor,
   Controller,
   Delete,
   Get,
@@ -9,6 +10,7 @@ import {
   Post,
   Query,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -19,14 +21,14 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { ProductService } from './product.service';
-import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from 'src/shared/guards/role.guard';
 import { UserRoleEnum } from 'src/shared/enums/user.enum';
 import { Roles } from 'src/shared/decorators/role.decorator';
 import { PaginateProductsDto } from '../../shared/dto/product/paginate-products.dto';
 import { ProductResponseDto } from 'src/shared/dto/product/product-respose.dto';
-import { PaginationProductResponseDto } from 'src/shared/dto/product/pagination-product-response';
 import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
+import { ApiPaginatedResponse } from 'src/shared/decorators/api-paginated-response.decorator';
+import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
 
 @ApiTags('Products')
 @ApiBearerAuth('access-token')
@@ -43,10 +45,10 @@ export class ProductController {
   @ApiOperation({ summary: 'Get products with pagination & filters' })
   @ApiResponse({
     status: 201,
-    description: 'Products get successfully',
-    type: PaginationProductResponseDto,
+    description: 'Products get successfully'
   })
-  @ApiQuery({ name: 'dto', required: true, type: PaginateProductsDto })
+  @ApiPaginatedResponse(ProductResponseDto)
+  @UseInterceptors(ClassSerializerInterceptor)
   getList(@Query() dto: PaginateProductsDto) {
     return this.productService.getProductsPagination(dto);
   }

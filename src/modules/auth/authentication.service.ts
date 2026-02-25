@@ -29,6 +29,7 @@ export class AuthenticationService {
       throw new BadRequestException({
         errorCode: ErrorCodeEnum.AUTH_EMAIL_EXISTED,
         statusCode: 400,
+        message: 'Email already existed',
       });
     }
 
@@ -54,6 +55,7 @@ export class AuthenticationService {
       throw new UnauthorizedException({
         errorCode: ErrorCodeEnum.AUTH_INVALID_CREDENTIALS,
         statusCode: 401,
+        message: 'Invalid credentials',
       });
     }
 
@@ -66,6 +68,7 @@ export class AuthenticationService {
       throw new UnauthorizedException({
         errorCode: ErrorCodeEnum.AUTH_INVALID_CREDENTIALS,
         statusCode: 401,
+        message: 'Invalid credentials',
       });
     }
 
@@ -88,29 +91,9 @@ export class AuthenticationService {
       expiresIn: this.configService.get('JWT_EXPIRES_IN'),
     });
 
-    const refreshPayload = {
-      sub: user.id,
-      tokenVersion: version,
-    };
-
-    const refreshToken = this.jwtService.sign(refreshPayload, {
-      secret:
-        this.configService.get('JWT_REFRESH_SECRET') ??
-        this.configService.get('JWT_SECRET'),
-      expiresIn: this.configService.get('JWT_REFRESH_EXPIRES_IN') ?? '7d',
-    });
-
-    const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
-
     const refreshTtl =
       this.configService.get<number>('JWT_REFRESH_TTL_SECONDS') ??
       60 * 60 * 24 * 7;
-
-    await this.redisService.set(
-      `user:refreshToken:${user.id}`,
-      hashedRefreshToken,
-      refreshTtl,
-    );
 
     await this.redisService.setWithNumber(
       `user:tokenVersion:${user.id}`,

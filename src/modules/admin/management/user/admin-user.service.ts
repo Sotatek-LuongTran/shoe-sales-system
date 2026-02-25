@@ -5,6 +5,7 @@ import { CreateUserDto } from 'src/modules/auth/dto/create-user.dto';
 import { UpdateUserDto } from 'src/modules/admin/management/user/dto/update-user.dto';
 import { RedisService } from 'src/common/redis/redis.service';
 import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
+import { PaginateUsersDto } from 'src/shared/dto/user/paginate-user.dto';
 
 @Injectable()
 export class AdminUserService {
@@ -21,8 +22,8 @@ export class AdminUserService {
     });
   }
 
-  async findAllUsers() {
-    return this.userRepository.find();
+  async getAllUsersPagination(dto: PaginateUsersDto) {
+    return this.userRepository.findUsersPagination(dto);
   }
 
   async findUserById(id: string) {
@@ -31,6 +32,7 @@ export class AdminUserService {
       throw new NotFoundException({
         errorCode: ErrorCodeEnum.USER_NOT_FOUND,
         status: 404,
+        message: 'User not found',
       });
     }
     return user;
@@ -42,6 +44,7 @@ export class AdminUserService {
       throw new NotFoundException({
         errorCode: ErrorCodeEnum.USER_NOT_FOUND,
         status: 404,
+        message: 'User not found',
       });
     }
     if (updateUserDto.password) {
@@ -56,9 +59,9 @@ export class AdminUserService {
       throw new NotFoundException({
         errorCode: ErrorCodeEnum.USER_NOT_FOUND,
         status: 404,
+        message: 'User not found',
       });
     }
     await this.redisService.incr(`user:tokenVersion:${userId}`);
-    await this.redisService.del(`user:refreshToken:${userId}`); 
   }
 }

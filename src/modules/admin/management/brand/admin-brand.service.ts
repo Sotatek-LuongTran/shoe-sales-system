@@ -30,6 +30,7 @@ export class AdminBrandService {
       throw new BadRequestException({
         errorCode: ErrorCodeEnum.BRAND_ALREADY_EXIST,
         statusCode: 400,
+        message: 'Brand has already existed',
       });
 
     const brand = this.brandRepository.create(createBrandDto);
@@ -45,13 +46,12 @@ export class AdminBrandService {
       throw new NotFoundException({
         errorCode: ErrorCodeEnum.BRAND_NOT_FOUND,
         statusCode: 404,
+        message: 'Brand not found',
       });
 
     Object.assign(brand, updateBrandDto);
 
     await this.brandRepository.save(brand);
-
-    return new AdminBrandResponseDto(brand);
   }
 
   async deleteBrand(brandId: string) {
@@ -60,6 +60,7 @@ export class AdminBrandService {
       throw new NotFoundException({
         errorCode: ErrorCodeEnum.BRAND_NOT_FOUND,
         statusCode: 404,
+        message: 'Brand not found',
       });
 
     brand.deletedAt = new Date(Date.now());
@@ -74,11 +75,11 @@ export class AdminBrandService {
       throw new NotFoundException({
         errorCode: ErrorCodeEnum.BRAND_NOT_FOUND,
         statusCode: 404,
+        message: 'Brand not found',
       });
     }
 
     brand.deletedAt = null;
     await this.brandRepository.save(brand);
-    return new AdminBrandResponseDto(brand);
   }
 }

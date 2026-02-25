@@ -1,28 +1,29 @@
 import {
+  ClassSerializerInterceptor,
   Controller,
   Get,
   Param,
   ParseUUIDPipe,
   Query,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
   ApiParam,
-  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { AuthGuard } from '@nestjs/passport';
 import { Roles } from 'src/shared/decorators/role.decorator';
 import { UserRoleEnum } from 'src/shared/enums/user.enum';
 import { RolesGuard } from 'src/shared/guards/role.guard';
 import { CategoryService } from './category.service';
 import { PaginateCategoriesDto } from '../../shared/dto/category/paginate-categories.dto';
 import { CategoryResponseDto } from 'src/shared/dto/category/category-response.dto';
-import { PaginationCategoryResponseDto } from 'src/shared/dto/category/pagination-category-response';
 import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
+import { ApiPaginatedResponse } from 'src/shared/decorators/api-paginated-response.decorator';
+import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
 
 @ApiTags('Categories')
 @ApiBearerAuth('access-token')
@@ -40,11 +41,11 @@ export class CategoryController {
   @ApiResponse({
     status: 201,
     description: 'Categories get successfully',
-    type: PaginationCategoryResponseDto,
   })
-  @ApiQuery({ name: 'dto', required: true, type: PaginateCategoriesDto })
+  @ApiPaginatedResponse(CategoryResponseDto)
+  @UseInterceptors(ClassSerializerInterceptor)
   getList(
-    @Query('dto') dto: PaginateCategoriesDto,
+    @Query() dto: PaginateCategoriesDto,
   ) {
     return this.categoryService.getCategoriesPagination(dto);
   }

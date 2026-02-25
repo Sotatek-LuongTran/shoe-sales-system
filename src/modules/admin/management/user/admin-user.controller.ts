@@ -8,6 +8,9 @@ import {
   Param,
   UseGuards,
   ParseUUIDPipe,
+  Query,
+  UseInterceptors,
+  ClassSerializerInterceptor,
 } from '@nestjs/common';
 import { AdminUserService } from './admin-user.service';
 import { CreateUserDto } from 'src/modules/auth/dto/create-user.dto';
@@ -19,6 +22,9 @@ import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagg
 import { AuthGuard } from '@nestjs/passport';
 import { UserResponseDto } from 'src/shared/dto/user/user-response.dto';
 import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
+import { PaginateUsersDto } from 'src/shared/dto/user/paginate-user.dto';
+import { ApiPaginatedResponse } from 'src/shared/decorators/api-paginated-response.decorator';
+import { AdminUserResponseDto } from './dto/admin-user-response.dto';
 
 @ApiTags('Admin')
 @ApiBearerAuth('access-token')
@@ -44,10 +50,11 @@ export class AdminUserController {
   @ApiResponse({
     status: 201,
     description: 'Users get successfully',
-    type: UserResponseDto,
   })
-  findAllUsers() {
-    return this.adminUserService.findAllUsers();
+  @ApiPaginatedResponse(AdminUserResponseDto)
+  @UseInterceptors(ClassSerializerInterceptor)
+  getList(@Query() dto: PaginateUsersDto) {
+    return this.adminUserService.getAllUsersPagination(dto);
   }
 
   @Get(':id')

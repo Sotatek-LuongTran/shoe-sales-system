@@ -26,6 +26,7 @@ export class CategoryService {
       throw new NotFoundException({
         errorCode: ErrorCodeEnum.CATEGORY_NOT_FOUND,
         statusCode: 404,
+        message: 'Category not found',
       });
 
     return new CategoryResponseDto(category);

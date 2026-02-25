@@ -23,6 +23,7 @@ export class BrandService {
       throw new NotFoundException({
         errorCode: ErrorCodeEnum.BRAND_NOT_FOUND,
         statusCode: 404,
+        message: 'Brand not found',
       });
 
     return new BrandResponseDto(brand);

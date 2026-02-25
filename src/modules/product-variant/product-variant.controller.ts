@@ -1,10 +1,12 @@
 import {
+  ClassSerializerInterceptor,
   Controller,
   Get,
   Param,
   ParseUUIDPipe,
   Query,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -21,8 +23,9 @@ import { RolesGuard } from 'src/shared/guards/role.guard';
 import { UserRoleEnum } from 'src/shared/enums/user.enum';
 import { Roles } from 'src/shared/decorators/role.decorator';
 import { ProductVariantResponseDto } from 'src/shared/dto/product-variant/product-variant-response.dto';
-import { PaginationVariantResponseDto } from 'src/shared/dto/product-variant/pagination-variant-response';
 import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
+import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
+import { ApiPaginatedResponse } from 'src/shared/decorators/api-paginated-response.decorator';
 
 @ApiTags('Product variants')
 @ApiBearerAuth('access-token')
@@ -40,12 +43,12 @@ export class ProductVariantController {
     summary: 'Get variants of a product with pagination',
   })
   @ApiParam({ name: 'productId', description: 'Product ID', type: String })
-  @ApiQuery({ name: 'dto', required: true, type: PaginateVariantsDto })
   @ApiResponse({
     status: 200,
-    description: 'Paginated list of product variants',
-    type: PaginationVariantResponseDto,
+    description: 'Paginated list of product variants'
   })
+  @ApiPaginatedResponse(ProductVariantResponseDto)
+  @UseInterceptors(ClassSerializerInterceptor)
   async getVariantsByProduct(
     @Param('productId', new ParseUUIDPipe()) productId: string,
     @Query() dto: PaginateVariantsDto,
