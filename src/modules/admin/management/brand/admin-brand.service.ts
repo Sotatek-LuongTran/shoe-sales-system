@@ -50,8 +50,6 @@ export class AdminBrandService {
     Object.assign(brand, updateBrandDto);
 
     await this.brandRepository.save(brand);
-
-    return new AdminBrandResponseDto(brand);
   }
 
   async deleteBrand(brandId: string) {

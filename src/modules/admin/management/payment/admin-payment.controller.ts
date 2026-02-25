@@ -22,8 +22,9 @@ import { UserRoleEnum } from 'src/shared/enums/user.enum';
 import { RolesGuard } from 'src/shared/guards/role.guard';
 import { AdminPaymentService } from './admin-payment.service';
 import { PaymentResponseDto } from 'src/shared/dto/payment/payment-response.dto';
-import { PaginationPaymentResponseDto } from 'src/shared/dto/payment/pagination-order-response';
 import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
+import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
+import { ApiPaginatedResponse } from 'src/shared/decorators/api-paginated-response.decorator';
 
 @Controller('admin/payments')
 @ApiBearerAuth('access-token')
@@ -39,11 +40,10 @@ export class AdminPaymentController {
   @ApiOperation({ summary: 'Admin: get all payments' })
   @ApiResponse({
     status: 200,
-    description: 'Payment refunded successfully',
-    type: PaginationPaymentResponseDto,
+    description: 'Payment refunded successfully'
   })
-  @ApiQuery({ name: 'dto', required: true, type: PaginatePaymentsDto })
-  async getAllPayments(@Query('dto') dto: PaginatePaymentsDto) {
+  @ApiPaginatedResponse(PaymentResponseDto)
+  async getAllPayments(@Query() dto: PaginatePaymentsDto) {
     return this.adminPaymentService.getAllPayments(dto);
   }
   // =========================

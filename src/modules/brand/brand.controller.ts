@@ -15,14 +15,14 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { AuthGuard } from '@nestjs/passport';
 import { Roles } from 'src/shared/decorators/role.decorator';
 import { UserRoleEnum } from 'src/shared/enums/user.enum';
 import { RolesGuard } from 'src/shared/guards/role.guard';
 import { PaginateBrandsDto } from '../../shared/dto/brand/paginate-brands.dto';
 import { BrandResponseDto } from 'src/shared/dto/brand/brand-response.dto';
-import { PaginationBrandResponseDto } from 'src/shared/dto/brand/pagination-brand-response';
 import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
+import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
+import { ApiPaginatedResponse } from 'src/shared/decorators/api-paginated-response.decorator';
 
 @ApiTags('Brands')
 @ApiBearerAuth('access-token')
@@ -39,11 +39,10 @@ export class BrandController {
   @ApiOperation({ summary: 'Get brands with pagination & filters' })
   @ApiResponse({
     status: 201,
-    description: 'Brands get successfully',
-    type: PaginationBrandResponseDto,
+    description: 'Brands get successfully'
   })
-  @ApiQuery({ name: 'dto', required: true, type: PaginateBrandsDto })
-  getList(@Query('dto') dto: PaginateBrandsDto) {
+  @ApiPaginatedResponse(BrandResponseDto)
+  getList(@Query() dto: PaginateBrandsDto) {
     return this.brandService.getBrandsPagination(dto);
   }
 

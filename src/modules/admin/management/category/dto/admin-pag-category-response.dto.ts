@@ -7,12 +7,6 @@ import { ApiProperty } from "@nestjs/swagger";
 export class AdminPaginationCategoryResponseDto {
     @Expose()
     @ApiProperty({
-        description: 'Meta of pagination'
-    })
-    meta: PaginationResponseDto;
-
-    @Expose()
-    @ApiProperty({
         description: 'List of categories'
     })
     categories: AdminCategoryResponseDto[];
