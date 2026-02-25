@@ -60,6 +60,8 @@ export class ProductResponseDto extends ResponseDto {
   @Expose()
   @ApiProperty({
     description: 'List of variants',
+    type: () => ProductVariantResponseDto,
+    isArray: true,
   })
   productVariants: ProductVariantResponseDto[];
 
