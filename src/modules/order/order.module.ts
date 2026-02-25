@@ -8,7 +8,7 @@ import { OrderService } from './order.service';
 import { OrderController } from './order.controller';
 import { ProductRepository } from 'src/shared/modules/common-product/product.repository';
 import { ProductVariantRepository } from 'src/shared/modules/common-product-variant/product-variant.repository';
-import { UserRepository } from 'src/shared/modules/user/user.repository';
+import { UserRepository } from 'src/shared/modules/common-user/user.repository';
 import { AuthenticationModule } from '../auth/authentication.module';
 import { PaymentRepository } from '../payment/repository/payment.repository';
 

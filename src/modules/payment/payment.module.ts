@@ -7,7 +7,7 @@ import { OrderRepository } from '../../shared/modules/common-order/order.reposit
 import { PaymentController } from './payment.controller';
 import { ProductVariantRepository } from 'src/shared/modules/common-product-variant/product-variant.repository';
 import { PaymentService } from './payment.service';
-import { UserRepository } from 'src/shared/modules/user/user.repository';
+import { UserRepository } from 'src/shared/modules/common-user/user.repository';
 
 @Module({
   imports: [TypeOrmModule.forFeature([PaymentEntity, OrderEntity])],

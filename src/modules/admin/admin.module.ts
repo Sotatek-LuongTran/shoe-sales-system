@@ -3,7 +3,7 @@ import { AdminUserController } from './management/user/admin-user.controller';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from 'src/database/entities/user.entity';
-import { UserRepository } from 'src/shared/modules/user/user.repository';
+import { UserRepository } from 'src/shared/modules/common-user/user.repository';
 import { AdminBrandController } from './management/brand/admin-brand.controller';
 import { AdminBrandService } from './management/brand/admin-brand.service';
 import { BrandRepository } from 'src/shared/modules/common-brand/brand.repository';

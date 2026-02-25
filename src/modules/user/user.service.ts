@@ -1,5 +1,5 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { UserRepository } from 'src/shared/modules/user/user.repository';
+import { UserRepository } from 'src/shared/modules/common-user/user.repository';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
 import * as bcrypt from 'bcrypt';

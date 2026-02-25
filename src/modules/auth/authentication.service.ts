@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { UserRepository } from 'src/shared/modules/user/user.repository';
+import { UserRepository } from 'src/shared/modules/common-user/user.repository';
 import { CreateUserDto } from './dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
 import { LoginDto } from './dto/login.dto';
@@ -80,6 +80,16 @@ export class AuthenticationService {
       version = 0;
     }
 
+    const refreshTtl =
+      this.configService.get<number>('JWT_REFRESH_TTL_SECONDS') ??
+      60 * 60 * 24 * 7;
+
+    await this.redisService.setWithNumber(
+      `user:tokenVersion:${user.id}`,
+      version,
+      refreshTtl,
+    );
+
     const accessPayload = {
       sub: user.id,
       role: user.role,
@@ -90,16 +100,6 @@ export class AuthenticationService {
       secret: this.configService.get('JWT_SECRET'),
       expiresIn: this.configService.get('JWT_EXPIRES_IN'),
     });
-
-    const refreshTtl =
-      this.configService.get<number>('JWT_REFRESH_TTL_SECONDS') ??
-      60 * 60 * 24 * 7;
-
-    await this.redisService.setWithNumber(
-      `user:tokenVersion:${user.id}`,
-      version,
-      refreshTtl,
-    );
 
     return {
       accessToken,

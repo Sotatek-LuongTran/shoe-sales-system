@@ -4,6 +4,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { RedisService } from '../../common/redis/redis.service';
 import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
+import { UserRoleEnum } from 'src/shared/enums/user.enum';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -17,6 +18,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new NotFoundException({
         errorCode: ErrorCodeEnum.AUTH_JWT_SECRET_NOT_FOUND,
         statusCode: 404,
+        message: 'Secret key not found'
       });
     }
     super({
@@ -30,6 +32,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     let currentVersion = await this.redisService.getAsNumber(
       `user:tokenVersion:${payload.sub}`,
     );
+    
     if (currentVersion === null) {
       currentVersion = 0;
     }

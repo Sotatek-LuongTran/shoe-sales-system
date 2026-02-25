@@ -14,7 +14,7 @@ import { OrderEntity } from 'src/database/entities/order.entity';
 import { DataSource } from 'typeorm';
 import { PaymentResponseDto } from 'src/shared/dto/payment/payment-response.dto';
 import { PaginatePaymentsDto } from 'src/shared/dto/payment/paginate-payments.dto';
-import { UserRepository } from 'src/shared/modules/user/user.repository';
+import { UserRepository } from 'src/shared/modules/common-user/user.repository';
 import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
 
 @Injectable()
