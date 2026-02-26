@@ -28,17 +28,17 @@ export class MailerService {
 
   async sendApprovalEmail(
     to: string,
-    context: { approver: string; link: string },
+    context: { approver: string; link: string, token: string },
   ) {
-    if (!to || !context.approver || !context.link) {
+    if (!to || !context.approver || !context.link || !context.token) {
       throw new BadRequestException({
         errorCode: ErrorCodeEnum.MAILER_MISSING_INFORMATION,
         statusCode: 400,
-        message: 'Missing required fields: to, approver, link',
+        message: 'Missing required fields: to, approver, link or token',
       });
     }
     return this.sendTemplateEmail(
-      'approval-notification',
+      'registration-notification',
       to,
       'Approval Required',
       context,
