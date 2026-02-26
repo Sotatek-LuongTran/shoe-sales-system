@@ -5,6 +5,7 @@ import { CategoryEntity } from 'src/database/entities/category.entity';
 import { ProductEntity } from 'src/database/entities/product.entity';
 import { PaginateCategoriesDto } from 'src/shared/dto/category/paginate-categories.dto';
 import { paginate } from 'nestjs-typeorm-paginate';
+import { CategoryStatusEnum } from 'src/shared/enums/category.enum';
 
 @Injectable()
 export class CategoryRepository extends BaseRepository<CategoryEntity> {
@@ -16,6 +17,7 @@ export class CategoryRepository extends BaseRepository<CategoryEntity> {
     return this.findOne({
       where: {
         name,
+        status: CategoryStatusEnum.ACTIVE,
       },
     });
   }
@@ -29,16 +31,21 @@ export class CategoryRepository extends BaseRepository<CategoryEntity> {
       qb.withDeleted();
     }
 
+    if (dto.status) {
+      qb.andWhere('category.status = :status', { status: dto.status });
+    }
+
     if (dto.search) {
-      qb.andWhere('category.name ILIKE :search OR category.description ILIKE', { search: `%${dto.search}%` });
+      qb.andWhere('category.name ILIKE :search OR category.description ILIKE', {
+        search: `%${dto.search}%`,
+      });
     }
     return paginate(qb, { page, limit });
   }
 
-  async findDeletedCategory(categoryId: string) {
+  async findInactiveCategory(categoryId: string) {
     return this.findOne({
-      where: { id: categoryId },
-      withDeleted: true,
+      where: { id: categoryId, status: CategoryStatusEnum.INACTIVE },
     });
   }
 }

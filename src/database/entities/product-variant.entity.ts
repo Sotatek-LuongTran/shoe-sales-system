@@ -1,6 +1,7 @@
 import { Column, Entity, Index, ManyToOne, JoinColumn, Check, DeleteDateColumn } from 'typeorm';
 import { BaseEntity } from '../../shared/modules/base/base.entity';
 import { ProductEntity } from './product.entity';
+import { VariantStatusEnum } from '../../shared/enums/product-variant';
 
 @Entity('product_variants')
 @Index('idx_product_variants_product_id_variant_value', ['productId', 'variantValue'], { unique: true })
@@ -17,8 +18,15 @@ export class ProductVariantEntity extends BaseEntity {
   @Column({ name: 'stock', type: 'int', default: 0 })
   stock: number;
 
-  @Column({ name: 'is_active', type: 'boolean', default: true })
-  isActive: boolean;
+  // @Column({ name: 'is_active', type: 'boolean', default: true })
+  // isActive: boolean;
+
+  @Column({
+    name: 'status',
+    type: 'enum',
+    enum: VariantStatusEnum,
+  })
+  status: VariantStatusEnum;
 
   // @Column({ name: 'deleted_at', type: 'timestamp', nullable: true })
   @DeleteDateColumn({ name: 'deleted_at' })

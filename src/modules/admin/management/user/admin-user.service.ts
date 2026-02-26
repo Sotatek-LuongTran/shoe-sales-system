@@ -6,6 +6,7 @@ import { UpdateUserDto } from 'src/modules/admin/management/user/dto/update-user
 import { RedisService } from 'src/common/redis/redis.service';
 import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
 import { PaginateUsersDto } from 'src/shared/dto/user/paginate-user.dto';
+import { UserStatusEnum } from 'src/shared/enums/user.enum';
 
 @Injectable()
 export class AdminUserService {
@@ -62,13 +63,13 @@ export class AdminUserService {
         message: 'User not found',
       });
     }
-    user.deletedAt = new Date();
+    user.status = UserStatusEnum.BANNED;
     await this.userRepository.save(user)
     await this.redisService.incr(`user:tokenVersion:${userId}`);
   }
 
   async restoreUser(userId: string) {
-    const user = await this.userRepository.findDeletedUser(userId);
+    const user = await this.userRepository.findBannedUser(userId);
     if (!user) {
       throw new NotFoundException({
         errorCode: ErrorCodeEnum.USER_NOT_FOUND,
@@ -76,7 +77,7 @@ export class AdminUserService {
         message: 'User not found',
       });
     }
-    user.deletedAt = null;
+    user.status = UserStatusEnum.ACTIVE;
     await this.userRepository.save(user);
     await this.redisService.decr(`user:tokenVersion:${userId}`);
   }

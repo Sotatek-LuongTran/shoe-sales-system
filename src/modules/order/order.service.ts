@@ -25,6 +25,7 @@ import { CreateOrderItemDto } from './dto/create-order.dto';
 import { OrderResponseDto } from 'src/shared/dto/order/order-response.dto';
 import { PaginateOrdersDto } from 'src/shared/dto/order/paginate-order.dto';
 import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
+import { ProductStatusEnum } from 'src/shared/enums/product.enum';
 
 @Injectable()
 export class OrderService {
@@ -139,7 +140,7 @@ export class OrderService {
 
     // Validate product
     const product = await this.productRepository.findById(productId);
-    if (!product || !product.isActive) {
+    if (!product || product.status !== ProductStatusEnum.ACTIVE ) {
       throw new BadRequestException({
         errorCode: ErrorCodeEnum.PRODUCT_NOT_AVAILABLE,
         statusCode: 400,

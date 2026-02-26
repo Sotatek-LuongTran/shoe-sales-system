@@ -1,7 +1,7 @@
 import { DataSource } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { UserRepository } from '../../shared/modules/common-user/user.repository';
-import { UserRoleEnum } from 'src/shared/enums/user.enum';
+import { UserRoleEnum, UserStatusEnum } from 'src/shared/enums/user.enum';
 
 export async function seedAdmin(dataSource: DataSource) {
   const userRepo = new UserRepository(dataSource);
@@ -20,13 +20,16 @@ export async function seedAdmin(dataSource: DataSource) {
 
   const passwordHash = await bcrypt.hash('Admin@123', 10);
 
-  const admin = await userRepo.create({
+  const admin = userRepo.create({
     name: 'System Admin',
     email: adminEmail,
     passwordHash: passwordHash,
     role: UserRoleEnum.ADMIN,
     deletedAt: null,
+    status: UserStatusEnum.ACTIVE,
   });
+
+  userRepo.save(admin)
 
   console.log('🚀 Admin user seeded successfully');
 }

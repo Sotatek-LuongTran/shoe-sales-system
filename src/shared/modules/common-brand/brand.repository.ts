@@ -5,6 +5,7 @@ import { Injectable } from '@nestjs/common';
 import { ProductEntity } from 'src/database/entities/product.entity';
 import { PaginateBrandsDto } from 'src/shared/dto/brand/paginate-brands.dto';
 import { paginate } from 'nestjs-typeorm-paginate';
+import { BrandStatusEnum } from 'src/shared/enums/brand.enum';
 
 @Injectable()
 export class BrandRepository extends BaseRepository<BrandEntity> {
@@ -16,6 +17,7 @@ export class BrandRepository extends BaseRepository<BrandEntity> {
     return this.findOne({
       where: {
         name,
+        status: BrandStatusEnum.ACTIVE,
       },
     });
   }
@@ -28,17 +30,21 @@ export class BrandRepository extends BaseRepository<BrandEntity> {
     if (dto.includeDeleted) {
       qb.withDeleted();
     }
+    if (dto.status) {
+      qb.andWhere('brand.status = :status', { status: dto.status });
+    }
 
     if (dto.search) {
-      qb.andWhere('brand.name ILIKE :search OR brand.description ILIKE', {search: `%${dto.search}%`})
+      qb.andWhere('brand.name ILIKE :search OR brand.description ILIKE', {
+        search: `%${dto.search}%`,
+      });
     }
     return paginate(qb, { page, limit });
   }
 
-  async findDeletedBrand(brandId: string) {
+  async findInactiveBrand(brandId: string) {
     return this.findOne({
-      where: { id: brandId },
-      withDeleted: true,
+      where: { id: brandId, status: BrandStatusEnum.INACTIVE },
     });
   }
 }

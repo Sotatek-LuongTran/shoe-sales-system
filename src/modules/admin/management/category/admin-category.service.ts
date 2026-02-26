@@ -9,6 +9,7 @@ import { UpdateCategoryDto } from 'src/modules/admin/management/category/dto/upd
 import { CategoryRepository } from 'src/shared/modules/common-category/category.repository';
 import { AdminCategoryResponseDto } from './dto/admin-category-response.dto';
 import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
+import { CategoryStatusEnum } from 'src/shared/enums/category.enum';
 
 @Injectable()
 export class AdminCategoryService {
@@ -73,9 +74,23 @@ export class AdminCategoryService {
     };
   }
 
+  async deactivateCategory(categoryId: string) {
+    const category = await this.categoryRepository.findById(categoryId);
+    if (!category)
+      throw new NotFoundException({
+        errorCode: ErrorCodeEnum.CATEGORY_NOT_FOUND,
+        statusCode: 404,
+        message: 'Category not found',
+      });
+
+      category.status = CategoryStatusEnum.INACTIVE;
+
+    await this.categoryRepository.save(category);
+  }
+
   async restoreCategory(categoryId: string) {
     const category =
-      await this.categoryRepository.findDeletedCategory(categoryId);
+      await this.categoryRepository.findInactiveCategory(categoryId);
 
     if (!category) {
       throw new NotFoundException({
@@ -85,7 +100,7 @@ export class AdminCategoryService {
       });
     }
 
-    category.deletedAt = null;
+    category.status = CategoryStatusEnum.ACTIVE;
     return this.categoryRepository.save(category);
   }
 }
