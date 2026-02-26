@@ -10,9 +10,10 @@ import { CreateUserDto } from './dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
 import { LoginDto } from './dto/login.dto';
 import { RedisService } from '../../common/redis/redis.service';
-import { UserRoleEnum } from 'src/shared/enums/user.enum';
+import { UserRoleEnum, UserStatusEnum } from 'src/shared/enums/user.enum';
 import { UserResponseDto } from 'src/shared/dto/user/user-response.dto';
 import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
+import { MailerService } from 'src/shared/modules/mailer/mailer.service';
 
 @Injectable()
 export class AuthenticationService {
@@ -21,6 +22,7 @@ export class AuthenticationService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly redisService: RedisService,
+    private readonly mailerService: MailerService,
   ) {}
 
   async register(createUserDto: CreateUserDto) {
@@ -41,9 +43,17 @@ export class AuthenticationService {
       passwordHash: hashedPassword,
       role: UserRoleEnum.USER,
       deletedAt: null,
+      status: UserStatusEnum.INACTIVE,
     });
 
     await this.usersRepo.save(user);
+
+    const link = `${this.configService.get('APPROVAL_LINK')}`;
+
+    await this.mailerService.sendApprovalEmail(user.email, {
+      approver: user.name,
+      link,
+    });
 
     return new UserResponseDto(user);
   }
@@ -55,7 +65,7 @@ export class AuthenticationService {
       throw new UnauthorizedException({
         errorCode: ErrorCodeEnum.AUTH_INVALID_CREDENTIALS,
         statusCode: 401,
-        message: 'Invalid credentials',
+        message: 'Invalid email',
       });
     }
 
@@ -68,7 +78,23 @@ export class AuthenticationService {
       throw new UnauthorizedException({
         errorCode: ErrorCodeEnum.AUTH_INVALID_CREDENTIALS,
         statusCode: 401,
-        message: 'Invalid credentials',
+        message: 'Invalid password',
+      });
+    }
+
+    if (user.status === UserStatusEnum.INACTIVE) {
+      throw new UnauthorizedException({
+        errorCode: ErrorCodeEnum.AUTH_INVALID_STATUS,
+        statusCode: 401,
+        message: 'Your account has not been activated',
+      });
+    }
+
+    if (user.status === UserStatusEnum.BANNED) {
+      throw new UnauthorizedException({
+        errorCode: ErrorCodeEnum.AUTH_INVALID_STATUS,
+        statusCode: 401,
+        message: 'You has been banned',
       });
     }
 
