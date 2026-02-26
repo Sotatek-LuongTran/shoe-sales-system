@@ -6,6 +6,7 @@ import { ProductEntity } from 'src/database/entities/product.entity';
 import { PaginateCategoriesDto } from 'src/shared/dto/category/paginate-categories.dto';
 import { paginate } from 'nestjs-typeorm-paginate';
 import { CategoryStatusEnum } from 'src/shared/enums/category.enum';
+import { AdminPaginateCategoriesDto } from 'src/modules/admin/management/category/dto/admin-paginate-category.dto';
 
 @Injectable()
 export class CategoryRepository extends BaseRepository<CategoryEntity> {
@@ -21,8 +22,15 @@ export class CategoryRepository extends BaseRepository<CategoryEntity> {
       },
     });
   }
+  async findCategoriesPaginationUser(dto: PaginateCategoriesDto) {
+    return this.findCategoriesPagination(dto);
+  }
 
-  async findCategoriesPagination(dto: PaginateCategoriesDto) {
+  async findCategoriesPaginationAdmin(dto: AdminPaginateCategoriesDto) {
+    return this.findCategoriesPagination(dto);
+  }
+
+  private async findCategoriesPagination(dto: any) {
     const page = dto.page ?? 1;
     const limit = dto.limit ?? 10;
 

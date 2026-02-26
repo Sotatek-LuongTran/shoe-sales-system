@@ -6,6 +6,7 @@ import { PaginateVariantsDto } from 'src/shared/dto/product-variant/paginate-var
 import { paginate, Pagination } from 'nestjs-typeorm-paginate';
 import { groupBy } from 'rxjs';
 import { VariantStatusEnum } from 'src/shared/enums/product-variant';
+import { AdminPaginateVariantsDto } from 'src/modules/admin/management/product-variant/dto/admin-paginate-variant.dto';
 
 @Injectable()
 export class ProductVariantRepository extends BaseRepository<ProductVariantEntity> {
@@ -13,9 +14,17 @@ export class ProductVariantRepository extends BaseRepository<ProductVariantEntit
     super(datasource, ProductVariantEntity);
   }
 
+  async findVariantsPaginationUser(productId: string, dto: PaginateVariantsDto) {
+    return this.findVariantsPagination(productId, dto);
+  }
+
+  async findVariantsPaginationAdmin(productId: string, dto: AdminPaginateVariantsDto) {
+    return this.findVariantsPagination(productId, dto);
+  }
+
   async findVariantsPagination(
     productId: string,
-    dto: PaginateVariantsDto,
+    dto: any,
   ) {
     const page = dto.page ?? 1;
     const limit = dto.limit ?? 10;

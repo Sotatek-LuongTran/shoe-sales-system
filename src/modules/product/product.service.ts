@@ -16,7 +16,7 @@ export class ProductService {
   ) {}
 
   async getProductsPagination(dto: PaginateProductsDto): Promise<Pagination<ProductResponseDto>> {
-    const products = await this.productRepository.findProductsPagination(dto);
+    const products = await this.productRepository.findProductsPaginationUser(dto);
 
     return {
       ...products,

@@ -51,13 +51,4 @@ export class PaginateProductsDto extends PaginateDto {
   @IsUUID()
   @IsOptional()
   categoryId?: string;
-
-  @ApiPropertyOptional({
-    description: 'Status of the product',
-    example: ProductStatusEnum.ACTIVE,
-    enum: ProductStatusEnum,
-  })
-  @IsEnum(ProductStatusEnum)
-  @IsOptional()
-  status?: ProductStatusEnum;
 }

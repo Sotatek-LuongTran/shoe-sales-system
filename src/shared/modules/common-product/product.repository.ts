@@ -5,6 +5,7 @@ import { BaseRepository } from '../base/base.repository';
 import { paginate, Pagination } from 'nestjs-typeorm-paginate';
 import { PaginateProductsDto } from 'src/shared/dto/product/paginate-products.dto';
 import { ProductStatusEnum } from 'src/shared/enums/product.enum';
+import { AdminPaginateProductsDto } from 'src/modules/admin/management/product/dto/admin-paginate-product.dto';
 
 @Injectable()
 export class ProductRepository extends BaseRepository<ProductEntity> {
@@ -12,9 +13,15 @@ export class ProductRepository extends BaseRepository<ProductEntity> {
     super(datasource, ProductEntity);
   }
 
-  async findProductsPagination(
-    dto: PaginateProductsDto,
-  ): Promise<Pagination<ProductEntity>> {
+  async findProductsPaginationUser(dto: PaginateProductsDto) {
+    return this.findProductsPagination(dto);
+  }
+
+  async findProductsPaginationAdmin(dto: AdminPaginateProductsDto) {
+    return this.findProductsPagination(dto);
+  }
+
+  async findProductsPagination(dto: any): Promise<Pagination<ProductEntity>> {
     const page = dto.page ?? 1;
     const limit = dto.limit ?? 10;
 

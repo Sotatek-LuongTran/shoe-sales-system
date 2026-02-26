@@ -6,6 +6,7 @@ import { ProductEntity } from 'src/database/entities/product.entity';
 import { PaginateBrandsDto } from 'src/shared/dto/brand/paginate-brands.dto';
 import { paginate } from 'nestjs-typeorm-paginate';
 import { BrandStatusEnum } from 'src/shared/enums/brand.enum';
+import { AdminPaginateBrandsDto } from 'src/modules/admin/management/brand/dto/admin-paginate-brand.dto';
 
 @Injectable()
 export class BrandRepository extends BaseRepository<BrandEntity> {
@@ -21,8 +22,15 @@ export class BrandRepository extends BaseRepository<BrandEntity> {
       },
     });
   }
+  async findBrandsPaginationUser(dto: PaginateBrandsDto) {
+    return this.findBrandsPagination(dto);
+  }
 
-  async findBrandsPagination(dto: PaginateBrandsDto) {
+  async findBrandsPaginationAdmin(dto: AdminPaginateBrandsDto) {
+    return this.findBrandsPagination(dto);
+  }
+
+  private async findBrandsPagination(dto: any) {
     const page = dto.page ?? 1;
     const limit = dto.limit ?? 10;
 
