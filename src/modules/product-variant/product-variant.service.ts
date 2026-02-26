@@ -45,7 +45,7 @@ export class ProductVariantService {
       });
     }
 
-    return this.productVariantRepository.findVariantsPagination(productId, dto);
+    return this.productVariantRepository.findVariantsPaginationUser(productId, dto);
   }
 
   async getProductVariant(id: string) {

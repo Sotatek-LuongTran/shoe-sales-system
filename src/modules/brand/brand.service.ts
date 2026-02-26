@@ -9,7 +9,7 @@ export class BrandService {
   constructor(private readonly brandRepository: BrandRepository) {}
 
   async getBrandsPagination(dto: PaginateBrandsDto) {
-    const brands = await this.brandRepository.findBrandsPagination(dto);
+    const brands = await this.brandRepository.findBrandsPaginationUser(dto);
 
     return {
       ...brands,

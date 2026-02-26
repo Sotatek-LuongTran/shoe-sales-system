@@ -1,7 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { PaginateDto } from '../paginate.dto';
 import { UserStatusEnum } from 'src/shared/enums/user.enum';
-import { IsEnum, IsOptional } from 'class-validator';
+import { IsBoolean, IsEnum, IsOptional } from 'class-validator';
 
 export class PaginateUsersDto extends PaginateDto {
   @ApiPropertyOptional({
@@ -12,4 +12,12 @@ export class PaginateUsersDto extends PaginateDto {
   @IsEnum(UserStatusEnum)
   @IsOptional()
   status?: UserStatusEnum;
+
+  @ApiPropertyOptional({
+    description: 'Include deleted variants',
+    example: false,
+  })
+  @IsBoolean()
+  @IsOptional()
+  includeDeleted?: boolean;
 }

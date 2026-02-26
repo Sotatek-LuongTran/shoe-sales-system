@@ -11,6 +11,7 @@ import { AdminProductResponseDto } from './dto/admin-product-response.dto';
 import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
 import { ProductStatusEnum } from 'src/shared/enums/product.enum';
 import { VariantStatusEnum } from 'src/shared/enums/product-variant';
+import { AdminPaginateProductsDto } from './dto/admin-paginate-product.dto';
 
 @Injectable()
 export class AdminProductService {
@@ -91,10 +92,9 @@ export class AdminProductService {
   }
 
   async getProductsPagination(
-    dto: PaginateProductsDto,
+    dto: AdminPaginateProductsDto,
   ) {
-    dto.includeDeleted = true;
-    const products = await this.productRepository.findProductsPagination(dto);
+    const products = await this.productRepository.findProductsPaginationAdmin(dto);
     return {
       ...products,
       items: products.items.map((item) => new AdminProductResponseDto(item)),

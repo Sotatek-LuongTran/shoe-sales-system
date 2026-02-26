@@ -1,12 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateVariantDto } from 'src/modules/admin/management/product-variant/dto/create-variant.dto';
-import { PaginateVariantsDto } from 'src/shared/dto/product-variant/paginate-variants.dto';
 import { UpdateVariantDto } from 'src/modules/admin/management/product-variant/dto/update-vatiant.dto';
 import { ProductVariantRepository } from 'src/shared/modules/common-product-variant/product-variant.repository';
 import { ProductRepository } from 'src/shared/modules/common-product/product.repository';
 import { AdminVariantResponseDto } from './dto/admin-variant-response.dto';
 import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
 import { VariantStatusEnum } from 'src/shared/enums/product-variant';
+import { AdminPaginateVariantsDto } from './dto/admin-paginate-variant.dto';
 
 @Injectable()
 export class AdminProductVariantService {
@@ -71,7 +71,7 @@ export class AdminProductVariantService {
 
   async getVariantsByProductPagination(
     productId: string,
-    dto: PaginateVariantsDto,
+    dto: AdminPaginateVariantsDto,
   ) {
     const product =
       await this.productRepository.findOneWithBrandAndCategory(productId);
@@ -99,7 +99,7 @@ export class AdminProductVariantService {
       });
     }
 
-    const variants = await this.productVariantRepository.findVariantsPagination(
+    const variants = await this.productVariantRepository.findVariantsPaginationAdmin(
       productId,
       dto,
     );

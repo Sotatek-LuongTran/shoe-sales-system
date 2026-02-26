@@ -10,6 +10,7 @@ import { CategoryRepository } from 'src/shared/modules/common-category/category.
 import { AdminCategoryResponseDto } from './dto/admin-category-response.dto';
 import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
 import { CategoryStatusEnum } from 'src/shared/enums/category.enum';
+import { AdminPaginateCategoriesDto } from './dto/admin-paginate-category.dto';
 
 @Injectable()
 export class AdminCategoryService {
@@ -63,10 +64,9 @@ export class AdminCategoryService {
     await this.categoryRepository.save(category);
   }
 
-  async getCategoriesPagination(dto: PaginateCategoriesDto) {
-    dto.includeDeleted = true;
+  async getCategoriesPagination(dto: AdminPaginateCategoriesDto) {
     const categories =
-      await this.categoryRepository.findCategoriesPagination(dto);
+      await this.categoryRepository.findCategoriesPaginationAdmin(dto);
 
     return {
       ...categories,

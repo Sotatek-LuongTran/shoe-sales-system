@@ -32,13 +32,4 @@ export class PaginateVariantsDto extends PaginateDto {
   @IsInt()
   @IsOptional()
   stock?: number;
-
-  @ApiPropertyOptional({
-    description: 'Status of the product',
-    example: VariantStatusEnum.ACTIVE,
-    enum: VariantStatusEnum,
-  })
-  @IsEnum(VariantStatusEnum)
-  @IsOptional()
-  status?: VariantStatusEnum;
 }
