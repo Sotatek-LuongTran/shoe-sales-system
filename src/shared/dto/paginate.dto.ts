@@ -28,6 +28,7 @@ export class PaginateDto {
   @IsOptional()
   search?: string;
 
+  // Chuyen sang admin
   @ApiPropertyOptional({
     description: 'Include deleted products',
     example: false,

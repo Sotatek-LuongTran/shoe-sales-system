@@ -4,6 +4,7 @@ import { DataSource, IsNull } from 'typeorm';
 import { BaseRepository } from '../base/base.repository';
 import { paginate, Pagination } from 'nestjs-typeorm-paginate';
 import { PaginateProductsDto } from 'src/shared/dto/product/paginate-products.dto';
+import { ProductStatusEnum } from 'src/shared/enums/product.enum';
 
 @Injectable()
 export class ProductRepository extends BaseRepository<ProductEntity> {
@@ -26,12 +27,10 @@ export class ProductRepository extends BaseRepository<ProductEntity> {
       qb.withDeleted();
     }
 
-    if (dto.isActive !== undefined) {
-      qb.andWhere('product.isActive = :isActive', {
-        isActive: dto.isActive,
+    if (dto.status) {
+      qb.andWhere('product.status = :status', {
+        status: dto.status,
       });
-    } else if (!dto.includeDeleted) {
-      qb.andWhere('product.isActive = true');
     }
     if (dto.search) {
       qb.andWhere(
@@ -63,17 +62,27 @@ export class ProductRepository extends BaseRepository<ProductEntity> {
       });
     }
 
-    // Price range filtering (AGGREGATE → HAVING)
-    if (dto.minPrice !== undefined) {
-      qb.having('MIN(variant.price) >= :minPrice', {
-        minPrice: dto.minPrice,
-      });
-    }
+    if (dto.minPrice !== undefined || dto.maxPrice !== undefined) {
+      const priceSubQuery = this.createQueryBuilder('p')
+        .select('p.id')
+        .leftJoin('p.variants', 'v')
+        .groupBy('p.id');
 
-    if (dto.maxPrice !== undefined) {
-      qb.andHaving('MAX(variant.price) <= :maxPrice', {
-        maxPrice: dto.maxPrice,
-      });
+      if (dto.minPrice !== undefined) {
+        priceSubQuery.having('MIN(v.price) >= :minPrice', {
+          minPrice: dto.minPrice,
+        });
+      }
+
+      if (dto.maxPrice !== undefined) {
+        priceSubQuery.andHaving('MAX(v.price) <= :maxPrice', {
+          maxPrice: dto.maxPrice,
+        });
+      }
+
+      qb.andWhere(`product.id IN (${priceSubQuery.getQuery()})`).setParameters(
+        priceSubQuery.getParameters(),
+      );
     }
 
     qb.orderBy('product.createdAt', 'DESC')
@@ -87,8 +96,9 @@ export class ProductRepository extends BaseRepository<ProductEntity> {
     return this.findOne({
       where: {
         id,
+        status: ProductStatusEnum.ACTIVE,
       },
-      relations: ['variants', 'brand', 'category']
+      relations: ['variants', 'brand', 'category'],
     });
   }
 
@@ -96,7 +106,7 @@ export class ProductRepository extends BaseRepository<ProductEntity> {
     return await this.findOne({
       where: {
         id: id,
-        deletedAt: IsNull(),
+        status: ProductStatusEnum.ACTIVE,
       },
       relations: ['brand', 'category'],
     });
@@ -108,5 +118,12 @@ export class ProductRepository extends BaseRepository<ProductEntity> {
       .from(ProductEntity)
       .where('deleted_at IS NOT NULL')
       .execute();
+  }
+
+  async findInactiveProduct(productId: string) {
+    return this.findOne({
+      where: { id: productId, status: ProductStatusEnum.INACTIVE },
+      relations: ['variants'],
+    });
   }
 }

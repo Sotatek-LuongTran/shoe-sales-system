@@ -5,6 +5,7 @@ import { ProductVariantEntity } from 'src/database/entities/product-variant.enti
 import { PaginateVariantsDto } from 'src/shared/dto/product-variant/paginate-variants.dto';
 import { paginate, Pagination } from 'nestjs-typeorm-paginate';
 import { groupBy } from 'rxjs';
+import { VariantStatusEnum } from 'src/shared/enums/product-variant';
 
 @Injectable()
 export class ProductVariantRepository extends BaseRepository<ProductVariantEntity> {
@@ -31,13 +32,12 @@ export class ProductVariantRepository extends BaseRepository<ProductVariantEntit
     if (dto.includeDeleted) {
       qb.withDeleted();
     }
-    if (dto.isActive !== undefined) {
-      qb.andWhere('product.isActive = :isActive', {
-        isActive: dto.isActive,
+    if (dto.status) {
+      qb.andWhere('product.status = :status', {
+        status: dto.status,
       });
-    } else if (!dto.includeDeleted) {
-      qb.andWhere('product.isActive = true');
     }
+
     qb.groupBy('variant.id');
 
     if (dto.variantValue) {
@@ -75,5 +75,14 @@ export class ProductVariantRepository extends BaseRepository<ProductVariantEntit
       .andWhere('variant.variantValue = :variantValue', { variantValue })
       .andWhere('variant.isActive = true')
       .getOne();
+  }
+
+  async findInactiveVariant(variantId: string) {
+    return this.findOne({
+      where: {
+        id: variantId,
+        status: VariantStatusEnum.INACTIVE,
+      },
+    });
   }
 }
