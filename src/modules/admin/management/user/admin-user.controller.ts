@@ -42,6 +42,7 @@ export class AdminUserController {
     description: 'User created successfully',
     type: UserResponseDto,
   })
+  @UseInterceptors(ClassSerializerInterceptor)
   createUser(@Body() createUserDto: CreateUserDto) {
     return this.adminUserService.createUser(createUserDto);
   }
@@ -65,6 +66,7 @@ export class AdminUserController {
     description: 'User get successfully',
     type: UserResponseDto,
   })
+  @UseInterceptors(ClassSerializerInterceptor)
   findUserById(@Param('id', ParseUUIDPipe) id: string) {
     return this.adminUserService.findUserById(id);
   }
@@ -74,7 +76,6 @@ export class AdminUserController {
   @ApiResponse({
     status: 201,
     description: 'User updated successfully',
-    type: UserResponseDto,
   })
   updateUser(@Param('id', ParseUUIDPipe) id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.adminUserService.updateUser(id, updateUserDto);

@@ -60,6 +60,7 @@ export class BrandController {
     type: BrandResponseDto
   })
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
+  @UseInterceptors(ClassSerializerInterceptor)
   getOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.brandService.getBrand(id);
   }

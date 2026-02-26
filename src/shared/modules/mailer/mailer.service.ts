@@ -1,9 +1,14 @@
-import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 import { ConfigService } from '@nestjs/config';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as handlebars from 'handlebars';
+import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
 
 @Injectable()
 export class MailerService {
@@ -21,11 +26,23 @@ export class MailerService {
     });
   }
 
-  async sendApprovalEmail(to: string, context: { approver: string; link: string }) {
+  async sendApprovalEmail(
+    to: string,
+    context: { approver: string; link: string },
+  ) {
     if (!to || !context.approver || !context.link) {
-      throw new BadRequestException('Missing required fields: to, approver, link');
+      throw new BadRequestException({
+        errorCode: ErrorCodeEnum.MAILER_MISSING_INFORMATION,
+        statusCode: 400,
+        message: 'Missing required fields: to, approver, link',
+      });
     }
-    return this.sendTemplateEmail('approval-notification', to, 'Approval Required', context);
+    return this.sendTemplateEmail(
+      'approval-notification',
+      to,
+      'Approval Required',
+      context,
+    );
   }
 
   private async sendTemplateEmail(
@@ -34,24 +51,21 @@ export class MailerService {
     subject: string,
     context: any,
   ): Promise<void> {
-
     const html = this.compileTemplate(templateName, context);
-
-    try {
-      return await this.transporter.sendMail({
-        from: `"Approval System" <${this.configService.get('SMTP_USER')}>`,
-        to,
-        subject: subject,
-        html,
-      });
-    } catch (error) {
-      console.error('Send Email Error:', error);
-      throw new InternalServerErrorException('Failed to send email');
-    }
+    return await this.transporter.sendMail({
+      from: `"Approval System" <${this.configService.get('SMTP_USER')}>`,
+      to,
+      subject: subject,
+      html,
+    });
   }
 
   private compileTemplate(templateName: string, context: any): string {
-    const templatePath = path.join(__dirname, 'templates', `${templateName}.hbs`);
+    const templatePath = path.join(
+      __dirname,
+      'templates',
+      `${templateName}.hbs`,
+    );
     const templateSource = fs.readFileSync(templatePath, 'utf8');
     const compiledTemplate = handlebars.compile(templateSource);
     return compiledTemplate(context);
