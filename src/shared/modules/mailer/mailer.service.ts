@@ -38,7 +38,7 @@ export class MailerService {
       });
     }
     return this.sendTemplateEmail(
-      'approval-notification',
+      'registration-notification',
       to,
       'Approval Required',
       context,
