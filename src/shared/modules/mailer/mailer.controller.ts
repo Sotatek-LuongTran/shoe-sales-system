@@ -1,10 +1,4 @@
-import {
-  Controller,
-  Post,
-  Body,
-  Res,
-  Get,
-} from '@nestjs/common';
+import { Body, Controller, Get, Post, Res } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { MailerService } from './mailer.service';
 import { Response } from 'express';
@@ -29,7 +23,6 @@ export class MailerController {
         token: string;
       };
     },
-    @Res() res: Response,
   ) {
     const { to, context } = body;
     return this.mailerService.sendApprovalEmail(to, context);
@@ -37,9 +30,10 @@ export class MailerController {
 
   @Get('preview-approval')
   previewApproval(@Res() res: Response) {
-    return res.render('registration-notification', {
-      appover: 'Preview User',
+    return res.render('approval-notification', {
+      approver: 'Preview User',
       link: 'https://example.com/login',
+      token: 'preview-token',
     });
   }
 }
