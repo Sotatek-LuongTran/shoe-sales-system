@@ -70,6 +70,7 @@ export class ProductVariantController {
     type: ProductVariantResponseDto,
   })
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
+  @UseInterceptors(ClassSerializerInterceptor)
   getOne(@Param('id') id: string) {
     return this.productVariantService.getProductVariant(id);
   }

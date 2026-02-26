@@ -1,5 +1,6 @@
 import {
   Body,
+  ClassSerializerInterceptor,
   Controller,
   Get,
   Param,
@@ -7,6 +8,7 @@ import {
   Req,
   UnauthorizedException,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { AuthenticationService } from './authentication.service';
@@ -31,6 +33,7 @@ export class AuthenticationController {
     type: UserResponseDto,
   })
   @Post('register')
+  @UseInterceptors(ClassSerializerInterceptor)
   async register(@Body() createUserDto: CreateUserDto) {
     return await this.authService.register(createUserDto);
   }
@@ -39,9 +42,9 @@ export class AuthenticationController {
   @ApiResponse({
     status: 201,
     description: 'User login successfully',
-    type: UserResponseDto,
   })
   @Post('login')
+  @UseInterceptors(ClassSerializerInterceptor)
   async login(@Body() loginDto: LoginDto) {
     return await this.authService.login(loginDto);
   }

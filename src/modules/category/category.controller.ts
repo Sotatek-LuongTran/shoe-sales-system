@@ -61,6 +61,7 @@ export class CategoryController {
     type: CategoryResponseDto
   })
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
+  @UseInterceptors(ClassSerializerInterceptor)
   getOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.categoryService.getCategory(id);
   }

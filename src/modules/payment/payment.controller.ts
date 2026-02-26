@@ -81,6 +81,7 @@ export class PaymentController {
     type: PaymentResponseDto,
   })
   @ApiParam({name: 'paymentId', type: 'string', format: 'uuid'})
+  @UseInterceptors(ClassSerializerInterceptor)
   async retryPayment(
     @Param('paymentId', ParseUUIDPipe) paymentId: string,
     @Req() req: any,

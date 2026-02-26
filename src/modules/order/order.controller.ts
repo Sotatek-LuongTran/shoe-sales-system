@@ -50,6 +50,7 @@ export class OrderController {
     description: 'Order created successfully',
     type: OrderResponseDto,
   })
+  @UseInterceptors(ClassSerializerInterceptor)
   async checkoutOrder(@Req() req: any) {
     return this.orderService.checkoutOrder(req.user.userId);
   }
@@ -64,6 +65,7 @@ export class OrderController {
     description: 'Product added to pending order',
     type: OrderResponseDto,
   })
+  @UseInterceptors(ClassSerializerInterceptor)
   async addToPendingOrder(@Req() req: any, @Body() dto: AddToPendingOrderDto) {
     return this.orderService.addProductToPendingOrder(req.user.userId, dto);
   }
@@ -94,6 +96,7 @@ export class OrderController {
     type: OrderResponseDto,
   })
   @ApiParam({name: 'id', type: 'string', format: 'uuid'})
+  @UseInterceptors(ClassSerializerInterceptor)
   async getOrderById(@Req() req: any, @Param('id', ParseUUIDPipe) id: string) {
     return this.orderService.getOrderById(id, req.user.userId);
   }

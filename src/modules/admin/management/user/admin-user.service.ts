@@ -50,7 +50,7 @@ export class AdminUserService {
     if (updateUserDto.password) {
       updateUserDto.password = await bcrypt.hash(updateUserDto.password, 10);
     }
-    return this.userRepository.update(id, updateUserDto);
+    await this.userRepository.update(id, updateUserDto);
   }
 
   async deactivateUser(userId: string) {

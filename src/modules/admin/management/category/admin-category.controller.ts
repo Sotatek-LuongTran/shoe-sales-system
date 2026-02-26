@@ -55,7 +55,6 @@ export class AdminCategoryController {
   @ApiResponse({
     status: 201,
     description: 'Product updated successfully',
-    type: AdminCategoryResponseDto,
   })
   update(@Body() dto: UpdateCategoryDto) {
     return this.adminCategoryService.updateCategory(dto);
@@ -99,7 +98,6 @@ export class AdminCategoryController {
   @ApiResponse({
     status: 201,
     description: 'Category deleted successfully',
-    type: AdminCategoryResponseDto,
   })
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
   restoreCategory(@Param('id', ParseUUIDPipe) id: string) {

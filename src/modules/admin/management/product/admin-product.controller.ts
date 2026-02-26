@@ -31,6 +31,7 @@ export class AdminProductController {
     description: 'Product created successfully',
     type: AdminProductResponseDto,
   })
+  @UseInterceptors(ClassSerializerInterceptor)
   create(@Body() dto: CreateProductDto) {
     return this.adminProductService.createProduct(dto);
   }
@@ -56,7 +57,6 @@ export class AdminProductController {
   @Delete('deleted')
   @ApiOperation({
     summary: 'Permanently delete soft-deleted products',
-    description: 'Hard delete all products that are currently soft deleted',
   })
   @ApiResponse({
     status: 204,
@@ -74,7 +74,6 @@ export class AdminProductController {
   @ApiResponse({
     status: 201,
     description: 'Product updated successfully',
-    type: AdminProductResponseDto,
   })
   update(@Body() dto: UpdateProductDto) {
     return this.adminProductService.updateProduct(dto);

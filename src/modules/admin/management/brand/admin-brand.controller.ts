@@ -62,6 +62,7 @@ export class AdminBrandController {
     description: 'Brand created successfully',
     type: AdminBrandResponseDto,
   })
+  @UseInterceptors(ClassSerializerInterceptor)
   create(@Body() dto: CreateBrandDto) {
     return this.adminBrandService.createBrand(dto);
   }
@@ -74,7 +75,6 @@ export class AdminBrandController {
   @ApiResponse({
     status: 201,
     description: 'Brand updated successfully',
-    type: AdminBrandResponseDto,
   })
   update(@Body() dto: UpdateBrandDto) {
     return this.adminBrandService.updateBrand(dto);
@@ -102,7 +102,6 @@ export class AdminBrandController {
   @ApiResponse({
     status: 201,
     description: 'Brand deleted successfully',
-    type: AdminBrandResponseDto,
   })
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
   restoreBrand(@Param('id', ParseUUIDPipe) id: string) {

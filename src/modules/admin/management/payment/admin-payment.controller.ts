@@ -60,6 +60,7 @@ export class AdminPaymentController {
     type: PaymentResponseDto,
   })
   @ApiParam({name: 'paymentId', required: true, type: 'string', format: 'uuid' })
+  @UseInterceptors(ClassSerializerInterceptor)
   async refund(@Param('paymentId', ParseUUIDPipe) paymentId: string) {
     return this.adminPaymentService.refundPayment(paymentId);
   }
