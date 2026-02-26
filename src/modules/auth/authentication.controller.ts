@@ -5,7 +5,10 @@ import {
   Get,
   Param,
   Post,
+  Put,
+  Query,
   Req,
+  Res,
   UnauthorizedException,
   UseGuards,
   UseInterceptors,
@@ -20,6 +23,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { UserResponseDto } from 'src/shared/dto/user/user-response.dto';
+import { Response } from 'express';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -55,12 +59,25 @@ export class AuthenticationController {
   @ApiBearerAuth('refresh-token')
   async refresh(@Req() req: any) {
     const authHeader = req.headers['authorization'];
-    
+
     if (!authHeader?.startsWith('Bearer ')) {
       throw new UnauthorizedException('Refresh token missing');
     }
 
     const refreshToken = authHeader.slice(7);
     return this.authService.refeshAccessToken(refreshToken);
+  }
+
+  @Get('confirm')
+  async confirmAccountActivation(
+    @Query('token') token: string,
+    @Res() res: Response,
+  ) {
+    const result = await this.authService.confirmAccountActivation(token);
+
+    return res.render('registration-approval', {
+      appover: result.appover,
+      link: result.link,
+    });
   }
 }
