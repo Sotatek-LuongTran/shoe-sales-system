@@ -14,6 +14,7 @@ import { UserModule } from './modules/user/user.module';
 import { PassportModule } from '@nestjs/passport';
 import { APP_FILTER } from '@nestjs/core';
 import { CatchEverythingFilter } from './shared/filters/catch-everything.filter';
+import { MailerModule } from './shared/modules/mailer/mailer.module';
 @Module({
   imports: [
     PassportModule,
@@ -31,6 +32,7 @@ import { CatchEverythingFilter } from './shared/filters/catch-everything.filter'
     PaymentModule,
     AdminModule,
     UserModule,
+    MailerModule,
   ],
   // providers: [
   //   {
