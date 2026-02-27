@@ -15,6 +15,7 @@ import { PassportModule } from '@nestjs/passport';
 import { APP_FILTER } from '@nestjs/core';
 import { CatchEverythingFilter } from './shared/filters/catch-everything.filter';
 import { MailerModule } from './shared/modules/mailer/mailer.module';
+import { ScheduleModule } from '@nestjs/schedule';
 @Module({
   imports: [
     PassportModule,
@@ -22,6 +23,7 @@ import { MailerModule } from './shared/modules/mailer/mailer.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    ScheduleModule.forRoot(),
     RedisModule,
     AuthenticationModule,
     ProductModule,

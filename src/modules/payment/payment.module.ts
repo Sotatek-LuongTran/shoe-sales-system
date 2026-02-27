@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { OrderEntity } from 'src/database/entities/order.entity';
 import { PaymentEntity } from 'src/database/entities/payment.entity';
-import { PaymentRepository } from './repository/payment.repository';
+import { PaymentRepository } from '../../shared/modules/common-payment/payment.repository';
 import { OrderRepository } from '../../shared/modules/common-order/order.repository';
 import { PaymentController } from './payment.controller';
 import { ProductVariantRepository } from 'src/shared/modules/common-product-variant/product-variant.repository';

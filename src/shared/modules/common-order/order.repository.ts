@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { paginate, Pagination } from 'nestjs-typeorm-paginate';
 import { OrderEntity } from 'src/database/entities/order.entity';
+import { AdminPaginateOrdersDto } from 'src/modules/admin/management/order/dto/admin-paginate-orders.dto';
 import { PaginateOrdersDto } from 'src/shared/dto/order/paginate-order.dto';
 import {
   OrderPaymentStatusEnum,
@@ -45,8 +46,17 @@ export class OrderRepository extends BaseRepository<OrderEntity> {
   //   return paginate(qb, { page, limit });
   // }
 
-  async findOrdersPagination(
-    dto: PaginateOrdersDto,
+  async findOrdersPaginationUser(userId: string, dto: PaginateOrdersDto) {
+    return this.findOrdersPagination(userId, dto);
+  }
+
+  async findOrdersPaginationAdmin(userId: string, dto: AdminPaginateOrdersDto) {
+    return this.findOrdersPagination(userId, dto);
+  }
+
+  private async findOrdersPagination(
+    userId: string,
+    dto: any,
   ): Promise<Pagination<OrderEntity>> {
     const page = dto.page ?? 1;
     const limit = dto.limit ?? 10;
@@ -55,10 +65,14 @@ export class OrderRepository extends BaseRepository<OrderEntity> {
       'order.items',
       'items',
     );
-    if (dto.userId) {
+    if (userId) {
       qb.leftJoin('order.user', 'user').where('user.id = :userId', {
-        userId: dto.userId,
+        userId: userId,
       });
+    }
+
+    if (dto.search) {
+      qb.where('order.');
     }
     return paginate(qb, { page, limit });
   }
@@ -85,6 +99,7 @@ export class OrderRepository extends BaseRepository<OrderEntity> {
       },
       relations: {
         items: true,
+        payment: true,
       },
     });
   }

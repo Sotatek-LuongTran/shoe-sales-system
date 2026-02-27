@@ -82,7 +82,6 @@ export class ProductVariantRepository extends BaseRepository<ProductVariantEntit
       .innerJoin('variant.product', 'product')
       .where('variant.productId = :productId', { productId })
       .andWhere('variant.variantValue = :variantValue', { variantValue })
-      .andWhere('variant.isActive = true')
       .getOne();
   }
 
@@ -92,6 +91,16 @@ export class ProductVariantRepository extends BaseRepository<ProductVariantEntit
         id: variantId,
         status: VariantStatusEnum.INACTIVE,
       },
+    });
+  }
+
+  async findVariantWithProduct(variantId: string) {
+    return this.findOne({
+      where: {
+        id: variantId,
+        status: VariantStatusEnum.ACTIVE,
+      },
+      relations: ['product']
     });
   }
 }

@@ -7,7 +7,7 @@ import {
 // import {
 //   CreateOrderItemDto,
 // } from 'src/modules/order/dto/create-order.dto';
-import { DataSource } from 'typeorm';
+import { DataSource, Not } from 'typeorm';
 import { OrderRepository } from '../../shared/modules/common-order/order.repository';
 import { OrderItemRepository } from './repository/order-item.repository';
 import { UserRepository } from 'src/shared/modules/common-user/user.repository';
@@ -18,14 +18,14 @@ import {
 } from 'src/shared/enums/order.enum';
 import { ProductVariantRepository } from 'src/shared/modules/common-product-variant/product-variant.repository';
 import { ProductRepository } from 'src/shared/modules/common-product/product.repository';
-import { PaymentRepository } from '../payment/repository/payment.repository';
+import { PaymentRepository } from '../../shared/modules/common-payment/payment.repository';
 import { PaymentStatusEnum } from 'src/shared/enums/payment.enum';
 import { RemoveOrderItemDto } from 'src/modules/order/dto/remove-item.dto';
-import { CreateOrderItemDto } from './dto/create-order.dto';
 import { OrderResponseDto } from 'src/shared/dto/order/order-response.dto';
 import { PaginateOrdersDto } from 'src/shared/dto/order/paginate-order.dto';
 import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
 import { ProductStatusEnum } from 'src/shared/enums/product.enum';
+import { CreateOrderDto } from './dto/create-order.dto';
 
 @Injectable()
 export class OrderService {
@@ -39,48 +39,100 @@ export class OrderService {
     private readonly paymentRepository: PaymentRepository,
   ) {}
 
-  async checkoutOrder(userId: string) {
-    const order = await this.orderRepository.findPendingOrderByUser(userId);
-
-    if (!order) {
-      throw new BadRequestException({
-        errorCode: ErrorCodeEnum.ORDER_PENDING_NOT_FOUND,
+  async createOrder(userId: string, dto: CreateOrderDto) {
+    const user = await this.userRepository.findById(userId);
+    if (!user) {
+      throw new NotFoundException({
+        errorCode: ErrorCodeEnum.USER_NOT_FOUND,
         statusCode: 404,
-        message: 'No pending order found',
+        message: 'User not found',
       });
     }
 
-    if (order.items.length === 0) {
-      throw new BadRequestException({
-        errorCode: ErrorCodeEnum.ORDER_EMPTY,
-        statusCode: 404,
-        message: 'Order is empty',
+    const order = await this.orderRepository.save(
+      this.orderRepository.create({
+        userId: userId,
+        paymentStatus: OrderPaymentStatusEnum.UNPAID,
+        status: OrderStatusEnum.PROCESSING,
+        totalPrice: 0,
+        expiresAt: new Date(),
+      }),
+    );
+
+    let totalPrice = 0;
+
+    for (const itemDto of dto.items) {
+      const variant =
+        await this.productVariantRepository.findVariantWithProduct(
+          itemDto.variantId,
+        );
+
+      if (!variant) {
+        throw new NotFoundException({
+          errorCode: ErrorCodeEnum.PRODUCT_VARIANT_NOT_FOUND,
+          statusCode: 404,
+          message: 'Variant not found',
+        });
+      }
+
+      if (variant.stock - variant.reservedStock < itemDto.quantity) {
+        throw new BadRequestException({
+          errorCode: ErrorCodeEnum.ORDER_INVALID_QUANTITY,
+          statusCode: 400,
+          message: 'Quantity too large',
+        });
+      }
+
+      const finalPrice = variant.price * itemDto.quantity;
+      totalPrice += finalPrice;
+
+      const item = this.orderItemRepository.create({
+        orderId: order.id,
+        name: variant.product.name,
+        description: variant.product.description,
+        productType: variant.product.productType,
+        gender: variant.product.gender,
+        variantValue: variant.variantValue,
+        price: variant.price,
+        quantity: itemDto.quantity,
+        finalPrice,
+        productId: variant.productId,
       });
+
+      variant.reservedStock += itemDto.quantity;
+
+      await this.productVariantRepository.save(variant);
+
+      await this.orderItemRepository.save(item);
     }
 
-    // create payment
+    order.totalPrice = totalPrice;
+    await this.orderRepository.save(order);
+
     const payment = this.paymentRepository.create({
       orderId: order.id,
-      amount: order.totalPrice,
+      amount: totalPrice,
       paymentStatus: PaymentStatusEnum.PENDING,
     });
 
-    await this.paymentRepository.save(payment);
+    order.payment = payment;
 
-    order.status = OrderStatusEnum.PROCESSING;
     await this.orderRepository.save(order);
 
-    return {
-      orderId: order.id,
-      paymentId: payment.id,
-      amount: payment.amount,
-    };
+    await this.paymentRepository.save(payment);
+
+    const finalOrder = await this.orderRepository.findOrderWithItems(order.id);
+    if (!finalOrder) {
+      throw new NotFoundException({
+        errorCode: ErrorCodeEnum.ORDER_NOT_FOUND,
+        statusCode: 404,
+        message: 'Order has not been created successfully',
+      });
+    }
+    return new OrderResponseDto(finalOrder);
   }
 
   async getOrdersByUserPagination(userId: string, dto: PaginateOrdersDto) {
-    if (!dto.userId || dto.userId !== userId) {
-      throw new NotFoundException();
-    }
     const user = await this.userRepository.findById(userId);
     if (!user)
       throw new NotFoundException({
@@ -89,7 +141,10 @@ export class OrderService {
         message: 'User not found',
       });
 
-    const orders = await this.orderRepository.findOrdersPagination(dto);
+    const orders = await this.orderRepository.findOrdersPaginationUser(
+      userId,
+      dto,
+    );
 
     return {
       ...orders,
@@ -127,98 +182,97 @@ export class OrderService {
     return new OrderResponseDto(order);
   }
 
-  async addProductToPendingOrder(userId: string, dto: AddToPendingOrderDto) {
-    const user = await this.userRepository.findById(userId);
-    if (!user)
-      throw new NotFoundException({
-        errorCode: ErrorCodeEnum.USER_NOT_FOUND,
-        statusCode: 404,
-        message: 'User not found',
-      });
+  // async addProductToPendingOrder(userId: string, dto: AddToPendingOrderDto) {
+  //   const user = await this.userRepository.findById(userId);
+  //   if (!user)
+  //     throw new NotFoundException({
+  //       errorCode: ErrorCodeEnum.USER_NOT_FOUND,
+  //       statusCode: 404,
+  //       message: 'User not found',
+  //     });
 
-    const { productId, productVariantId, quantity } = dto;
+  //   const { productId, productVariantId, quantity } = dto;
 
-    // Validate product
-    const product = await this.productRepository.findById(productId);
-    if (!product || product.status !== ProductStatusEnum.ACTIVE ) {
-      throw new BadRequestException({
-        errorCode: ErrorCodeEnum.PRODUCT_NOT_AVAILABLE,
-        statusCode: 400,
-        message: 'Product not available',
-      });
-    }
+  //   // Validate product
+  //   const product = await this.productRepository.findById(productId);
+  //   if (!product || product.status !== ProductStatusEnum.ACTIVE ) {
+  //     throw new BadRequestException({
+  //       errorCode: ErrorCodeEnum.PRODUCT_NOT_AVAILABLE,
+  //       statusCode: 400,
+  //       message: 'Product not available',
+  //     });
+  //   }
 
-    // Validate variant
-    const variant =
-      await this.productVariantRepository.findById(productVariantId);
+  //   // Validate variant
+  //   const variant =
+  //     await this.productVariantRepository.findById(productVariantId);
 
-    if (!variant || variant.stock < quantity) {
-      throw new BadRequestException({
-        errorCode: ErrorCodeEnum.PRODUCT_VARIANT_OUT_OF_STOCK,
-        statusCode: 400,
-        message: 'Variant out of stock',
-      });
-    }
+  //   if (!variant || variant.stock < quantity) {
+  //     throw new BadRequestException({
+  //       errorCode: ErrorCodeEnum.PRODUCT_VARIANT_OUT_OF_STOCK,
+  //       statusCode: 400,
+  //       message: 'Variant out of stock',
+  //     });
+  //   }
 
+  //   // Bo
+  //   variant.stock -= quantity;
 
-    // Bo
-    variant.stock -= quantity;
+  //   await this.productVariantRepository.save(variant);
 
-    await this.productVariantRepository.save(variant);
+  //   // Find or create pending order
+  //   let order = await this.orderRepository.findPendingOrderByUser(userId);
 
-    // Find or create pending order
-    let order = await this.orderRepository.findPendingOrderByUser(userId);
+  //   if (!order) {
+  //     order = this.orderRepository.create({
+  //       user,
+  //       status: OrderStatusEnum.PENDING,
+  //       paymentStatus: OrderPaymentStatusEnum.UNPAID,
+  //       totalPrice: 0,
+  //     });
+  //     await this.orderRepository.save(order);
+  //   }
 
-    if (!order) {
-      order = this.orderRepository.create({
-        user,
-        status: OrderStatusEnum.PENDING,
-        paymentStatus: OrderPaymentStatusEnum.UNPAID,
-        totalPrice: 0,
-      });
-      await this.orderRepository.save(order);
-    }
+  //   let item = await this.orderItemRepository.findItemInOrder(
+  //     order.id,
+  //     productId,
+  //     variant.variantValue,
+  //   );
 
-    let item = await this.orderItemRepository.findItemInOrder(
-      order.id,
-      productId,
-      variant.variantValue,
-    );
+  //   const price = Number(variant.price);
 
-    const price = Number(variant.price);
+  //   if (item) {
+  //     item.quantity += quantity;
+  //     item.finalPrice = item.quantity * price;
+  //   } else {
+  //     const createItemDto: CreateOrderItemDto = {
+  //       productId,
+  //       variantValue: variant.variantValue,
+  //       quantity,
+  //       price,
+  //       name: product.name,
+  //       description: product.description,
+  //       productType: product.productType,
+  //       gender: product.gender,
+  //     };
 
-    if (item) {
-      item.quantity += quantity;
-      item.finalPrice = item.quantity * price;
-    } else {
-      const createItemDto: CreateOrderItemDto = {
-        productId,
-        variantValue: variant.variantValue,
-        quantity,
-        price,
-        name: product.name,
-        description: product.description,
-        productType: product.productType,
-        gender: product.gender,
-      };
+  //     item = this.orderItemRepository.create({
+  //       orderId: order.id,
+  //       ...createItemDto,
+  //       finalPrice: price * quantity,
+  //     });
+  //   }
 
-      item = this.orderItemRepository.create({
-        orderId: order.id,
-        ...createItemDto,
-        finalPrice: price * quantity,
-      });
-    }
+  //   await this.orderItemRepository.save(item);
 
-    await this.orderItemRepository.save(item);
+  //   // Recalculate total
+  //   const items = await this.orderItemRepository.findByOrderId(order.id);
+  //   order.totalPrice = items.reduce((sum, i) => sum + Number(i.finalPrice), 0);
 
-    // Recalculate total
-    const items = await this.orderItemRepository.findByOrderId(order.id);
-    order.totalPrice = items.reduce((sum, i) => sum + Number(i.finalPrice), 0);
+  //   await this.orderRepository.save(order);
 
-    await this.orderRepository.save(order);
-
-    return new OrderResponseDto(order);
-  }
+  //   return new OrderResponseDto(order);
+  // }
 
   async cancelOrder(orderId: string, userId: string) {
     const user = await this.userRepository.findById(userId);
@@ -270,7 +324,7 @@ export class OrderService {
           );
 
         if (variant) {
-          variant.stock += item.quantity;
+          variant.reservedStock -= item.quantity;
           await manager.getRepository(variant.constructor).save(variant);
         }
       }
@@ -323,7 +377,7 @@ export class OrderService {
     );
 
     if (variant) {
-      variant.stock += item.quantity;
+      variant.reservedStock -= item.quantity;
       await this.productVariantRepository.save(variant);
     }
 

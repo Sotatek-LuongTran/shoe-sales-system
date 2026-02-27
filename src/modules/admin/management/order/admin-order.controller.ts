@@ -16,6 +16,7 @@ import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
 import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
 import { ApiPaginatedResponse } from 'src/shared/decorators/api-paginated-response.decorator';
 import { OrderResponseDto } from 'src/shared/dto/order/order-response.dto';
+import { AdminPaginateOrdersDto } from './dto/admin-paginate-orders.dto';
 
 @Controller('admin/orders')
 @ApiBearerAuth('access-token')
@@ -35,7 +36,7 @@ export class AdminOrderController {
   })
   @ApiPaginatedResponse(OrderResponseDto)
   @UseInterceptors(ClassSerializerInterceptor)
-  async getAllOrders(@Query() dto: PaginateOrdersDto) {
+  async getAllOrders(@Query() dto: AdminPaginateOrdersDto) {
     return this.adminOrderService.getAllOrdersPagination(dto);
   }
 }
