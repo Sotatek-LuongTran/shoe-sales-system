@@ -40,10 +40,9 @@ export class PaymentRepository extends BaseRepository<PaymentEntity> {
     const page = dto.page ?? 1;
     const limit = dto.limit ?? 10;
 
-    const qb = this.createQueryBuilder('payment').leftJoinAndSelect(
-      'payment.order',
-      'order',
-    );
+    const qb = this.createQueryBuilder('payment')
+      .leftJoinAndSelect('payment.order', 'order')
+      .leftJoinAndSelect('order.items','items');
 
     if (userId) {
       qb.leftJoin('order.user', 'user').where('user.id = :userId', {

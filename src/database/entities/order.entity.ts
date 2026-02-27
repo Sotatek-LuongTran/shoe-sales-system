@@ -19,7 +19,7 @@ import {
 
 @Entity('orders')
 export class OrderEntity extends BaseEntity {
-  @Column({ name: 'status', type: 'enum', enum: OrderStatusEnum })
+  @Column({ name: 'status', type: 'enum', enum: OrderStatusEnum})
   status: OrderStatusEnum;
 
   @Column({
