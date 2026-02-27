@@ -56,7 +56,7 @@ export class OrderService {
         paymentStatus: OrderPaymentStatusEnum.UNPAID,
         status: OrderStatusEnum.PENDING,
         totalPrice: 0,
-        expiresAt: new Date(Date.now() + 12 * 60 * 60 * 1000),
+        expiresAt: new Date(Date.now() + 1 * 60 * 60 * 1000),
       }),
     );
 
