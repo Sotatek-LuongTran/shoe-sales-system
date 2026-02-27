@@ -179,7 +179,7 @@ export class PaymentService {
     payment.paymentStatus = PaymentStatusEnum.PENDING;
     await this.paymentRepository.save(payment);
 
-    payment.order.status = OrderStatusEnum.PROCESSING;
+    payment.order.status = OrderStatusEnum.PENDING;
     await this.orderRepository.save(payment.order);
 
     return new PaymentResponseDto(payment);

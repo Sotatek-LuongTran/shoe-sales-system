@@ -26,6 +26,7 @@ import { PaginateOrdersDto } from 'src/shared/dto/order/paginate-order.dto';
 import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
 import { ProductStatusEnum } from 'src/shared/enums/product.enum';
 import { CreateOrderDto } from './dto/create-order.dto';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class OrderService {
@@ -53,9 +54,9 @@ export class OrderService {
       this.orderRepository.create({
         userId: userId,
         paymentStatus: OrderPaymentStatusEnum.UNPAID,
-        status: OrderStatusEnum.PROCESSING,
+        status: OrderStatusEnum.PENDING,
         totalPrice: 0,
-        expiresAt: new Date(),
+        expiresAt: new Date(Date.now() + 12 * 60 * 60 * 1000),
       }),
     );
 
@@ -302,8 +303,7 @@ export class OrderService {
       }
 
       if (
-        order.status !== OrderStatusEnum.PENDING &&
-        order.status !== OrderStatusEnum.PROCESSING
+        order.status !== OrderStatusEnum.PENDING
       ) {
         throw new BadRequestException({
           errorCode: ErrorCodeEnum.ORDER_INVALID_STATUS,
@@ -399,5 +399,35 @@ export class OrderService {
     );
 
     await this.orderRepository.save(order);
+  }
+
+  @Cron(CronExpression.EVERY_30_SECONDS)
+  async cancelExpiredOrders() {
+    console.log("Start cancel expired orders . . .")
+    const pendingOrders = await this.orderRepository.findAllPendingOrders();
+
+    for (const order of pendingOrders) {
+      for (const item of order.items) {
+        const variant =
+          await this.productVariantRepository.findByProductAndValue(
+            item.productId,
+            item.variantValue,
+          );
+
+        if (!variant) {
+          throw new NotFoundException({
+            errorCode: ErrorCodeEnum.PRODUCT_VARIANT_NOT_FOUND,
+            statusCode: 404,
+            message: 'Variant not found',
+          });
+        }
+
+        variant.reservedStock -= item.quantity;
+        await this.productVariantRepository.save(variant);
+      }
+      order.status = OrderStatusEnum.CANCELLED;
+      await this.orderRepository.save(order);
+    }
+    console.log("Cancel expired orders completed.")
   }
 }
