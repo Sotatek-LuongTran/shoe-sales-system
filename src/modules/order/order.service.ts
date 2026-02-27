@@ -49,6 +49,14 @@ export class OrderService {
         message: 'User not found',
       });
     }
+    const existing = await this.orderRepository.findPendingOrderByUser(userId);
+    if (existing) {
+      throw new BadRequestException({
+        errorCode: ErrorCodeEnum.ORDER_PENDING_EXISTS,
+        statusCode: 400,
+        message: 'You have one pending order',
+      });
+    }
 
     const order = await this.orderRepository.save(
       this.orderRepository.create({
@@ -334,72 +342,72 @@ export class OrderService {
     });
   }
 
-  async removeItemFromPendingOrder(userId: string, dto: RemoveOrderItemDto) {
-    const { productId, variantValue } = dto;
-    // Find pending order
-    const order = await this.orderRepository.findPendingOrderByUser(userId);
+  // async removeItemFromPendingOrder(userId: string, dto: RemoveOrderItemDto) {
+  //   const { productId, variantValue } = dto;
+  //   // Find pending order
+  //   const order = await this.orderRepository.findPendingOrderByUser(userId);
 
-    if (!order) {
-      throw new NotFoundException({
-        errorCode: ErrorCodeEnum.ORDER_PENDING_NOT_FOUND,
-        statusCode: 400,
-        message: 'No pending order found',
-      });
-    }
+  //   if (!order) {
+  //     throw new NotFoundException({
+  //       errorCode: ErrorCodeEnum.ORDER_PENDING_NOT_FOUND,
+  //       statusCode: 400,
+  //       message: 'No pending order found',
+  //     });
+  //   }
 
-    if (order.status !== OrderStatusEnum.PENDING) {
-      throw new BadRequestException({
-        errorCode: ErrorCodeEnum.ORDER_INVALID_STATUS,
-        statusCode: 400,
-        message: 'Invalid order status',
-      });
-    }
+  //   if (order.status !== OrderStatusEnum.PENDING) {
+  //     throw new BadRequestException({
+  //       errorCode: ErrorCodeEnum.ORDER_INVALID_STATUS,
+  //       statusCode: 400,
+  //       message: 'Invalid order status',
+  //     });
+  //   }
 
-    // Find item in order
-    const item = await this.orderItemRepository.findItemInOrder(
-      order.id,
-      productId,
-      variantValue,
-    );
+  //   // Find item in order
+  //   const item = await this.orderItemRepository.findItemInOrder(
+  //     order.id,
+  //     productId,
+  //     variantValue,
+  //   );
 
-    if (!item) {
-      throw new NotFoundException({
-        errorCode: ErrorCodeEnum.ORDER_EMPTY,
-        statusCode: 404,
-        message: 'OrderIsEmpty',
-      });
-    }
+  //   if (!item) {
+  //     throw new NotFoundException({
+  //       errorCode: ErrorCodeEnum.ORDER_EMPTY,
+  //       statusCode: 404,
+  //       message: 'OrderIsEmpty',
+  //     });
+  //   }
 
-    // Restore stock
-    const variant = await this.productVariantRepository.findByProductAndValue(
-      productId,
-      variantValue,
-    );
+  //   // Restore stock
+  //   const variant = await this.productVariantRepository.findByProductAndValue(
+  //     productId,
+  //     variantValue,
+  //   );
 
-    if (variant) {
-      variant.reservedStock -= item.quantity;
-      await this.productVariantRepository.save(variant);
-    }
+  //   if (variant) {
+  //     variant.reservedStock -= item.quantity;
+  //     await this.productVariantRepository.save(variant);
+  //   }
 
-    // Remove item
-    await this.orderItemRepository.removeItemFromOrder(
-      order.id,
-      productId,
-      variantValue,
-    );
+  //   // Remove item
+  //   await this.orderItemRepository.removeItemFromOrder(
+  //     order.id,
+  //     productId,
+  //     variantValue,
+  //   );
 
-    // Recalculate total price
-    const remainingItems = await this.orderItemRepository.findByOrderId(
-      order.id,
-    );
+  //   // Recalculate total price
+  //   const remainingItems = await this.orderItemRepository.findByOrderId(
+  //     order.id,
+  //   );
 
-    order.totalPrice = remainingItems.reduce(
-      (sum, i) => sum + Number(i.finalPrice),
-      0,
-    );
+  //   order.totalPrice = remainingItems.reduce(
+  //     (sum, i) => sum + Number(i.finalPrice),
+  //     0,
+  //   );
 
-    await this.orderRepository.save(order);
-  }
+  //   await this.orderRepository.save(order);
+  // }
 
   @Cron(CronExpression.EVERY_30_SECONDS)
   async cancelExpiredOrders() {
@@ -425,8 +433,11 @@ export class OrderService {
         variant.reservedStock -= item.quantity;
         await this.productVariantRepository.save(variant);
       }
-      order.status = OrderStatusEnum.CANCELLED;
+      order.status = OrderStatusEnum.EXPIRED;
       await this.orderRepository.save(order);
+
+      order.payment.paymentStatus = PaymentStatusEnum.CANCELLED;
+      await this.paymentRepository.save(order.payment);
     }
     console.log("Cancel expired orders completed.")
   }

@@ -118,10 +118,10 @@ export class OrderController {
   // =========================
   // USER: REMOVE ORDER ITEM
   // =========================
-  @Delete('pending/item')
-  @ApiOperation({ summary: 'Delete order item' })
-  @ApiResponse({ status: 200, description: 'Item deleted successfully' })
-  async removeItem(@Req() req: any, @Body() dto: RemoveOrderItemDto) {
-    return this.orderService.removeItemFromPendingOrder(req.user.userId, dto);
-  }
+  // @Delete('pending/item')
+  // @ApiOperation({ summary: 'Delete order item' })
+  // @ApiResponse({ status: 200, description: 'Item deleted successfully' })
+  // async removeItem(@Req() req: any, @Body() dto: RemoveOrderItemDto) {
+  //   return this.orderService.removeItemFromPendingOrder(req.user.userId, dto);
+  // }
 }
