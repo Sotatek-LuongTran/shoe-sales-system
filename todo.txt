@@ -1,9 +1,9 @@
-- bo add item
-- Truyen list id item vao order, order CHI DUOC CHOT 1 lan 
 - timeout order 1h
 - tach ro loi order theo status
-- check item trong order truoc payment
 
+- //bo add item
+- //Truyen list id item vao order, order CHI DUOC CHOT 1 lan 
+- //check item trong order truoc payment
 - //them trang thai entity (co restoration)
 - //verify email (template engine - handlebar)
 - //refesh token 

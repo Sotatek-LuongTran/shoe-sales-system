@@ -1,9 +1,9 @@
 export enum OrderStatusEnum {
     PENDING = 'pending',
-    PROCESSING = 'processing',
     SHIPPED = 'shipped',
     COMPLETED = 'completed',
     CANCELLED = 'cancelled',
+    EXPIRED = 'expired',
 }
 
 export enum OrderPaymentStatusEnum {

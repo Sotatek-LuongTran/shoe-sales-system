@@ -8,20 +8,12 @@ import {
   OrderStatusEnum,
 } from 'src/shared/enums/order.enum';
 import { BaseRepository } from 'src/shared/modules/base/base.repository';
-import { DataSource, EntityManager, IsNull } from 'typeorm';
+import { DataSource, EntityManager, IsNull, LessThan } from 'typeorm';
 
 @Injectable()
 export class OrderRepository extends BaseRepository<OrderEntity> {
   constructor(datasource: DataSource) {
     super(datasource, OrderEntity);
-  }
-
-  createOrder(manager: EntityManager, userId: string) {
-    return manager.getRepository(OrderEntity).save({
-      userId,
-      status: OrderStatusEnum.PROCESSING,
-      paymentStatus: OrderPaymentStatusEnum.UNPAID,
-    });
   }
 
   // async findOrdersByUser(userId: string) {
@@ -95,12 +87,25 @@ export class OrderRepository extends BaseRepository<OrderEntity> {
     return this.findOne({
       where: {
         id,
-        status: OrderStatusEnum.PROCESSING,
+        status: OrderStatusEnum.PENDING,
       },
       relations: {
         items: true,
         payment: true,
       },
     });
+  }
+
+  async findAllPendingOrders() {
+    return this.find({
+      where: {
+        status: OrderStatusEnum.PENDING,
+        expiresAt: LessThan(new Date())
+      },
+      relations: {
+        items: true,
+        payment: true,
+      }
+    })
   }
 }
