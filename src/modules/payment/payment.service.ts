@@ -84,8 +84,6 @@ export class PaymentService {
           message: 'Payment not found',
         });
 
-      console.log(payment)
-
       if (payment.paymentStatus !== PaymentStatusEnum.PENDING) {
         throw new BadRequestException({
           errorCode: ErrorCodeEnum.PAYMENT_ALREADY_PROCESSED,
