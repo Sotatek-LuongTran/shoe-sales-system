@@ -12,7 +12,7 @@ import { ProductRepository } from 'src/shared/modules/common-product/product.rep
 import { ProductVariantRepository } from 'src/shared/modules/common-product-variant/product-variant.repository';
 import { OrderItemRepository } from '../order/repository/order-item.repository';
 import { OrderRepository } from 'src/shared/modules/common-order/order.repository';
-import { PaymentRepository } from '../payment/repository/payment.repository';
+import { PaymentRepository } from '../../shared/modules/common-payment/payment.repository';
 import { AdminCategoryService } from './management/category/admin-category.service';
 import { AdminOrderService } from './management/order/admin-order.service';
 import { AdminPaymentService } from './management/payment/admin-payment.service';

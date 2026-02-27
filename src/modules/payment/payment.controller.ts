@@ -66,6 +66,7 @@ export class PaymentController {
     description: 'Payment processed',
     type: PaymentResponseDto,
   })
+  @UseInterceptors(ClassSerializerInterceptor)
   async confirmPayment(@Param('paymentId', ParseUUIDPipe) paymentId: string) {
     return this.paymentService.confirmPayment(paymentId);
   }

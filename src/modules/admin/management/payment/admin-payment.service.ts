@@ -6,7 +6,7 @@ import {
 import { OrderEntity } from 'src/database/entities/order.entity';
 import { PaymentEntity } from 'src/database/entities/payment.entity';
 import { PaginatePaymentsDto } from 'src/shared/dto/payment/paginate-payments.dto';
-import { PaymentRepository } from 'src/modules/payment/repository/payment.repository';
+import { PaymentRepository } from 'src/shared/modules/common-payment/payment.repository';
 import {
   OrderPaymentStatusEnum,
   OrderStatusEnum,
@@ -16,6 +16,7 @@ import { ProductVariantRepository } from 'src/shared/modules/common-product-vari
 import { DataSource } from 'typeorm';
 import { PaymentResponseDto } from 'src/shared/dto/payment/payment-response.dto';
 import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
+import { AdminPaginatePaymentsDto } from './dto/admin-paginate-payments.dto';
 
 @Injectable()
 export class AdminPaymentService {
@@ -25,8 +26,11 @@ export class AdminPaymentService {
     private readonly productVariantRepository: ProductVariantRepository,
   ) {}
 
-  async getAllPayments(dto: PaginatePaymentsDto) {
-    const payments = await this.paymentRepository.findPaymentsPagination(dto);
+  async getAllPayments(dto: AdminPaginatePaymentsDto) {
+    const payments = await this.paymentRepository.findPaymentsPaginationAdmin(
+      dto.userId,
+      dto,
+    );
 
     return {
       ...payments,

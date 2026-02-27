@@ -1,10 +1,9 @@
+- bo add item
 - Truyen list id item vao order, order CHI DUOC CHOT 1 lan 
 - timeout order 1h
-- bo add item
 - tach ro loi order theo status
 - check item trong order truoc payment
 
-- them trang thai entity (co restoration)
-
-- verify email (template engine - handlebar)
+- //them trang thai entity (co restoration)
+- //verify email (template engine - handlebar)
 - //refesh token 

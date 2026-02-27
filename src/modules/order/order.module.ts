@@ -10,7 +10,7 @@ import { ProductRepository } from 'src/shared/modules/common-product/product.rep
 import { ProductVariantRepository } from 'src/shared/modules/common-product-variant/product-variant.repository';
 import { UserRepository } from 'src/shared/modules/common-user/user.repository';
 import { AuthenticationModule } from '../auth/authentication.module';
-import { PaymentRepository } from '../payment/repository/payment.repository';
+import { PaymentRepository } from '../../shared/modules/common-payment/payment.repository';
 
 @Module({
   imports: [

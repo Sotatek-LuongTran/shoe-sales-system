@@ -6,7 +6,6 @@ import { GenderEnum, ProductStatusEnum, ProductTypeEnum } from 'src/shared/enums
 export class PaginateProductsDto extends PaginateDto {
   @ApiPropertyOptional({
     description: 'Max price of the product',
-    example: '100',
   })
   @IsNumber()
   @IsPositive()
@@ -15,7 +14,6 @@ export class PaginateProductsDto extends PaginateDto {
 
   @ApiPropertyOptional({
     description: 'Min price of the product',
-    example: '100',
   })
   @IsNumber()
   @IsPositive()

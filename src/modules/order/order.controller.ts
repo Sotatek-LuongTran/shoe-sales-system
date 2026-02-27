@@ -14,6 +14,7 @@ import {
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiBody,
   ApiOperation,
   ApiParam,
   ApiQuery,
@@ -31,6 +32,7 @@ import { PaginateOrdersDto } from 'src/shared/dto/order/paginate-order.dto';
 import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
 import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
 import { ApiPaginatedResponse } from 'src/shared/decorators/api-paginated-response.decorator';
+import { CreateOrderDto } from './dto/create-order.dto';
 
 @ApiTags('Orders')
 @ApiBearerAuth('access-token')
@@ -50,25 +52,26 @@ export class OrderController {
     description: 'Order created successfully',
     type: OrderResponseDto,
   })
+  @ApiBody({ type: CreateOrderDto })
   @UseInterceptors(ClassSerializerInterceptor)
-  async checkoutOrder(@Req() req: any) {
-    return this.orderService.checkoutOrder(req.user.userId);
+  async createOrder(@Req() req: any, @Body() dto: CreateOrderDto) {
+    return this.orderService.createOrder(req.user.userId, dto);
   }
 
   // =========================
   // ADD PRODUCT TO PENDING ORDER (CART)
   // =========================
-  @Post('pending/add-item')
-  @ApiOperation({ summary: 'Add product to pending order (cart)' })
-  @ApiResponse({
-    status: 200,
-    description: 'Product added to pending order',
-    type: OrderResponseDto,
-  })
-  @UseInterceptors(ClassSerializerInterceptor)
-  async addToPendingOrder(@Req() req: any, @Body() dto: AddToPendingOrderDto) {
-    return this.orderService.addProductToPendingOrder(req.user.userId, dto);
-  }
+  // @Post('pending/add-item')
+  // @ApiOperation({ summary: 'Add product to pending order (cart)' })
+  // @ApiResponse({
+  //   status: 200,
+  //   description: 'Product added to pending order',
+  //   type: OrderResponseDto,
+  // })
+  // @UseInterceptors(ClassSerializerInterceptor)
+  // async addToPendingOrder(@Req() req: any, @Body() dto: AddToPendingOrderDto) {
+  //   return this.orderService.addProductToPendingOrder(req.user.userId, dto);
+  // }
 
   // =========================
   // USER: GET ALL ORDERS
@@ -77,7 +80,7 @@ export class OrderController {
   @ApiOperation({ summary: 'get all orders' })
   @ApiResponse({
     status: 200,
-    description: 'Order get successfully'
+    description: 'Order get successfully',
   })
   @ApiPaginatedResponse(OrderResponseDto)
   @UseInterceptors(ClassSerializerInterceptor)
