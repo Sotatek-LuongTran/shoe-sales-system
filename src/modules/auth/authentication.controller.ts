@@ -18,12 +18,14 @@ import { AuthenticationService } from './authentication.service';
 import { LoginDto } from './dto/login.dto';
 import {
   ApiBearerAuth,
+  ApiBody,
   ApiOperation,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { UserResponseDto } from 'src/shared/dto/user/user-response.dto';
 import { Response } from 'express';
+import { RegistrationOtpDto } from './dto/registration-otp.dto';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -69,15 +71,31 @@ export class AuthenticationController {
   }
 
   @Get('confirm')
-  async confirmAccountActivation(
-    @Query('token') token: string,
+  async getConfirmAccountActivation(
+    @Query('approver') approver: string,
     @Res() res: Response,
   ) {
-    const result = await this.authService.confirmAccountActivation(token);
-
     return res.render('registration-approval', {
-      appover: result.appover,
-      link: result.link,
+      approver,
     });
+  }
+
+  @Post('confirm')
+  @ApiOperation({ summary: 'Confirm account registration' })
+  @ApiResponse({ status: 201, description: 'Account confirmed successfully' })
+  async confirmAccountActivation(
+    @Body() dto: RegistrationOtpDto,
+    @Res() res: Response,
+  ) {
+    const result = await this.authService.confirmRegistration(dto);
+
+    if (!result.verified) {
+      return res.render('registration-approval', {
+        email: dto.email,
+        error: 'Invalid or expired OTP',
+      });
+    }
+
+    return res.render('registration-approval-success');
   }
 }

@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -14,7 +15,8 @@ import { UserRoleEnum, UserStatusEnum } from 'src/shared/enums/user.enum';
 import { UserResponseDto } from 'src/shared/dto/user/user-response.dto';
 import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
 import { MailerService } from 'src/shared/modules/mailer/mailer.service';
-import { stringify } from 'querystring';
+import * as crypto from 'crypto';
+import { RegistrationOtpDto } from './dto/registration-otp.dto';
 
 @Injectable()
 export class AuthenticationService {
@@ -36,6 +38,10 @@ export class AuthenticationService {
       });
     }
 
+    const otp = this.generateOtp(createUserDto.email);
+    const otpExpiresIn =
+      this.configService.get<string>('OTP_EXPIRES_IN') ?? '5';
+
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
 
     const user = this.usersRepo.create({
@@ -49,18 +55,10 @@ export class AuthenticationService {
 
     await this.usersRepo.save(user);
 
-    const payload = { userId: user.id };
-
-    const emailToken = this.jwtService.sign(payload, {
-      secret: this.configService.get<string>('JWT_SECRET'),
-    });
-
-    const link = `${this.configService.get('APPROVAL_LINK')}`;
-
     await this.mailerService.sendApprovalEmail(user.email, {
-      approver: user.name,
-      link,
-      token: emailToken,
+      approver: user.email,
+      otp: otp,
+      expiresIn: otpExpiresIn,
     });
 
     return new UserResponseDto(user);
@@ -197,37 +195,80 @@ export class AuthenticationService {
     return { accessToken: newAccessToken };
   }
 
-  async confirmAccountActivation(token: string) {
-    let payload: { userId: string };
-    try {
-      payload = this.jwtService.verify(token, {
-        secret: this.configService.get<string>('JWT_SECRET'),
-      });
-    } catch {
-      throw new BadRequestException({
-        errorCode: ErrorCodeEnum.AUTH_INVALID_CONFIRMATION,
-        statusCode: 400,
-        message: 'Invalid account confirmation',
-      });
-    }
-
-    const user = await this.usersRepo.findById(payload.userId);
+  async confirmRegistration(dto: RegistrationOtpDto) {
+    const user = await this.usersRepo.findByEmail(dto.email);
 
     if (!user) {
-      throw new BadRequestException({
+      throw new UnauthorizedException({
         errorCode: ErrorCodeEnum.USER_NOT_FOUND,
-        statusCode: 400,
+        statusCode: 401,
         message: 'User not found',
       });
     }
-    const link = await this.configService.get<string>('APPROVAL_LINK');
-    if (user.status === UserStatusEnum.ACTIVE) {
-      return { alreadyConfirmed: true, appover: user.name, link };
+
+    const isOtpValid = this.verifyOtp(dto.email, dto.otp);
+
+    if (!isOtpValid) {
+      throw new BadRequestException({
+        errorCode: ErrorCodeEnum.AUTH_INVALID_OTP,
+        statusCode: 400,
+        message: 'Invalid Otp',
+      });
     }
 
     user.status = UserStatusEnum.ACTIVE;
+
     await this.usersRepo.save(user);
 
-    return { confirmed: true, appover: user.name, link };
+    return { verified: true };
+  }
+
+  private verifyOtp(email: string, inputOtp: string) {
+    const now = Date.now();
+
+    const key = this.configService.get<string>('OTP_SECRET_KEY');
+    if (!key) {
+      throw new NotFoundException({
+        errorCode: ErrorCodeEnum.AUTH_MISSING_OTP_KEY,
+        statusCode: 404,
+        message: 'Otp secret key is missing',
+      });
+    }
+    for (let offset = -1; offset <= 1; offset++) {
+      const timeWindow = Math.floor(now / (5 * 60 * 1000)) + offset;
+
+      const hmac = crypto
+        .createHmac('sha256', key)
+        .update(`${email}:${timeWindow}`)
+        .digest('hex');
+
+      const expectedOtp = hmac.slice(0, 6).toUpperCase();
+
+      if (expectedOtp === inputOtp) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  private generateOtp(email: string): string {
+    const timeWindow = Math.floor(Date.now() / (5 * 60 * 1000)); // 5 mins
+
+    const key = this.configService.get<string>('OTP_SECRET_KEY');
+    if (!key) {
+      throw new NotFoundException({
+        errorCode: ErrorCodeEnum.AUTH_MISSING_OTP_KEY,
+        statusCode: 404,
+        message: 'Otp secret key is missing',
+      });
+    }
+
+    const hmac = crypto
+      .createHmac('sha256', key)
+      .update(`${email}:${timeWindow}`)
+      .digest('hex');
+
+    return hmac.slice(0, 6).toUpperCase();
   }
 }
