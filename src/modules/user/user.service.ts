@@ -38,6 +38,5 @@ export class UserService {
     });
 
     await this.userRepository.save(user);
-    return new UserResponseDto(user);
   }
 }

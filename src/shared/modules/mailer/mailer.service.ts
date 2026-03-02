@@ -45,6 +45,25 @@ export class MailerService {
     );
   }
 
+  async sendForgotPasswordEmail(
+    to: string,
+    context: { approver: string; otp: string; expiresIn: string },
+  ) {
+    if (!to || !context.approver || !context.otp) {
+      throw new BadRequestException({
+        errorCode: ErrorCodeEnum.MAILER_MISSING_INFORMATION,
+        statusCode: 400,
+        message: 'Missing required fields: to, approver or otp',
+      });
+    }
+    return this.sendTemplateEmail(
+      'forgot-password-notification',
+      to,
+      'Approval Required',
+      context,
+    );
+  }
+
   private async sendTemplateEmail(
     templateName: string,
     to: string,
