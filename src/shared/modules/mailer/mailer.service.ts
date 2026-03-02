@@ -28,9 +28,9 @@ export class MailerService {
 
   async sendApprovalEmail(
     to: string,
-    context: { approver: string; link: string; token: string },
+    context: { approver: string; link: string, token: string },
   ) {
-    if (!to || !context?.approver || !context?.link || !context?.token) {
+    if (!to || !context.approver || !context.link || !context.token) {
       throw new BadRequestException({
         errorCode: ErrorCodeEnum.MAILER_MISSING_INFORMATION,
         statusCode: 400,
@@ -52,18 +52,12 @@ export class MailerService {
     context: any,
   ): Promise<void> {
     const html = this.compileTemplate(templateName, context);
-    try {
-      await this.transporter.sendMail({
-        from: `"Approval System" <${this.configService.get('SMTP_USER')}>`,
-        to,
-        subject: subject,
-        html,
-      });
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Send Email Error:', error);
-      throw new InternalServerErrorException('Failed to send email');
-    }
+    return await this.transporter.sendMail({
+      from: `"Approval System" <${this.configService.get('SMTP_USER')}>`,
+      to,
+      subject: subject,
+      html,
+    });
   }
 
   private compileTemplate(templateName: string, context: any): string {

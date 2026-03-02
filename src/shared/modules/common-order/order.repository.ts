@@ -66,10 +66,6 @@ export class OrderRepository extends BaseRepository<OrderEntity> {
     if (dto.search) {
       qb.where('order.');
     }
-
-    if (dto.search) {
-      qb.where('order.');
-    }
     return paginate(qb, { page, limit });
   }
 
