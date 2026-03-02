@@ -17,6 +17,7 @@ import { DataSource } from 'typeorm';
 import { PaymentResponseDto } from 'src/shared/dto/payment/payment-response.dto';
 import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
 import { AdminPaginatePaymentsDto } from './dto/admin-paginate-payments.dto';
+import { AdminPaymentResponseDto } from './dto/admin-payment-response.dto';
 
 @Injectable()
 export class AdminPaymentService {
@@ -34,7 +35,7 @@ export class AdminPaymentService {
 
     return {
       ...payments,
-      items: payments.items.map((item) => new PaymentResponseDto(item)),
+      items: payments.items.map((item) => new AdminPaymentResponseDto(item)),
     };
   }
 
