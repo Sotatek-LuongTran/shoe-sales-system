@@ -25,11 +25,10 @@ export class MailerController {
       to: string;
       context: {
         approver: string;
-        link: string;
-        token: string;
+        otp: string;
+        expiresIn: string;
       };
     },
-    @Res() res: Response,
   ) {
     const { to, context } = body;
     return this.mailerService.sendApprovalEmail(to, context);

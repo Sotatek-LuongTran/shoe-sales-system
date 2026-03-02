@@ -28,17 +28,36 @@ export class MailerService {
 
   async sendApprovalEmail(
     to: string,
-    context: { approver: string; link: string, token: string },
+    context: { approver: string; otp: string; expiresIn: string },
   ) {
-    if (!to || !context.approver || !context.link || !context.token) {
+    if (!to || !context.approver || !context.otp) {
       throw new BadRequestException({
         errorCode: ErrorCodeEnum.MAILER_MISSING_INFORMATION,
         statusCode: 400,
-        message: 'Missing required fields: to, approver, link or token',
+        message: 'Missing required fields: to, approver or otp',
       });
     }
     return this.sendTemplateEmail(
       'registration-notification',
+      to,
+      'Approval Required',
+      context,
+    );
+  }
+
+  async sendForgotPasswordEmail(
+    to: string,
+    context: { approver: string; otp: string; expiresIn: string },
+  ) {
+    if (!to || !context.approver || !context.otp) {
+      throw new BadRequestException({
+        errorCode: ErrorCodeEnum.MAILER_MISSING_INFORMATION,
+        statusCode: 400,
+        message: 'Missing required fields: to, approver or otp',
+      });
+    }
+    return this.sendTemplateEmail(
+      'forgot-password-notification',
       to,
       'Approval Required',
       context,

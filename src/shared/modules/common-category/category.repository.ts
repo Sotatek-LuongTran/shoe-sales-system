@@ -45,7 +45,7 @@ export class CategoryRepository extends BaseRepository<CategoryEntity> {
 
     if (dto.search) {
       qb.andWhere('category.name ILIKE :search OR category.description ILIKE', {
-        search: `%${dto.search}%`,
+        search: dto.search,
       });
     }
     return paginate(qb, { page, limit });

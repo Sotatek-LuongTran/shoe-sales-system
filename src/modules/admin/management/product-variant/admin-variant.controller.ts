@@ -28,7 +28,6 @@ import { AuthGuard } from '@nestjs/passport';
 import { CreateVariantDto } from 'src/modules/admin/management/product-variant/dto/create-variant.dto';
 import { UpdateVariantDto } from 'src/modules/admin/management/product-variant/dto/update-vatiant.dto';
 import { AdminVariantResponseDto } from './dto/admin-variant-response.dto';
-import { AdminPaginationVariantResponseDto } from './dto/admin-pag-variant-response.dto';
 import { PaginateVariantsDto } from 'src/shared/dto/product-variant/paginate-variants.dto';
 import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
 import { ApiPaginatedResponse } from 'src/shared/decorators/api-paginated-response.decorator';

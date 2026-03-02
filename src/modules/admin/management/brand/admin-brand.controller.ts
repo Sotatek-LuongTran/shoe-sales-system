@@ -12,7 +12,14 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { CreateBrandDto } from 'src/modules/admin/management/brand/dto/create-brand.dto';
 import { UpdateBrandDto } from 'src/modules/admin/management/brand/dto/update-brand.dto';
 import { Roles } from 'src/shared/decorators/role.decorator';
@@ -33,7 +40,6 @@ import { Reflector } from '@nestjs/core';
 @Roles(UserRoleEnum.ADMIN)
 @ApiTags('Admin')
 export class AdminBrandController {
-  brandService: any;
   constructor(private readonly adminBrandService: AdminBrandService) {}
 
   // =============================
@@ -46,10 +52,9 @@ export class AdminBrandController {
     description: 'Brands get successfully',
   })
   @ApiPaginatedResponse(AdminBrandResponseDto)
-  @ApiQuery({ name: 'dto', required: true, type: PaginateBrandsDto })
   @UseInterceptors(ClassSerializerInterceptor)
   getList(@Query() dto: PaginateBrandsDto) {
-    return this.brandService.getBrandsPagination(dto);
+    return this.adminBrandService.getBrandsPagination(dto);
   }
 
   // =============================

@@ -46,9 +46,7 @@ export class UserController {
   @ApiResponse({
     status: 201,
     description: 'Password changed successfully',
-    type: UserResponseDto,
   })
-  @UseInterceptors(ClassSerializerInterceptor)
   async changePassword(@Req() req: any, @Body() dto: ChangePasswordDto) {
     return this.userService.changePassword(req.user.userId, dto);
   }
