@@ -24,7 +24,8 @@
     "migration:run": "npm run typeorm -- migration:run -d src/database/data-source.ts",
     "migration:revert": "npm run typeorm -- migration:revert -d src/database/data-source.ts",
     "migration:show": "npm run typeorm -- migration:show -d src/database/data-source.ts",
-    "seed:run": "ts-node -r tsconfig-paths/register src/database/seeds/seed.ts"
+    "seed:run": "ts-node -r tsconfig-paths/register src/database/seeds/seed.ts",
+    "copy:templates": "cpx \"src/shared/modules/mailer/templates/**/*\" \"dist/shared/modules/mailer/templates\""
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
@@ -65,6 +66,7 @@
     "@types/node": "^22.10.7",
     "@types/passport-jwt": "^4.0.1",
     "@types/supertest": "^6.0.2",
+    "cpx": "^1.5.0",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.2.2",
