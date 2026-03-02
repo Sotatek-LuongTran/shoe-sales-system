@@ -1,6 +1,5 @@
-- timeout order 1h
-- tach ro loi order theo status
-
+- //timeout order 1h
+- //tach ro loi order theo status
 - //bo add item
 - //Truyen list id item vao order, order CHI DUOC CHOT 1 lan 
 - //check item trong order truoc payment

@@ -27,6 +27,11 @@ import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
 import { ProductStatusEnum } from 'src/shared/enums/product.enum';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { ProductVariantEntity } from 'src/database/entities/product-variant.entity';
+import { OrderItemEntity } from 'src/database/entities/order-item.entity';
+import { OrderEntity } from 'src/database/entities/order.entity';
+import { PaymentEntity } from 'src/database/entities/payment.entity';
+import { UserEntity } from 'src/database/entities/user.entity';
 
 @Injectable()
 export class OrderService {
@@ -41,104 +46,116 @@ export class OrderService {
   ) {}
 
   async createOrder(userId: string, dto: CreateOrderDto) {
-    const user = await this.userRepository.findById(userId);
-    if (!user) {
-      throw new NotFoundException({
-        errorCode: ErrorCodeEnum.USER_NOT_FOUND,
-        statusCode: 404,
-        message: 'User not found',
+    return await this.dataSource.transaction(async (manager) => {
+      const user = await manager.getRepository(UserEntity).findOne({
+        where: { id: userId },
       });
-    }
-    const existing = await this.orderRepository.findPendingOrderByUser(userId);
-    if (existing) {
-      throw new BadRequestException({
-        errorCode: ErrorCodeEnum.ORDER_PENDING_EXISTS,
-        statusCode: 400,
-        message: 'You have one pending order',
-      });
-    }
 
-    const order = await this.orderRepository.save(
-      this.orderRepository.create({
-        userId: userId,
-        paymentStatus: OrderPaymentStatusEnum.UNPAID,
-        status: OrderStatusEnum.PENDING,
-        totalPrice: 0,
-        expiresAt: new Date(Date.now() + 1 * 60 * 60 * 1000),
-      }),
-    );
-
-    let totalPrice = 0;
-
-    for (const itemDto of dto.items) {
-      const variant =
-        await this.productVariantRepository.findVariantWithProduct(
-          itemDto.variantId,
-        );
-
-      if (!variant) {
+      if (!user) {
         throw new NotFoundException({
-          errorCode: ErrorCodeEnum.PRODUCT_VARIANT_NOT_FOUND,
+          errorCode: ErrorCodeEnum.USER_NOT_FOUND,
           statusCode: 404,
-          message: 'Variant not found',
+          message: 'User not found',
         });
       }
-
-      if (variant.stock - variant.reservedStock < itemDto.quantity) {
+      const existing = await manager.getRepository(OrderEntity).findOne({
+        where: { userId, status: OrderStatusEnum.PENDING },
+      });
+      if (existing) {
         throw new BadRequestException({
-          errorCode: ErrorCodeEnum.ORDER_INVALID_QUANTITY,
+          errorCode: ErrorCodeEnum.ORDER_PENDING_EXISTS,
           statusCode: 400,
-          message: 'Quantity too large',
+          message: 'You have one pending order',
         });
       }
 
-      const finalPrice = variant.price * itemDto.quantity;
-      totalPrice += finalPrice;
+      const variantIds = dto.items.map((item) => item.variantId);
 
-      const item = this.orderItemRepository.create({
+      const variants = await manager
+        .getRepository(ProductVariantEntity)
+        .createQueryBuilder('variant')
+        .innerJoinAndSelect('variant.product', 'product')
+        .where('variant.id IN (:...ids)', { ids: variantIds })
+        .setLock('pessimistic_write')
+        .getMany();
+
+      const variantMap = new Map(
+        variants.map((variant) => [variant.id, variant]),
+      );
+
+      let totalPrice = 0;
+      const orderItems: OrderItemEntity[] = [];
+      for (const item of dto.items) {
+        const variant = variantMap.get(item.variantId);
+        if (!variant) {
+          throw new NotFoundException({
+            errorCode: ErrorCodeEnum.PRODUCT_VARIANT_NOT_FOUND,
+            statusCode: 404,
+            message: 'Variant not found',
+          });
+        }
+        if (variant.stock - variant.reservedStock < item.quantity) {
+          throw new BadRequestException({
+            errorCode: ErrorCodeEnum.ORDER_INVALID_QUANTITY,
+            statusCode: 400,
+            message: 'Quantity too large',
+          });
+        }
+        const finalPrice = variant.price * item.quantity;
+        totalPrice += finalPrice;
+
+        variant.reservedStock += item.quantity;
+        orderItems.push(
+          manager.create(OrderItemEntity, {
+            name: variant.product.name,
+            description: variant.product.description,
+            productType: variant.product.productType,
+            gender: variant.product.gender,
+            variantValue: variant.variantValue,
+            price: variant.price,
+            quantity: item.quantity,
+            finalPrice,
+            productId: variant.productId,
+          }),
+        );
+      }
+      const order = manager.getRepository(OrderEntity).create({
+        userId,
+        status: OrderStatusEnum.PENDING,
+        paymentStatus: OrderPaymentStatusEnum.UNPAID,
+        totalPrice,
+        items: orderItems,
+        expiresAt: new Date(Date.now() + 1 * 60 * 60 * 1000),
+      });
+      await manager.save(order);
+
+      orderItems.forEach((i) => (i.orderId = order.id));
+      await manager.save(orderItems);
+
+      const payment = manager.create(PaymentEntity, {
         orderId: order.id,
-        name: variant.product.name,
-        description: variant.product.description,
-        productType: variant.product.productType,
-        gender: variant.product.gender,
-        variantValue: variant.variantValue,
-        price: variant.price,
-        quantity: itemDto.quantity,
-        finalPrice,
-        productId: variant.productId,
+        amount: totalPrice,
+        paymentStatus: PaymentStatusEnum.PENDING,
       });
 
-      variant.reservedStock += itemDto.quantity;
+      await manager.save(payment);
 
-      await this.productVariantRepository.save(variant);
+      await manager.save([...variantMap.values()]);
+      const finalOrder = await manager.getRepository(OrderEntity).findOne({
+        where: { id: order.id },
+        relations: ['items', 'payment'],
+      });
 
-      await this.orderItemRepository.save(item);
-    }
+      if (!finalOrder) {
+        throw new NotFoundException({
+          errorCode: ErrorCodeEnum.ORDER_NOT_FOUND,
+          statusCode: 404,
+          message: 'Order has not been created successfully',
+        });
+      }
 
-    order.totalPrice = totalPrice;
-    await this.orderRepository.save(order);
-
-    const payment = this.paymentRepository.create({
-      orderId: order.id,
-      amount: totalPrice,
-      paymentStatus: PaymentStatusEnum.PENDING,
+      return new OrderResponseDto(finalOrder);
     });
-
-    order.payment = payment;
-
-    await this.orderRepository.save(order);
-
-    await this.paymentRepository.save(payment);
-
-    const finalOrder = await this.orderRepository.findOrderWithItems(order.id);
-    if (!finalOrder) {
-      throw new NotFoundException({
-        errorCode: ErrorCodeEnum.ORDER_NOT_FOUND,
-        statusCode: 404,
-        message: 'Order has not been created successfully',
-      });
-    }
-    return new OrderResponseDto(finalOrder);
   }
 
   async getOrdersByUserPagination(userId: string, dto: PaginateOrdersDto) {
@@ -191,98 +208,6 @@ export class OrderService {
     return new OrderResponseDto(order);
   }
 
-  // async addProductToPendingOrder(userId: string, dto: AddToPendingOrderDto) {
-  //   const user = await this.userRepository.findById(userId);
-  //   if (!user)
-  //     throw new NotFoundException({
-  //       errorCode: ErrorCodeEnum.USER_NOT_FOUND,
-  //       statusCode: 404,
-  //       message: 'User not found',
-  //     });
-
-  //   const { productId, productVariantId, quantity } = dto;
-
-  //   // Validate product
-  //   const product = await this.productRepository.findById(productId);
-  //   if (!product || product.status !== ProductStatusEnum.ACTIVE ) {
-  //     throw new BadRequestException({
-  //       errorCode: ErrorCodeEnum.PRODUCT_NOT_AVAILABLE,
-  //       statusCode: 400,
-  //       message: 'Product not available',
-  //     });
-  //   }
-
-  //   // Validate variant
-  //   const variant =
-  //     await this.productVariantRepository.findById(productVariantId);
-
-  //   if (!variant || variant.stock < quantity) {
-  //     throw new BadRequestException({
-  //       errorCode: ErrorCodeEnum.PRODUCT_VARIANT_OUT_OF_STOCK,
-  //       statusCode: 400,
-  //       message: 'Variant out of stock',
-  //     });
-  //   }
-
-  //   // Bo
-  //   variant.stock -= quantity;
-
-  //   await this.productVariantRepository.save(variant);
-
-  //   // Find or create pending order
-  //   let order = await this.orderRepository.findPendingOrderByUser(userId);
-
-  //   if (!order) {
-  //     order = this.orderRepository.create({
-  //       user,
-  //       status: OrderStatusEnum.PENDING,
-  //       paymentStatus: OrderPaymentStatusEnum.UNPAID,
-  //       totalPrice: 0,
-  //     });
-  //     await this.orderRepository.save(order);
-  //   }
-
-  //   let item = await this.orderItemRepository.findItemInOrder(
-  //     order.id,
-  //     productId,
-  //     variant.variantValue,
-  //   );
-
-  //   const price = Number(variant.price);
-
-  //   if (item) {
-  //     item.quantity += quantity;
-  //     item.finalPrice = item.quantity * price;
-  //   } else {
-  //     const createItemDto: CreateOrderItemDto = {
-  //       productId,
-  //       variantValue: variant.variantValue,
-  //       quantity,
-  //       price,
-  //       name: product.name,
-  //       description: product.description,
-  //       productType: product.productType,
-  //       gender: product.gender,
-  //     };
-
-  //     item = this.orderItemRepository.create({
-  //       orderId: order.id,
-  //       ...createItemDto,
-  //       finalPrice: price * quantity,
-  //     });
-  //   }
-
-  //   await this.orderItemRepository.save(item);
-
-  //   // Recalculate total
-  //   const items = await this.orderItemRepository.findByOrderId(order.id);
-  //   order.totalPrice = items.reduce((sum, i) => sum + Number(i.finalPrice), 0);
-
-  //   await this.orderRepository.save(order);
-
-  //   return new OrderResponseDto(order);
-  // }
-
   async cancelOrder(orderId: string, userId: string) {
     const user = await this.userRepository.findById(userId);
     if (!user)
@@ -310,9 +235,7 @@ export class OrderService {
         });
       }
 
-      if (
-        order.status !== OrderStatusEnum.PENDING
-      ) {
+      if (order.status !== OrderStatusEnum.PENDING) {
         throw new BadRequestException({
           errorCode: ErrorCodeEnum.ORDER_INVALID_STATUS,
           statusCode: 400,
@@ -342,76 +265,9 @@ export class OrderService {
     });
   }
 
-  // async removeItemFromPendingOrder(userId: string, dto: RemoveOrderItemDto) {
-  //   const { productId, variantValue } = dto;
-  //   // Find pending order
-  //   const order = await this.orderRepository.findPendingOrderByUser(userId);
-
-  //   if (!order) {
-  //     throw new NotFoundException({
-  //       errorCode: ErrorCodeEnum.ORDER_PENDING_NOT_FOUND,
-  //       statusCode: 400,
-  //       message: 'No pending order found',
-  //     });
-  //   }
-
-  //   if (order.status !== OrderStatusEnum.PENDING) {
-  //     throw new BadRequestException({
-  //       errorCode: ErrorCodeEnum.ORDER_INVALID_STATUS,
-  //       statusCode: 400,
-  //       message: 'Invalid order status',
-  //     });
-  //   }
-
-  //   // Find item in order
-  //   const item = await this.orderItemRepository.findItemInOrder(
-  //     order.id,
-  //     productId,
-  //     variantValue,
-  //   );
-
-  //   if (!item) {
-  //     throw new NotFoundException({
-  //       errorCode: ErrorCodeEnum.ORDER_EMPTY,
-  //       statusCode: 404,
-  //       message: 'OrderIsEmpty',
-  //     });
-  //   }
-
-  //   // Restore stock
-  //   const variant = await this.productVariantRepository.findByProductAndValue(
-  //     productId,
-  //     variantValue,
-  //   );
-
-  //   if (variant) {
-  //     variant.reservedStock -= item.quantity;
-  //     await this.productVariantRepository.save(variant);
-  //   }
-
-  //   // Remove item
-  //   await this.orderItemRepository.removeItemFromOrder(
-  //     order.id,
-  //     productId,
-  //     variantValue,
-  //   );
-
-  //   // Recalculate total price
-  //   const remainingItems = await this.orderItemRepository.findByOrderId(
-  //     order.id,
-  //   );
-
-  //   order.totalPrice = remainingItems.reduce(
-  //     (sum, i) => sum + Number(i.finalPrice),
-  //     0,
-  //   );
-
-  //   await this.orderRepository.save(order);
-  // }
-
   @Cron(CronExpression.EVERY_30_SECONDS)
   async cancelExpiredOrders() {
-    console.log("Start cancel expired orders . . .")
+    console.log('Start cancel expired orders . . .');
     const pendingOrders = await this.orderRepository.findAllPendingOrders();
 
     for (const order of pendingOrders) {
@@ -439,6 +295,6 @@ export class OrderService {
       order.payment.paymentStatus = PaymentStatusEnum.CANCELLED;
       await this.paymentRepository.save(order.payment);
     }
-    console.log("Cancel expired orders completed.")
+    console.log('Cancel expired orders completed.');
   }
 }

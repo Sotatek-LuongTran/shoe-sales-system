@@ -79,6 +79,7 @@ export class OrderRepository extends BaseRepository<OrderEntity> {
       relations: {
         items: true,
         user: true,
+        payment: true,
       },
     });
   }
