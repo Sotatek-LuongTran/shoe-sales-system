@@ -4,6 +4,7 @@ import { BaseRepository } from '../base/base.repository';
 import { DataSource } from 'typeorm';
 import { PaginateUsersDto } from 'src/shared/dto/user/paginate-user.dto';
 import { paginate, Pagination } from 'nestjs-typeorm-paginate';
+import { UserStatusEnum } from 'src/shared/enums/user.enum';
 
 @Injectable()
 export class UserRepository extends BaseRepository<UserEntity> {
@@ -22,6 +23,9 @@ export class UserRepository extends BaseRepository<UserEntity> {
     if (dto.includeDeleted) {
       qb.withDeleted();
     }
+    if (dto.status) {
+      qb.where('user.status = :status', {status: dto.status})
+    }
 
     qb.orderBy('user.createdAt', 'DESC')
       .skip((page - 1) * limit)
@@ -38,12 +42,12 @@ export class UserRepository extends BaseRepository<UserEntity> {
     });
   }
 
-  async findDeletedUser(userId: string) {
+  async findBannedUser(userId: string) {
     return this.findOne({
       where: {
         id: userId,
+        status: UserStatusEnum.BANNED,
       },
-      withDeleted: true
     });
   }
 }

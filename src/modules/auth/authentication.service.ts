@@ -10,9 +10,11 @@ import { CreateUserDto } from './dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
 import { LoginDto } from './dto/login.dto';
 import { RedisService } from '../../common/redis/redis.service';
-import { UserRoleEnum } from 'src/shared/enums/user.enum';
+import { UserRoleEnum, UserStatusEnum } from 'src/shared/enums/user.enum';
 import { UserResponseDto } from 'src/shared/dto/user/user-response.dto';
 import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
+import { MailerService } from 'src/shared/modules/mailer/mailer.service';
+import { stringify } from 'querystring';
 
 @Injectable()
 export class AuthenticationService {
@@ -21,6 +23,7 @@ export class AuthenticationService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly redisService: RedisService,
+    private readonly mailerService: MailerService,
   ) {}
 
   async register(createUserDto: CreateUserDto) {
@@ -41,9 +44,24 @@ export class AuthenticationService {
       passwordHash: hashedPassword,
       role: UserRoleEnum.USER,
       deletedAt: null,
+      status: UserStatusEnum.INACTIVE,
     });
 
     await this.usersRepo.save(user);
+
+    const payload = { userId: user.id };
+
+    const emailToken = this.jwtService.sign(payload, {
+      secret: this.configService.get<string>('JWT_SECRET'),
+    });
+
+    const link = `${this.configService.get('APPROVAL_LINK')}`;
+
+    await this.mailerService.sendApprovalEmail(user.email, {
+      approver: user.name,
+      link,
+      token: emailToken,
+    });
 
     return new UserResponseDto(user);
   }
@@ -55,7 +73,7 @@ export class AuthenticationService {
       throw new UnauthorizedException({
         errorCode: ErrorCodeEnum.AUTH_INVALID_CREDENTIALS,
         statusCode: 401,
-        message: 'Invalid credentials',
+        message: 'Invalid email',
       });
     }
 
@@ -68,7 +86,23 @@ export class AuthenticationService {
       throw new UnauthorizedException({
         errorCode: ErrorCodeEnum.AUTH_INVALID_CREDENTIALS,
         statusCode: 401,
-        message: 'Invalid credentials',
+        message: 'Invalid password',
+      });
+    }
+
+    if (user.status === UserStatusEnum.INACTIVE) {
+      throw new UnauthorizedException({
+        errorCode: ErrorCodeEnum.AUTH_INVALID_STATUS,
+        statusCode: 401,
+        message: 'Your account has not been activated',
+      });
+    }
+
+    if (user.status === UserStatusEnum.BANNED) {
+      throw new UnauthorizedException({
+        errorCode: ErrorCodeEnum.AUTH_INVALID_STATUS,
+        statusCode: 401,
+        message: 'You has been banned',
       });
     }
 
@@ -101,9 +135,99 @@ export class AuthenticationService {
       expiresIn: this.configService.get('JWT_EXPIRES_IN'),
     });
 
+    const refreshPayload = {
+      sub: user.id,
+      tokenVersion: version,
+    };
+
+    const refreshToken = this.jwtService.sign(refreshPayload, {
+      secret:
+        this.configService.get('JWT_REFRESH_SECRET') ??
+        this.configService.get('JWT_SECRET'),
+      expiresIn: this.configService.get('JWT_REFRESH_EXPIRES_IN') ?? '7d',
+    });
+
     return {
       accessToken,
+      refreshToken,
       message: 'User logged in successfully',
     };
+  }
+
+  async refeshAccessToken(refreshToken: string) {
+    let payload: any;
+
+    try {
+      payload = this.jwtService.verify(refreshToken, {
+        secret: this.configService.get('JWT_REFRESH_SECRET'),
+      });
+    } catch {
+      throw new UnauthorizedException({
+        errorCode: ErrorCodeEnum.AUTH_INVALID_REFRESH_TOKEN,
+        statusCode: 401,
+        message: 'Invalid refresh token',
+      });
+    }
+
+    const userId = payload.sub;
+
+    const redisVersion =
+      (await this.redisService.getAsNumber(`user:tokenVersion:${userId}`)) ?? 0;
+
+    if (Number(redisVersion) !== Number(payload.tokenVersion)) {
+      throw new UnauthorizedException({
+        errorCode: ErrorCodeEnum.AUTH_TOKEN_REVOKED,
+        statusCode: 401,
+        message: 'Token revoked',
+      });
+    }
+
+    const newAccessToken = this.jwtService.sign(
+      {
+        sub: payload.sub,
+        role: payload.role,
+        tokenVersion: payload.tokenVersion,
+      },
+      {
+        secret: this.configService.get('JWT_SECRET'),
+        expiresIn: this.configService.get('JWT_EXPIRES_IN'),
+      },
+    );
+
+    return { accessToken: newAccessToken };
+  }
+
+  async confirmAccountActivation(token: string) {
+    let payload: { userId: string };
+    try {
+      payload = this.jwtService.verify(token, {
+        secret: this.configService.get<string>('JWT_SECRET'),
+      });
+    } catch {
+      throw new BadRequestException({
+        errorCode: ErrorCodeEnum.AUTH_INVALID_CONFIRMATION,
+        statusCode: 400,
+        message: 'Invalid account confirmation',
+      });
+    }
+
+    const user = await this.usersRepo.findById(payload.userId);
+
+    if (!user) {
+      throw new BadRequestException({
+        errorCode: ErrorCodeEnum.USER_NOT_FOUND,
+        statusCode: 400,
+        message: 'User not found',
+      });
+    }
+    const link = await this.configService.get<string>('APPROVAL_LINK');
+    if (user.status === UserStatusEnum.ACTIVE) {
+      return { alreadyConfirmed: true, appover: user.name, link };
+    }
+
+    user.status = UserStatusEnum.ACTIVE;
+    await this.usersRepo.save(user);
+
+    return { confirmed: true, appover: user.name, link };
   }
 }

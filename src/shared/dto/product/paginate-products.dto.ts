@@ -1,12 +1,11 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsBoolean, IsEnum, IsNumber, IsOptional, IsPositive, IsUUID } from 'class-validator';
 import { PaginateDto } from 'src/shared/dto/paginate.dto';
-import { GenderEnum, ProductTypeEnum } from 'src/shared/enums/product.enum';
+import { GenderEnum, ProductStatusEnum, ProductTypeEnum } from 'src/shared/enums/product.enum';
 
 export class PaginateProductsDto extends PaginateDto {
   @ApiPropertyOptional({
     description: 'Max price of the product',
-    example: '100',
   })
   @IsNumber()
   @IsPositive()
@@ -15,7 +14,6 @@ export class PaginateProductsDto extends PaginateDto {
 
   @ApiPropertyOptional({
     description: 'Min price of the product',
-    example: '100',
   })
   @IsNumber()
   @IsPositive()
@@ -51,12 +49,4 @@ export class PaginateProductsDto extends PaginateDto {
   @IsUUID()
   @IsOptional()
   categoryId?: string;
-
-  @ApiPropertyOptional({
-    description: 'Activate / Deactivate product',
-    example: false,
-  })
-  @IsBoolean()
-  @IsOptional()
-  isActive?: boolean;
 }

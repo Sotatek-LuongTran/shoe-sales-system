@@ -7,6 +7,7 @@ import { AuthenticationService } from "./authentication.service";
 import { AuthenticationController } from "./authentication.controller";
 import { JwtStrategy } from "./jwt.strategy";
 import { UserRepository } from "src/shared/modules/common-user/user.repository";
+import { MailerModule } from "src/shared/modules/mailer/mailer.module";
 
 @Module({
     imports: [
@@ -21,6 +22,7 @@ import { UserRepository } from "src/shared/modules/common-user/user.repository";
                 },
             }),
         }),
+        MailerModule,
     ],
     providers: [AuthenticationService, JwtStrategy, UserRepository],
     controllers: [AuthenticationController],

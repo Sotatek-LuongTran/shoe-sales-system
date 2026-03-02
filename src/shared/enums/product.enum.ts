@@ -9,3 +9,8 @@ export enum GenderEnum {
     FEMALE = 'female',
     UNISEX = 'unisex',
 }
+
+export enum ProductStatusEnum {
+    ACTIVE = 'active',
+    INACTIVE = 'inactive',
+}

@@ -27,12 +27,4 @@ export class PaginateDto {
   @MaxLength(500)
   @IsOptional()
   search?: string;
-
-  @ApiPropertyOptional({
-    description: 'Include deleted products',
-    example: false,
-  })
-  @IsBoolean()
-  @IsOptional()
-  includeDeleted?: boolean;
 }

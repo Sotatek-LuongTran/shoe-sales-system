@@ -4,19 +4,19 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CreateBrandDto } from 'src/modules/admin/management/brand/dto/create-brand.dto';
-import { PaginateBrandsDto } from 'src/shared/dto/brand/paginate-brands.dto';
 import { UpdateBrandDto } from 'src/modules/admin/management/brand/dto/update-brand.dto';
 import { BrandRepository } from 'src/shared/modules/common-brand/brand.repository';
 import { AdminBrandResponseDto } from './dto/admin-brand-response.dto';
 import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
+import { BrandStatusEnum } from 'src/shared/enums/brand.enum';
+import { AdminPaginateBrandsDto } from './dto/admin-paginate-brand.dto';
 
 @Injectable()
 export class AdminBrandService {
   constructor(private readonly brandRepository: BrandRepository) {}
 
-  async getBrandsPagination(dto: PaginateBrandsDto) {
-    dto.includeDeleted = true;
-    const brands = await this.brandRepository.findBrandsPagination(dto);
+  async getBrandsPagination(dto: AdminPaginateBrandsDto) {
+    const brands = await this.brandRepository.findBrandsPaginationAdmin(dto);
 
     return {
       ...brands,
@@ -54,6 +54,20 @@ export class AdminBrandService {
     await this.brandRepository.save(brand);
   }
 
+  async deactivateBrand(brandId: string) {
+    const brand = await this.brandRepository.findById(brandId);
+    if (!brand)
+      throw new NotFoundException({
+        errorCode: ErrorCodeEnum.BRAND_NOT_FOUND,
+        statusCode: 404,
+        message: 'Brand not found',
+      });
+
+    brand.status = BrandStatusEnum.INACTIVE;
+
+    await this.brandRepository.save(brand);
+  }
+
   async deleteBrand(brandId: string) {
     const brand = await this.brandRepository.findById(brandId);
     if (!brand)
@@ -69,7 +83,7 @@ export class AdminBrandService {
   }
 
   async restoreBrand(brandId: string) {
-    const brand = await this.brandRepository.findDeletedBrand(brandId);
+    const brand = await this.brandRepository.findInactiveBrand(brandId);
 
     if (!brand) {
       throw new NotFoundException({
@@ -79,7 +93,7 @@ export class AdminBrandService {
       });
     }
 
-    brand.deletedAt = null;
+    brand.status = BrandStatusEnum.ACTIVE;
     await this.brandRepository.save(brand);
   }
 }

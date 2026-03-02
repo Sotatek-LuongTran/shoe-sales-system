@@ -116,7 +116,6 @@ export class AdminProductVariantController {
   @ApiResponse({
     status: 201,
     description: 'Product variant restored successfully',
-    type: AdminVariantResponseDto,
   })
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
   restoreProduct(@Param('id', ParseUUIDPipe) id: string) {

@@ -27,6 +27,7 @@ import { PaymentResponseDto } from 'src/shared/dto/payment/payment-response.dto'
 import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
 import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
 import { ApiPaginatedResponse } from 'src/shared/decorators/api-paginated-response.decorator';
+import { AdminPaginatePaymentsDto } from './dto/admin-paginate-payments.dto';
 
 @Controller('admin/payments')
 @ApiBearerAuth('access-token')
@@ -46,7 +47,7 @@ export class AdminPaymentController {
   })
   @ApiPaginatedResponse(PaymentResponseDto)
   @UseInterceptors(ClassSerializerInterceptor)
-  async getAllPayments(@Query() dto: PaginatePaymentsDto) {
+  async getAllPayments(@Query() dto: AdminPaginatePaymentsDto) {
     return this.adminPaymentService.getAllPayments(dto);
   }
   // =========================
@@ -60,6 +61,7 @@ export class AdminPaymentController {
     type: PaymentResponseDto,
   })
   @ApiParam({name: 'paymentId', required: true, type: 'string', format: 'uuid' })
+  @UseInterceptors(ClassSerializerInterceptor)
   async refund(@Param('paymentId', ParseUUIDPipe) paymentId: string) {
     return this.adminPaymentService.refundPayment(paymentId);
   }

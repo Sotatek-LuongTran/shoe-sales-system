@@ -1,6 +1,7 @@
 import { Column, Entity, OneToMany, Index, DeleteDateColumn } from "typeorm";
 import { BaseEntity } from "../../shared/modules/base/base.entity";
 import { ProductEntity } from "./product.entity";
+import { CategoryStatusEnum } from "../../shared/enums/category.enum";
 
 @Entity('categories')
 @Index('idx_categories_name_deleted_at', ['name', 'deletedAt'])
@@ -10,6 +11,9 @@ export class CategoryEntity extends BaseEntity {
 
     @Column({name:'description', type: 'text', nullable: true})
     description: string;
+
+    @Column({name: 'status', type: 'enum', enum: CategoryStatusEnum})
+    status: CategoryStatusEnum;
 
     // @Column({ name: 'deleted_at', type: 'timestamp', nullable: true })
     @DeleteDateColumn({ name: 'deleted_at' })

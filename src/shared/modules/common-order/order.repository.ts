@@ -1,26 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { paginate, Pagination } from 'nestjs-typeorm-paginate';
 import { OrderEntity } from 'src/database/entities/order.entity';
+import { AdminPaginateOrdersDto } from 'src/modules/admin/management/order/dto/admin-paginate-orders.dto';
 import { PaginateOrdersDto } from 'src/shared/dto/order/paginate-order.dto';
 import {
   OrderPaymentStatusEnum,
   OrderStatusEnum,
 } from 'src/shared/enums/order.enum';
 import { BaseRepository } from 'src/shared/modules/base/base.repository';
-import { DataSource, EntityManager, IsNull } from 'typeorm';
+import { DataSource, EntityManager, IsNull, LessThan } from 'typeorm';
 
 @Injectable()
 export class OrderRepository extends BaseRepository<OrderEntity> {
   constructor(datasource: DataSource) {
     super(datasource, OrderEntity);
-  }
-
-  createOrder(manager: EntityManager, userId: string) {
-    return manager.getRepository(OrderEntity).save({
-      userId,
-      status: OrderStatusEnum.PROCESSING,
-      paymentStatus: OrderPaymentStatusEnum.UNPAID,
-    });
   }
 
   // async findOrdersByUser(userId: string) {
@@ -45,20 +38,33 @@ export class OrderRepository extends BaseRepository<OrderEntity> {
   //   return paginate(qb, { page, limit });
   // }
 
-  async findOrdersPagination(
-    dto: PaginateOrdersDto,
+  async findOrdersPaginationUser(userId: string, dto: PaginateOrdersDto) {
+    return this.findOrdersPagination(userId, dto);
+  }
+
+  async findOrdersPaginationAdmin(userId: string, dto: AdminPaginateOrdersDto) {
+    return this.findOrdersPagination(userId, dto);
+  }
+
+  private async findOrdersPagination(
+    userId: string,
+    dto: any,
   ): Promise<Pagination<OrderEntity>> {
     const page = dto.page ?? 1;
     const limit = dto.limit ?? 10;
 
     const qb = this.createQueryBuilder('order').leftJoin(
-      'order.orderItems',
-      'item',
+      'order.items',
+      'items',
     );
-    if (dto.userId) {
-      qb.leftJoin('order.user', 'user').where('user.id ILIKE :userId', {
-        userId: `%${dto.userId}%`,
+    if (userId) {
+      qb.leftJoin('order.user', 'user').where('user.id = :userId', {
+        userId: userId,
       });
+    }
+
+    if (dto.search) {
+      qb.where('order.');
     }
     return paginate(qb, { page, limit });
   }
@@ -73,6 +79,7 @@ export class OrderRepository extends BaseRepository<OrderEntity> {
       relations: {
         items: true,
         user: true,
+        payment: true,
       },
     });
   }
@@ -85,7 +92,21 @@ export class OrderRepository extends BaseRepository<OrderEntity> {
       },
       relations: {
         items: true,
+        payment: true,
       },
     });
+  }
+
+  async findAllPendingOrders() {
+    return this.find({
+      where: {
+        status: OrderStatusEnum.PENDING,
+        expiresAt: LessThan(new Date())
+      },
+      relations: {
+        items: true,
+        payment: true,
+      }
+    })
   }
 }

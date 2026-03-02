@@ -69,7 +69,7 @@ export class AdminAuthService {
 
     const accessToken = this.jwtService.sign(accessPayload, {
       secret: this.configService.get('JWT_SECRET'),
-      expiresIn: this.configService.get('JWT_EXPIRES_IN'),
+      expiresIn: this.configService.get('JWT_ADMIN_EXPIRES_IN'),
     });
 
     const refreshTtl =

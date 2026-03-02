@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { IsBoolean, IsInt, IsNumber, IsOptional, IsPositive, IsString, MaxLength, MinLength } from "class-validator";
+import { IsBoolean, IsEnum, IsInt, IsNumber, IsOptional, IsPositive, IsString, MaxLength, MinLength } from "class-validator";
 import { PaginateDto } from "src/shared/dto/paginate.dto";
+import { VariantStatusEnum } from "src/shared/enums/product-variant";
 
 export class PaginateVariantsDto extends PaginateDto {
   @ApiProperty({
@@ -31,12 +32,4 @@ export class PaginateVariantsDto extends PaginateDto {
   @IsInt()
   @IsOptional()
   stock?: number;
-
-  @ApiPropertyOptional({
-    description: 'Activate / Deactivate product',
-    example: false,
-  })
-  @IsBoolean()
-  @IsOptional()
-  isActive?: boolean;
 }

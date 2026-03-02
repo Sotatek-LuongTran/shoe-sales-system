@@ -1,10 +1,29 @@
-import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  ClassSerializerInterceptor,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Put,
+  Query,
+  Req,
+  Res,
+  UnauthorizedException,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { AuthenticationService } from './authentication.service';
 import { LoginDto } from './dto/login.dto';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { UserResponseDto } from 'src/shared/dto/user/user-response.dto';
-import { AuthGuard } from '@nestjs/passport';
+import { Response } from 'express';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -18,6 +37,7 @@ export class AuthenticationController {
     type: UserResponseDto,
   })
   @Post('register')
+  @UseInterceptors(ClassSerializerInterceptor)
   async register(@Body() createUserDto: CreateUserDto) {
     return await this.authService.register(createUserDto);
   }
@@ -26,10 +46,38 @@ export class AuthenticationController {
   @ApiResponse({
     status: 201,
     description: 'User login successfully',
-    type: UserResponseDto,
   })
   @Post('login')
+  @UseInterceptors(ClassSerializerInterceptor)
   async login(@Body() loginDto: LoginDto) {
     return await this.authService.login(loginDto);
+  }
+
+  @Post('refresh')
+  @ApiOperation({ summary: 'Refresh access token' })
+  @ApiResponse({ status: 201, description: 'Token refreshed successfully' })
+  @ApiBearerAuth('refresh-token')
+  async refresh(@Req() req: any) {
+    const authHeader = req.headers['authorization'];
+
+    if (!authHeader?.startsWith('Bearer ')) {
+      throw new UnauthorizedException('Refresh token missing');
+    }
+
+    const refreshToken = authHeader.slice(7);
+    return this.authService.refeshAccessToken(refreshToken);
+  }
+
+  @Get('confirm')
+  async confirmAccountActivation(
+    @Query('token') token: string,
+    @Res() res: Response,
+  ) {
+    const result = await this.authService.confirmAccountActivation(token);
+
+    return res.render('registration-approval', {
+      appover: result.appover,
+      link: result.link,
+    });
   }
 }

@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { Body, ClassSerializerInterceptor, Controller, Post, UseGuards, UseInterceptors } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Roles } from 'src/shared/decorators/role.decorator';
@@ -21,6 +21,7 @@ export class AdminAuthController {
     type: UserResponseDto,
   })
   @Post('login')
+  @UseInterceptors(ClassSerializerInterceptor)
   async login(@Body() dto: AdminLoginDto) {
     return await this.adminAuthService.login(dto);
   }

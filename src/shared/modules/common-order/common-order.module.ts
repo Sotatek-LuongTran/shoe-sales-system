@@ -7,4 +7,4 @@ import { OrderRepository } from "./order.repository";
     imports: [TypeOrmModule.forFeature([OrderEntity])],
     exports: [OrderRepository]
 })
-export class OrderModule {}
+export class CommonOrderModule {}

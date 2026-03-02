@@ -28,10 +28,11 @@ export class PaymentResponseDto extends ResponseDto {
   order: OrderResponseDto;
 
   constructor(payment: PaymentEntity) {
-    super(payment.id)
-    Object.assign(this, {
-        ...payment,
-        order: new OrderResponseDto(payment.order)
-    })
+    super(payment.id);
+
+    this.amount = Number(payment.amount);
+    this.paymentStatus = payment.paymentStatus;
+
+    this.order = new OrderResponseDto(payment.order);
   }
 }

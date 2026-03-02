@@ -10,7 +10,7 @@ export class CategoryService {
 
   async getCategoriesPagination(dto: PaginateCategoriesDto) {
     const categories =
-      await this.categoryRepository.findCategoriesPagination(dto);
+      await this.categoryRepository.findCategoriesPaginationUser(dto);
 
     return {
       ...categories,

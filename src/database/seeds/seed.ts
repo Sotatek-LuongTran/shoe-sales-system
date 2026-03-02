@@ -1,10 +1,12 @@
 import { AppDataSource } from "../data-source";
 import { seedAdmin } from "./admin.seed";
+import { seedProducts } from "./products-data.seed";
 
 
 async function runSeed() {
   await AppDataSource.initialize();
   await seedAdmin(AppDataSource);
+  await seedProducts(AppDataSource);
   await AppDataSource.destroy();
 }
 

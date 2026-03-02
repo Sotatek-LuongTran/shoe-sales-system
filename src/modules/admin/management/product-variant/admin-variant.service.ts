@@ -1,11 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateVariantDto } from 'src/modules/admin/management/product-variant/dto/create-variant.dto';
-import { PaginateVariantsDto } from 'src/shared/dto/product-variant/paginate-variants.dto';
 import { UpdateVariantDto } from 'src/modules/admin/management/product-variant/dto/update-vatiant.dto';
 import { ProductVariantRepository } from 'src/shared/modules/common-product-variant/product-variant.repository';
 import { ProductRepository } from 'src/shared/modules/common-product/product.repository';
 import { AdminVariantResponseDto } from './dto/admin-variant-response.dto';
 import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
+import { VariantStatusEnum } from 'src/shared/enums/product-variant';
+import { AdminPaginateVariantsDto } from './dto/admin-paginate-variant.dto';
 
 @Injectable()
 export class AdminProductVariantService {
@@ -30,7 +31,7 @@ export class AdminProductVariantService {
       price: createVariantDto.price,
       stock: createVariantDto.stock,
       product: product,
-      isActive: true,
+      status: VariantStatusEnum.ACTIVE,
     });
 
     await this.productVariantRepository.save(variant);
@@ -70,7 +71,7 @@ export class AdminProductVariantService {
 
   async getVariantsByProductPagination(
     productId: string,
-    dto: PaginateVariantsDto,
+    dto: AdminPaginateVariantsDto,
   ) {
     const product =
       await this.productRepository.findOneWithBrandAndCategory(productId);
@@ -98,7 +99,7 @@ export class AdminProductVariantService {
       });
     }
 
-    const variants = await this.productVariantRepository.findVariantsPagination(
+    const variants = await this.productVariantRepository.findVariantsPaginationAdmin(
       productId,
       dto,
     );
@@ -121,11 +122,21 @@ export class AdminProductVariantService {
     return new AdminVariantResponseDto(variant);
   }
 
+  async deactivateProductVariant(variantId: string) {
+    const variant = await this.productVariantRepository.findById(variantId);
+    if (!variant) {
+      throw new NotFoundException({
+        errorCode: ErrorCodeEnum.PRODUCT_VARIANT_NOT_FOUND,
+        status: 404,
+        message: 'Product variant not found',
+      });
+    }
+    variant.status = VariantStatusEnum.INACTIVE;
+    await this.productVariantRepository.save(variant)
+  }
+
   async restoreProductVariant(variantId: string) {
-    const variant = await this.productVariantRepository.findOne({
-      where: { id: variantId },
-      withDeleted: true,
-    });
+    const variant = await this.productVariantRepository.findInactiveVariant(variantId)
 
     if (!variant) {
       throw new NotFoundException({
@@ -135,7 +146,7 @@ export class AdminProductVariantService {
       });
     }
 
-    variant.deletedAt = null;
+    variant.status = VariantStatusEnum.ACTIVE;
     await this.productVariantRepository.save(variant);
   }
 

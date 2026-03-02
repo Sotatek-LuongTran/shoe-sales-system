@@ -9,6 +9,9 @@ import { CategoryRepository } from 'src/shared/modules/common-category/category.
 import { ProductRepository } from 'src/shared/modules/common-product/product.repository';
 import { AdminProductResponseDto } from './dto/admin-product-response.dto';
 import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
+import { ProductStatusEnum } from 'src/shared/enums/product.enum';
+import { VariantStatusEnum } from 'src/shared/enums/product-variant';
+import { AdminPaginateProductsDto } from './dto/admin-paginate-product.dto';
 
 @Injectable()
 export class AdminProductService {
@@ -47,7 +50,7 @@ export class AdminProductService {
       gender,
       brand: brand,
       category: category,
-      isActive: true,
+      status: ProductStatusEnum.ACTIVE,
     });
 
     await this.productRepository.save(product);
@@ -89,10 +92,9 @@ export class AdminProductService {
   }
 
   async getProductsPagination(
-    dto: PaginateProductsDto,
+    dto: AdminPaginateProductsDto,
   ) {
-    dto.includeDeleted = true;
-    const products = await this.productRepository.findProductsPagination(dto);
+    const products = await this.productRepository.findProductsPaginationAdmin(dto);
     return {
       ...products,
       items: products.items.map((item) => new AdminProductResponseDto(item)),
@@ -129,12 +131,21 @@ export class AdminProductService {
     await this.productRepository.save(product);
   }
 
+  async deactivateProduct(productId: string) {
+    const product = await this.productRepository.findById(productId);
+    if (!product) {
+      throw new NotFoundException({
+        errorCode: ErrorCodeEnum.PRODUCT_NOT_FOUND,
+        status: 404,
+        message: 'Product not found',
+      });
+    }
+    product.status = ProductStatusEnum.INACTIVE;
+    await this.productRepository.save(product)
+  }
+
   async restoreProduct(productId: string) {
-    const product = await this.productRepository.findOne({
-      where: { id: productId },
-      withDeleted: true,
-      relations: ['variants'],
-    });
+    const product = await this.productRepository.findInactiveProduct(productId);
 
     if (!product) {
       throw new NotFoundException({
@@ -144,12 +155,12 @@ export class AdminProductService {
       });
     }
 
-    product.deletedAt = null;
+    product.status = ProductStatusEnum.ACTIVE;
 
     // Optional: restore variants too
     for (const variant of product.variants) {
-      if (variant.deletedAt) {
-        variant.deletedAt = null;
+      if (variant.status === VariantStatusEnum.INACTIVE) {
+        variant.status = VariantStatusEnum.ACTIVE;
       }
     }
 
