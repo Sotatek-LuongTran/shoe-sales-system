@@ -5,6 +5,7 @@ import { OrderRepository } from 'src/shared/modules/common-order/order.repositor
 import { AdminPaginateOrdersDto } from './dto/admin-paginate-orders.dto';
 import { UserRepository } from 'src/shared/modules/common-user/user.repository';
 import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
+import { AdminOrderResponseDto } from './dto/admin-order-reponse.dto';
 
 @Injectable()
 export class AdminOrderService {
@@ -26,7 +27,7 @@ export class AdminOrderService {
 
     return {
       ...orders,
-      items: orders.items.map((item) => new OrderResponseDto(item)),
+      items: orders.items.map((item) => new AdminOrderResponseDto(item)),
     };
   }
 }

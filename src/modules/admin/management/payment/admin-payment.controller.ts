@@ -28,6 +28,7 @@ import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
 import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
 import { ApiPaginatedResponse } from 'src/shared/decorators/api-paginated-response.decorator';
 import { AdminPaginatePaymentsDto } from './dto/admin-paginate-payments.dto';
+import { AdminPaymentResponseDto } from './dto/admin-payment-response.dto';
 
 @Controller('admin/payments')
 @ApiBearerAuth('access-token')
@@ -45,7 +46,7 @@ export class AdminPaymentController {
     status: 200,
     description: 'Payment refunded successfully'
   })
-  @ApiPaginatedResponse(PaymentResponseDto)
+  @ApiPaginatedResponse(AdminPaymentResponseDto)
   @UseInterceptors(ClassSerializerInterceptor)
   async getAllPayments(@Query() dto: AdminPaginatePaymentsDto) {
     return this.adminPaymentService.getAllPayments(dto);

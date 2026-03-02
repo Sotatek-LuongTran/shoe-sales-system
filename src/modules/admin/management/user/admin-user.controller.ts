@@ -81,7 +81,7 @@ export class AdminUserController {
     return this.adminUserService.updateUser(id, updateUserDto);
   }
 
-  @Delete(':id')
+  @Put('deactivate/:id')
   @ApiOperation({ summary: 'Deactivate an user' })
   @ApiResponse({
     status: 201,
