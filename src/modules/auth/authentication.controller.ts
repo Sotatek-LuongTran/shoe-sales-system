@@ -20,12 +20,16 @@ import {
   ApiBearerAuth,
   ApiBody,
   ApiOperation,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { UserResponseDto } from 'src/shared/dto/user/user-response.dto';
 import { Response } from 'express';
 import { RegistrationOtpDto } from './dto/registration-otp.dto';
+import { ChangePasswordDto } from '../user/dto/change-password.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { NewPasswordDto } from './dto/new-password.dto';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -97,5 +101,39 @@ export class AuthenticationController {
     }
 
     return res.render('registration-approval-success');
+  }
+
+  @Post('forgot-password')
+  @ApiOperation({ summary: 'Confirm forgot password' })
+  @ApiResponse({
+    status: 201,
+    description: 'Password forgot confirmed successfully',
+  })
+  async sendForgotPasswordEmail(@Query('email') approver: string) {
+    return this.authService.sendForgotPasswordRequest(approver);
+  }
+
+  @Post('forgot-password/confirm')
+  @ApiOperation({ summary: 'Confirm forgot password' })
+  @ApiResponse({
+    status: 201,
+    description: 'Password forgot confirmed successfully',
+  })
+  async confirmChangePassword(@Body() dto: ForgotPasswordDto) {
+    return this.authService.confirmChangePassword(dto);
+  }
+
+  @Post('forgot-password/change-password')
+  @ApiOperation({ summary: 'User change profile' })
+  @ApiResponse({
+    status: 201,
+    description: 'Password changed successfully',
+  })
+  async changePassword(
+    @Query('verified') verified: boolean,
+    @Query('email') email: string,
+    @Body() dto: NewPasswordDto,
+  ) {
+    return this.authService.changeForgotPassword(verified, email, dto);
   }
 }

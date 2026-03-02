@@ -17,6 +17,9 @@ import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
 import { MailerService } from 'src/shared/modules/mailer/mailer.service';
 import * as crypto from 'crypto';
 import { RegistrationOtpDto } from './dto/registration-otp.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ChangePasswordDto } from '../user/dto/change-password.dto';
+import { NewPasswordDto } from './dto/new-password.dto';
 
 @Injectable()
 export class AuthenticationService {
@@ -40,7 +43,7 @@ export class AuthenticationService {
 
     const otp = this.generateOtp(createUserDto.email);
     const otpExpiresIn =
-      this.configService.get<string>('OTP_EXPIRES_IN') ?? '5';
+      this.configService.get<string>('OTP_EXPIRES_IN') ?? '15';
 
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
 
@@ -195,6 +198,80 @@ export class AuthenticationService {
     return { accessToken: newAccessToken };
   }
 
+  async sendForgotPasswordRequest(email: string) {
+    const user = await this.usersRepo.findByEmail(email);
+
+    if (!user) {
+      throw new UnauthorizedException({
+        errorCode: ErrorCodeEnum.USER_NOT_FOUND,
+        statusCode: 401,
+        message: 'User not found',
+      });
+    }
+
+    const otp = this.generateOtp(email);
+    const otpExpiresIn =
+      this.configService.get<string>('OTP_EXPIRES_IN') ?? '15';
+    await this.mailerService.sendForgotPasswordEmail(email, {
+      approver: email,
+      otp: otp,
+      expiresIn: otpExpiresIn,
+    });
+  }
+
+  async confirmChangePassword(dto: ForgotPasswordDto) {
+    const user = await this.usersRepo.findByEmail(dto.email);
+    if (!user) {
+      throw new UnauthorizedException({
+        errorCode: ErrorCodeEnum.USER_NOT_FOUND,
+        statusCode: 401,
+        message: 'User not found',
+      });
+    }
+
+    const isOtpValid = this.verifyOtp(dto.email, dto.otp);
+
+    if (!isOtpValid) {
+      throw new BadRequestException({
+        errorCode: ErrorCodeEnum.AUTH_INVALID_OTP,
+        statusCode: 400,
+        message: 'Invalid Otp',
+      });
+    }
+    return { verified: true };
+  }
+
+  async changeForgotPassword(
+    verified: boolean,
+    email: string,
+    dto: NewPasswordDto,
+  ) {
+    if (!verified) {
+      throw new BadRequestException({
+        errorCode: ErrorCodeEnum.AUTH_INVALID_OTP,
+        statusCode: 400,
+        message: 'Invalid Otp',
+      });
+    }
+
+    const user = await this.usersRepo.findByEmail(email);
+    if (!user) {
+      throw new UnauthorizedException({
+        errorCode: ErrorCodeEnum.USER_NOT_FOUND,
+        statusCode: 401,
+        message: 'User not found',
+      });
+    }
+
+    const newPasswordHash = await bcrypt.hash(dto.password, 10);
+    Object.assign(user, {
+      ...user,
+      passwordHash: newPasswordHash,
+    });
+
+    await this.usersRepo.save(user);
+  }
+
   async confirmRegistration(dto: RegistrationOtpDto) {
     const user = await this.usersRepo.findByEmail(dto.email);
 
@@ -219,7 +296,6 @@ export class AuthenticationService {
     user.status = UserStatusEnum.ACTIVE;
 
     await this.usersRepo.save(user);
-
     return { verified: true };
   }
 
