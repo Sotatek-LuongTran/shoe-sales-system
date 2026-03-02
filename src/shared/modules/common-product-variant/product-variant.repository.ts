@@ -14,56 +14,51 @@ export class ProductVariantRepository extends BaseRepository<ProductVariantEntit
     super(datasource, ProductVariantEntity);
   }
 
-  async findVariantsPaginationUser(productId: string, dto: PaginateVariantsDto) {
-    return this.findVariantsPagination(productId, dto);
-  }
-
-  async findVariantsPaginationAdmin(productId: string, dto: AdminPaginateVariantsDto) {
-    return this.findVariantsPagination(productId, dto);
-  }
-
-  async findVariantsPagination(
+  async findVariantsPaginationUser(
     productId: string,
-    dto: any,
+    dto: PaginateVariantsDto,
   ) {
+    return this.findVariantsPagination(productId, dto);
+  }
+
+  async findVariantsPaginationAdmin(
+    productId: string,
+    dto: AdminPaginateVariantsDto,
+  ) {
+    return this.findVariantsPagination(productId, dto);
+  }
+
+  async findVariantsPagination(productId: string, dto: any) {
     const page = dto.page ?? 1;
     const limit = dto.limit ?? 10;
 
     const qb = this.createQueryBuilder('variant')
-      .innerJoin('variant.product', 'product')
-      .innerJoin('product.brand', 'brand')
-      .innerJoin('product.category', 'category')
-      .where('variant.productId = :productId', { productId })
-      .andWhere('variant.variantValue = :variantValue', {
+      .where('variant.productId = :productId', { productId });
+    if (dto.variantValue) {
+      qb.andWhere('variant.variantValue = :variantValue', {
         variantValue: dto.variantValue,
       });
+    }
 
     if (dto.includeDeleted) {
       qb.withDeleted();
     }
-    if (dto.status) {
-      qb.andWhere('product.status = :status', {
-        status: dto.status,
-      });
-    }
-
-    qb.groupBy('variant.id');
 
     if (dto.variantValue) {
       qb.andWhere('variant.variantValue ILIKE :search', {
-        search: `%${dto.search}%`,
+        search: dto.search,
       });
     }
 
     if (dto.stock) {
-      qb.andWhere('variant.stock >= :stock', { stock: `%${dto.stock}%` });
+      qb.andWhere('variant.stock >= :stock', { stock: dto.stock });
     }
 
     if (dto.price) {
-      qb.andWhere('variant.stock <= :price', { price: `%${dto.price}%` });
+      qb.andWhere('variant.stock <= :price', { price: dto.price });
     }
 
-    qb.orderBy('product.createdAt', 'DESC')
+    qb.orderBy('variant.createdAt', 'DESC')
       .skip((page - 1) * limit)
       .take(limit);
     return paginate(qb, { page, limit });
@@ -100,7 +95,7 @@ export class ProductVariantRepository extends BaseRepository<ProductVariantEntit
         id: variantId,
         status: VariantStatusEnum.ACTIVE,
       },
-      relations: ['product']
+      relations: ['product'],
     });
   }
 }

@@ -4,9 +4,8 @@ import { PaginateDto } from "src/shared/dto/paginate.dto";
 import { VariantStatusEnum } from "src/shared/enums/product-variant";
 
 export class PaginateVariantsDto extends PaginateDto {
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Value of the variant',
-    example: 'Blue',
   })
   @IsString()
   @MinLength(6)
@@ -14,18 +13,16 @@ export class PaginateVariantsDto extends PaginateDto {
   @IsOptional()
   variantValue?: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Price of the variant',
-    example: '100',
   })
   @IsNumber()
   @IsPositive()
   @IsOptional()
   price?: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Stock of the variant',
-    example: '10',
   })
   @IsNumber()
   @IsPositive()
