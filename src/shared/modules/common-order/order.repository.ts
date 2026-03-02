@@ -53,10 +53,10 @@ export class OrderRepository extends BaseRepository<OrderEntity> {
     const page = dto.page ?? 1;
     const limit = dto.limit ?? 10;
 
-    const qb = this.createQueryBuilder('order').leftJoin(
+    const qb = this.createQueryBuilder('order').leftJoinAndSelect(
       'order.items',
       'items',
-    );
+    ).leftJoinAndSelect('order.payment', 'payment');
     if (userId) {
       qb.leftJoin('order.user', 'user').where('user.id = :userId', {
         userId: userId,
