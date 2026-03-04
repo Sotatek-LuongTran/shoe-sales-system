@@ -1,7 +1,20 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsString, MinLength } from "class-validator";
+import { IsEmail, IsNotEmpty, IsString, Length, MinLength } from "class-validator";
 
 export class NewPasswordDto {
+  @IsString()
+  @Length(6, 6)
+  @ApiProperty({
+    description: '6-digit otp code'
+  })
+  otp: string;
+
+  @IsEmail()
+  @ApiProperty({
+    description: 'Approver'
+  })
+  email: string;
+  
   @ApiProperty({
     example: 'NewSupersecret123!',
     description: 'Password',

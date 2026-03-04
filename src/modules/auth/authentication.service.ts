@@ -245,24 +245,24 @@ export class AuthenticationService {
   }
 
   async changeForgotPassword(
-    verified: boolean,
-    email: string,
     dto: NewPasswordDto,
   ) {
-    if (!verified) {
-      throw new BadRequestException({
-        errorCode: ErrorCodeEnum.AUTH_INVALID_OTP,
-        statusCode: 400,
-        message: 'Invalid Otp',
-      });
-    }
-
-    const user = await this.usersRepo.findByEmail(email);
+    const user = await this.usersRepo.findByEmail(dto.email);
     if (!user) {
       throw new UnauthorizedException({
         errorCode: ErrorCodeEnum.USER_NOT_FOUND,
         statusCode: 401,
         message: 'User not found',
+      });
+    }
+
+    const isOtpValid = await this.verifyOtp(dto.email, dto.otp);
+
+    if (!isOtpValid) {
+      throw new BadRequestException({
+        errorCode: ErrorCodeEnum.AUTH_INVALID_OTP,
+        statusCode: 400,
+        message: 'Invalid Otp',
       });
     }
 

@@ -38,6 +38,7 @@ export class UserRepository extends BaseRepository<UserEntity> {
     return this.findOne({
       where: {
         email,
+        status: UserStatusEnum.ACTIVE,
       },
     });
   }
