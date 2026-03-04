@@ -59,12 +59,16 @@ export class AuthenticationService {
 
     await this.usersRepo.save(user);
 
-    await this.mailerService.sendApprovalEmail(user.email, {
-      approver: user.email,
-      otp: otp,
-      expiresIn: otpExpiresInMins.toString(),
-    });
-
+    await this.mailerService.sendTemplateEmail(
+      'registration-notification',
+      user.email,
+      'Registration Approval',
+      {
+        approver: user.email,
+        otp: otp,
+        expiresIn: otpExpiresInMins.toString(),
+      },
+    );
     return new UserResponseDto(user);
   }
 
@@ -203,11 +207,7 @@ export class AuthenticationService {
     const user = await this.usersRepo.findByEmail(email);
 
     if (!user) {
-      throw new UnauthorizedException({
-        errorCode: ErrorCodeEnum.USER_NOT_FOUND,
-        statusCode: 401,
-        message: 'User not found',
-      });
+      return;
     }
 
     const otp = await this.generateOtp(email);
@@ -215,11 +215,16 @@ export class AuthenticationService {
       this.configService.get<number>('OTP_EXPIRES_IN') ?? 300;
     const otpExpiresInMins = otpExpiresIn / 60;
 
-    await this.mailerService.sendForgotPasswordEmail(email, {
-      approver: email,
-      otp: otp,
-      expiresIn: otpExpiresInMins.toString(),
-    });
+    await this.mailerService.sendTemplateEmail(
+      'forgot-password-notification',
+      email,
+      'Forgot Password Approval',
+      {
+        approver: email,
+        otp: otp,
+        expiresIn: otpExpiresInMins.toString(),
+      },
+    );
   }
 
   async confirmChangePasswordOtp(dto: ForgotPasswordDto) {
@@ -244,9 +249,7 @@ export class AuthenticationService {
     return { verified: true };
   }
 
-  async changeForgotPassword(
-    dto: NewPasswordDto,
-  ) {
+  async changeForgotPassword(dto: NewPasswordDto) {
     const user = await this.usersRepo.findByEmail(dto.email);
     if (!user) {
       throw new UnauthorizedException({
@@ -263,14 +266,6 @@ export class AuthenticationService {
         errorCode: ErrorCodeEnum.AUTH_INVALID_OTP,
         statusCode: 400,
         message: 'Invalid Otp',
-      });
-    }
-
-    if (dto.password !== dto.confirmPassword) {
-      throw new BadRequestException({
-        errorCode: ErrorCodeEnum.USER_CONFIRM_PASSWORD_MISMATCH,
-        statusCode: 400,
-        message: 'Confirm password mismatch',
       });
     }
 

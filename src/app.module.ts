@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { DatabaseModule } from './database/database.module';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthenticationModule } from './modules/auth/authentication.module';
 import { RedisModule } from './common/redis/redis.module';
 import { ProductModule } from './modules/product/product.module';
@@ -16,6 +16,7 @@ import { APP_FILTER } from '@nestjs/core';
 import { CatchEverythingFilter } from './shared/filters/catch-everything.filter';
 import { MailerModule } from './shared/modules/mailer/mailer.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { BullModule } from '@nestjs/bull';
 @Module({
   imports: [
     PassportModule,
@@ -24,6 +25,16 @@ import { ScheduleModule } from '@nestjs/schedule';
       isGlobal: true,
     }),
     ScheduleModule.forRoot(),
+    BullModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        redis: {
+          host: configService.get<string>('QUEUE_HOST'),
+          port: Number(configService.get<string>('QUEUE_PORT')),
+        },
+      }),
+      inject: [ConfigService],
+    }),
     RedisModule,
     AuthenticationModule,
     ProductModule,
