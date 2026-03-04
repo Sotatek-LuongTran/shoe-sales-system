@@ -19,4 +19,13 @@ export class ChangePasswordDto {
   @MinLength(6)
   @IsNotEmpty()
   newPassword: string;
+
+  @ApiProperty({
+    example: 'SecondSupersecret123!',
+    description: 'Confirm password',
+  })
+  @IsString()
+  @MinLength(6)
+  @IsNotEmpty()
+  confirmPassword: string;
 }

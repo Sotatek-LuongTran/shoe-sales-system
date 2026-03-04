@@ -16,21 +16,15 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { AuthGuard } from '@nestjs/passport';
 import { ProductVariantService } from './product-variant.service';
 import { PaginateVariantsDto } from '../../shared/dto/product-variant/paginate-variants.dto';
-import { RolesGuard } from 'src/shared/guards/role.guard';
-import { UserRoleEnum } from 'src/shared/enums/user.enum';
-import { Roles } from 'src/shared/decorators/role.decorator';
 import { ProductVariantResponseDto } from 'src/shared/dto/product-variant/product-variant-response.dto';
-import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
-import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
 import { ApiPaginatedResponse } from 'src/shared/decorators/api-paginated-response.decorator';
 
 @ApiTags('Product variants')
-@ApiBearerAuth('access-token')
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRoleEnum.USER)
+// @ApiBearerAuth('access-token')
+// @UseGuards(JwtAuthGuard, RolesGuard)
+// @Roles(UserRoleEnum.USER)
 @Controller('products')
 export class ProductVariantController {
   constructor(private readonly productVariantService: ProductVariantService) {}

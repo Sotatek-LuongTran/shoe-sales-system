@@ -41,9 +41,10 @@ export class AuthenticationService {
       });
     }
 
-    const otp = this.generateOtp(createUserDto.email);
+    const otp = await this.generateOtp(createUserDto.email);
     const otpExpiresIn =
-      this.configService.get<string>('OTP_EXPIRES_IN') ?? '15';
+      this.configService.get<number>('OTP_EXPIRES_IN') ?? 300;
+    const otpExpiresInMins = otpExpiresIn / 60;
 
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
 
@@ -61,7 +62,7 @@ export class AuthenticationService {
     await this.mailerService.sendApprovalEmail(user.email, {
       approver: user.email,
       otp: otp,
-      expiresIn: otpExpiresIn,
+      expiresIn: otpExpiresInMins.toString(),
     });
 
     return new UserResponseDto(user);
@@ -209,17 +210,19 @@ export class AuthenticationService {
       });
     }
 
-    const otp = this.generateOtp(email);
+    const otp = await this.generateOtp(email);
     const otpExpiresIn =
-      this.configService.get<string>('OTP_EXPIRES_IN') ?? '15';
+      this.configService.get<number>('OTP_EXPIRES_IN') ?? 300;
+    const otpExpiresInMins = otpExpiresIn / 60;
+
     await this.mailerService.sendForgotPasswordEmail(email, {
       approver: email,
       otp: otp,
-      expiresIn: otpExpiresIn,
+      expiresIn: otpExpiresInMins.toString(),
     });
   }
 
-  async confirmChangePassword(dto: ForgotPasswordDto) {
+  async confirmChangePasswordOtp(dto: ForgotPasswordDto) {
     const user = await this.usersRepo.findByEmail(dto.email);
     if (!user) {
       throw new UnauthorizedException({
@@ -229,7 +232,7 @@ export class AuthenticationService {
       });
     }
 
-    const isOtpValid = this.verifyOtp(dto.email, dto.otp);
+    const isOtpValid = await this.verifyOtp(dto.email, dto.otp);
 
     if (!isOtpValid) {
       throw new BadRequestException({
@@ -260,6 +263,14 @@ export class AuthenticationService {
         errorCode: ErrorCodeEnum.USER_NOT_FOUND,
         statusCode: 401,
         message: 'User not found',
+      });
+    }
+
+    if (dto.password !== dto.confirmPassword) {
+      throw new BadRequestException({
+        errorCode: ErrorCodeEnum.USER_CONFIRM_PASSWORD_MISMATCH,
+        statusCode: 400,
+        message: 'Confirm password mismatch',
       });
     }
 
@@ -299,52 +310,23 @@ export class AuthenticationService {
     return { verified: true };
   }
 
-  private verifyOtp(email: string, inputOtp: string) {
-    const now = Date.now();
-
-    const key = this.configService.get<string>('OTP_SECRET_KEY');
-    if (!key) {
-      throw new NotFoundException({
-        errorCode: ErrorCodeEnum.AUTH_MISSING_OTP_KEY,
-        statusCode: 404,
-        message: 'Otp secret key is missing',
-      });
+  private async verifyOtp(email: string, inputOtp: string) {
+    const existedOtp = await this.redisService.get(`user:otp:${email}`);
+    if (!existedOtp) {
+      return false;
     }
-    for (let offset = -1; offset <= 1; offset++) {
-      const timeWindow = Math.floor(now / (5 * 60 * 1000)) + offset;
-
-      const hmac = crypto
-        .createHmac('sha256', key)
-        .update(`${email}:${timeWindow}`)
-        .digest('hex');
-
-      const expectedOtp = hmac.slice(0, 6).toUpperCase();
-
-      if (expectedOtp === inputOtp) {
-        return true;
-      }
+    if (existedOtp !== inputOtp) {
+      return false;
     }
-
-    return false;
+    await this.redisService.del(`user:otp:${email}`);
+    return true;
   }
 
-  private generateOtp(email: string): string {
-    const timeWindow = Math.floor(Date.now() / (5 * 60 * 1000)); // 5 mins
+  private async generateOtp(email: string) {
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpTtl = this.configService.get<number>('OTP_EXPIRES_IN') ?? 300;
 
-    const key = this.configService.get<string>('OTP_SECRET_KEY');
-    if (!key) {
-      throw new NotFoundException({
-        errorCode: ErrorCodeEnum.AUTH_MISSING_OTP_KEY,
-        statusCode: 404,
-        message: 'Otp secret key is missing',
-      });
-    }
-
-    const hmac = crypto
-      .createHmac('sha256', key)
-      .update(`${email}:${timeWindow}`)
-      .digest('hex');
-
-    return hmac.slice(0, 6).toUpperCase();
+    await this.redisService.set(`user:otp:${email}`, otp, otpTtl);
+    return otp;
   }
 }
