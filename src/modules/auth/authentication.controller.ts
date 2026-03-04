@@ -104,7 +104,7 @@ export class AuthenticationController {
   }
 
   @Post('forgot-password')
-  @ApiOperation({ summary: 'Confirm forgot password' })
+  @ApiOperation({ summary: 'Send forgot password email' })
   @ApiResponse({
     status: 201,
     description: 'Password forgot confirmed successfully',
@@ -130,10 +130,8 @@ export class AuthenticationController {
     description: 'Password changed successfully',
   })
   async changePassword(
-    @Query('verified') verified: boolean,
-    @Query('email') email: string,
     @Body() dto: NewPasswordDto,
   ) {
-    return this.authService.changeForgotPassword(verified, email, dto);
+    return this.authService.changeForgotPassword(dto);
   }
 }
