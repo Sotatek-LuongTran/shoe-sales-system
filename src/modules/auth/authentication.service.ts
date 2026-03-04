@@ -219,7 +219,7 @@ export class AuthenticationService {
     });
   }
 
-  async confirmChangePassword(dto: ForgotPasswordDto) {
+  async confirmChangePasswordOtp(dto: ForgotPasswordDto) {
     const user = await this.usersRepo.findByEmail(dto.email);
     if (!user) {
       throw new UnauthorizedException({
@@ -261,6 +261,14 @@ export class AuthenticationService {
         statusCode: 401,
         message: 'User not found',
       });
+    }
+
+    if (dto.password !== dto.confirmPassword) {
+      throw new BadRequestException({
+        errorCode: ErrorCodeEnum.USER_CONFIRM_PASSWORD_MISMATCH,
+        statusCode: 400,
+        message: 'Confirm password mismatch',
+      })
     }
 
     const newPasswordHash = await bcrypt.hash(dto.password, 10);

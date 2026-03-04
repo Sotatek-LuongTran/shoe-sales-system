@@ -120,7 +120,7 @@ export class AuthenticationController {
     description: 'Password forgot confirmed successfully',
   })
   async confirmChangePassword(@Body() dto: ForgotPasswordDto) {
-    return this.authService.confirmChangePassword(dto);
+    return this.authService.confirmChangePasswordOtp(dto);
   }
 
   @Post('forgot-password/change-password')
