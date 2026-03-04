@@ -2,14 +2,10 @@ import {
   Body,
   ClassSerializerInterceptor,
   Controller,
-  Get,
-  Param,
   Post,
-  Put,
   Query,
   Req,
   Res,
-  UnauthorizedException,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -27,9 +23,9 @@ import {
 import { UserResponseDto } from 'src/shared/dto/user/user-response.dto';
 import { Response } from 'express';
 import { RegistrationOtpDto } from './dto/registration-otp.dto';
-import { ChangePasswordDto } from '../user/dto/change-password.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { NewPasswordDto } from './dto/new-password.dto';
+import { RefreshTokenGuard } from 'src/shared/guards/refresh-token.guard';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -63,25 +59,11 @@ export class AuthenticationController {
   @ApiOperation({ summary: 'Refresh access token' })
   @ApiResponse({ status: 201, description: 'Token refreshed successfully' })
   @ApiBearerAuth('refresh-token')
+  @UseGuards(RefreshTokenGuard)
   async refresh(@Req() req: any) {
-    const authHeader = req.headers['authorization'];
-
-    if (!authHeader?.startsWith('Bearer ')) {
-      throw new UnauthorizedException('Refresh token missing');
-    }
-
-    const refreshToken = authHeader.slice(7);
+    const refreshToken = req['refreshToken'];
+    console.log(refreshToken)
     return this.authService.refeshAccessToken(refreshToken);
-  }
-
-  @Get('confirm')
-  async getConfirmAccountActivation(
-    @Query('approver') approver: string,
-    @Res() res: Response,
-  ) {
-    return res.render('registration-approval', {
-      approver,
-    });
   }
 
   @Post('confirm')
@@ -91,16 +73,7 @@ export class AuthenticationController {
     @Body() dto: RegistrationOtpDto,
     @Res() res: Response,
   ) {
-    const result = await this.authService.confirmRegistration(dto);
-
-    if (!result.verified) {
-      return res.render('registration-approval', {
-        email: dto.email,
-        error: 'Invalid or expired OTP',
-      });
-    }
-
-    return res.render('registration-approval-success');
+    return await this.authService.confirmRegistration(dto);
   }
 
   @Post('forgot-password')
@@ -129,9 +102,7 @@ export class AuthenticationController {
     status: 201,
     description: 'Password changed successfully',
   })
-  async changePassword(
-    @Body() dto: NewPasswordDto,
-  ) {
+  async changePassword(@Body() dto: NewPasswordDto) {
     return this.authService.changeForgotPassword(dto);
   }
 }

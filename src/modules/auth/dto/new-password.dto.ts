@@ -23,13 +23,4 @@ export class NewPasswordDto {
   @MinLength(6)
   @IsNotEmpty()
   password: string;
-
-  @ApiProperty({
-    example: 'NewSupersecret123!',
-    description: 'Confirm password',
-  })
-  @IsString()
-  @MinLength(6)
-  @IsNotEmpty()
-  confirmPassword: string;
 }

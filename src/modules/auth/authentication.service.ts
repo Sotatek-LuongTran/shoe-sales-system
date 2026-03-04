@@ -266,14 +266,6 @@ export class AuthenticationService {
       });
     }
 
-    if (dto.password !== dto.confirmPassword) {
-      throw new BadRequestException({
-        errorCode: ErrorCodeEnum.USER_CONFIRM_PASSWORD_MISMATCH,
-        statusCode: 400,
-        message: 'Confirm password mismatch',
-      });
-    }
-
     const newPasswordHash = await bcrypt.hash(dto.password, 10);
     Object.assign(user, {
       ...user,
