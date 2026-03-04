@@ -1,92 +1,25 @@
+import { InjectQueue } from '@nestjs/bull';
 import {
-  BadRequestException,
   Injectable,
-  InternalServerErrorException,
 } from '@nestjs/common';
-import * as nodemailer from 'nodemailer';
-import { ConfigService } from '@nestjs/config';
-import * as path from 'path';
-import * as fs from 'fs';
-import * as handlebars from 'handlebars';
-import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
+import { Queue } from 'bull';
 
 @Injectable()
 export class MailerService {
-  private transporter: nodemailer.Transporter;
+  constructor(@InjectQueue('email') private readonly emailQueue: Queue) {}
 
-  constructor(private configService: ConfigService) {
-    this.transporter = nodemailer.createTransport({
-      host: this.configService.get<string>('SMTP_HOST'),
-      port: this.configService.get<number>('SMTP_PORT'),
-      secure: this.configService.get<boolean>('SMTP_SECURE') === true,
-      auth: {
-        user: this.configService.get<string>('SMTP_USER'),
-        pass: this.configService.get<string>('SMTP_PASS'),
-      },
-    });
-  }
-
-  async sendApprovalEmail(
-    to: string,
-    context: { approver: string; otp: string; expiresIn: string },
-  ) {
-    if (!to || !context.approver || !context.otp) {
-      throw new BadRequestException({
-        errorCode: ErrorCodeEnum.MAILER_MISSING_INFORMATION,
-        statusCode: 400,
-        message: 'Missing required fields: to, approver or otp',
-      });
-    }
-    return this.sendTemplateEmail(
-      'registration-notification',
-      to,
-      'Approval Required',
-      context,
-    );
-  }
-
-  async sendForgotPasswordEmail(
-    to: string,
-    context: { approver: string; otp: string; expiresIn: string },
-  ) {
-    if (!to || !context.approver || !context.otp) {
-      throw new BadRequestException({
-        errorCode: ErrorCodeEnum.MAILER_MISSING_INFORMATION,
-        statusCode: 400,
-        message: 'Missing required fields: to, approver or otp',
-      });
-    }
-    return this.sendTemplateEmail(
-      'forgot-password-notification',
-      to,
-      'Approval Required',
-      context,
-    );
-  }
-
-  private async sendTemplateEmail(
+  async sendTemplateEmail(
     templateName: string,
     to: string,
     subject: string,
     context: any,
   ): Promise<void> {
-    const html = this.compileTemplate(templateName, context);
-    return await this.transporter.sendMail({
-      from: `"Approval System" <${this.configService.get('SMTP_USER')}>`,
+    console.log("Email is being sent")
+    await this.emailQueue.add('send-email', {
+      templateName,
       to,
-      subject: subject,
-      html,
+      subject,
+      context,
     });
-  }
-
-  private compileTemplate(templateName: string, context: any): string {
-    const templatePath = path.join(
-      __dirname,
-      'templates',
-      `${templateName}.hbs`,
-    );
-    const templateSource = fs.readFileSync(templatePath, 'utf8');
-    const compiledTemplate = handlebars.compile(templateSource);
-    return compiledTemplate(context);
   }
 }
