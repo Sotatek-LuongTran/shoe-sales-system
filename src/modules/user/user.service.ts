@@ -1,9 +1,10 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { UserRepository } from 'src/shared/modules/common-user/user.repository';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
 import * as bcrypt from 'bcrypt';
 import { UserResponseDto } from 'src/shared/dto/user/user-response.dto';
+import { error } from 'console';
 @Injectable()
 export class UserService {
   constructor(private readonly userRepository: UserRepository) {}
@@ -29,6 +30,14 @@ export class UserService {
         statusCode: 401,
         message: 'Old password mismatch',
       });
+    }
+
+    if (dto.newPassword !== dto.confirmPassword) {
+      throw new BadRequestException({
+        errorCode: ErrorCodeEnum.USER_CONFIRM_PASSWORD_MISMATCH,
+        statusCode: 400,
+        message: 'Confirm password mismatch',
+      })
     }
 
     const newPasswordHash = await bcrypt.hash(dto.newPassword, 10);
