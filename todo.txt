@@ -2,3 +2,5 @@
 - apply Bull queue for email sending
 - add email resend
 - no controllers for zshared modules
+
+- split mailer module as a seperate service

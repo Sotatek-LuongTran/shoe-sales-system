@@ -25,16 +25,6 @@ import { BullModule } from '@nestjs/bull';
       isGlobal: true,
     }),
     ScheduleModule.forRoot(),
-    BullModule.forRootAsync({
-      imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
-        redis: {
-          host: configService.get<string>('QUEUE_HOST'),
-          port: Number(configService.get<string>('QUEUE_PORT')),
-        },
-      }),
-      inject: [ConfigService],
-    }),
     RedisModule,
     AuthenticationModule,
     ProductModule,
@@ -45,7 +35,6 @@ import { BullModule } from '@nestjs/bull';
     PaymentModule,
     AdminModule,
     UserModule,
-    MailerModule,
   ],
   // providers: [
   //   {
