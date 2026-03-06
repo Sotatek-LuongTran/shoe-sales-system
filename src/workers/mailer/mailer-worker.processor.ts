@@ -1,4 +1,4 @@
-import { Processor, Process } from '@nestjs/bull';
+import { Processor, Process, OnQueueCompleted } from '@nestjs/bull';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
 import * as path from 'path';
@@ -33,14 +33,14 @@ export class MailerProcessor {
     });
   }
 
+  @OnQueueCompleted()
+  onEmailConsumed(job: Job) {
+    console.log(`Processing email with data ${JSON.stringify(job.data)}...`)
+  }
+
   private compileTemplate(templateName: string, context: any): string {
     const templatePath = path.join(
       __dirname,
-      // '..',
-      // '..',
-      // 'shared',
-      // 'modules',
-      // 'mailer',
       'templates',
       `${templateName}.hbs`,
     );
