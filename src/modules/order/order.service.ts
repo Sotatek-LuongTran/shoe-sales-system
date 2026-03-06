@@ -264,37 +264,4 @@ export class OrderService {
       return new OrderResponseDto(order);
     });
   }
-
-  @Cron(CronExpression.EVERY_30_SECONDS)
-  async cancelExpiredOrders() {
-    console.log('Start cancel expired orders . . .');
-    const pendingOrders = await this.orderRepository.findAllPendingOrders();
-
-    for (const order of pendingOrders) {
-      for (const item of order.items) {
-        const variant =
-          await this.productVariantRepository.findByProductAndValue(
-            item.productId,
-            item.variantValue,
-          );
-
-        if (!variant) {
-          throw new NotFoundException({
-            errorCode: ErrorCodeEnum.PRODUCT_VARIANT_NOT_FOUND,
-            statusCode: 404,
-            message: 'Variant not found',
-          });
-        }
-
-        variant.reservedStock -= item.quantity;
-        await this.productVariantRepository.save(variant);
-      }
-      order.status = OrderStatusEnum.EXPIRED;
-      await this.orderRepository.save(order);
-
-      order.payment.paymentStatus = PaymentStatusEnum.CANCELLED;
-      await this.paymentRepository.save(order.payment);
-    }
-    console.log('Cancel expired orders completed.');
-  }
 }
