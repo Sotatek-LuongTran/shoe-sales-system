@@ -1,7 +1,7 @@
 import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { MailerModule } from 'src/shared/modules/mailer/mailer.module';
+import { MailerProcessor } from './mailer/mailer.processor';
 
 @Module({
   imports: [
@@ -18,7 +18,10 @@ import { MailerModule } from 'src/shared/modules/mailer/mailer.module';
       }),
       inject: [ConfigService],
     }),
-    MailerModule,
+    BullModule.registerQueue({
+      name: 'email',
+    }),
   ],
+  providers: [MailerProcessor],
 })
 export class WorkerModule {}

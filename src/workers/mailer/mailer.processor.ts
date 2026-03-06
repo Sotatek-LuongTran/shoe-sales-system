@@ -28,7 +28,7 @@ export class MailerProcessor {
     return await this.transporter.sendMail({
       from: `"Approval System" <${this.configService.get('SMTP_USER')}>`,
       to,
-      subject: subject,
+      subject,
       html,
     });
   }
@@ -36,6 +36,11 @@ export class MailerProcessor {
   private compileTemplate(templateName: string, context: any): string {
     const templatePath = path.join(
       __dirname,
+      '..',
+      '..',
+      'shared',
+      'modules',
+      'mailer',
       'templates',
       `${templateName}.hbs`,
     );
