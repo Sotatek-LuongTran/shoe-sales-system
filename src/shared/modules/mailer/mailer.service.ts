@@ -14,6 +14,7 @@ export class MailerService {
     subject: string,
     context: any,
   ): Promise<void> {
+    console.log('Send email')
     await this.emailQueue.add('send-email', {
       templateName,
       to,
