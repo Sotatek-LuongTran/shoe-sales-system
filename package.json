@@ -25,7 +25,8 @@
     "migration:revert": "npm run typeorm -- migration:revert -d src/database/data-source.ts",
     "migration:show": "npm run typeorm -- migration:show -d src/database/data-source.ts",
     "seed:run": "ts-node -r tsconfig-paths/register src/database/seeds/seed.ts",
-    "copy:templates": "cpx \"src/shared/modules/mailer/templates/**/*\" \"dist/shared/modules/mailer/templates\""
+    "copy:templates": "cpx \"src/shared/modules/mailer/templates/**/*\" \"dist/shared/modules/mailer/templates\"",
+    "start:worker": "ts-node -r tsconfig-paths/register src/worker.ts"
   },
   "dependencies": {
     "@nestjs/bull": "^11.0.4",
@@ -46,6 +47,7 @@
     "express": "^5.2.1",
     "hbs": "^4.2.0",
     "ioredis": "^5.9.2",
+    "nest-commander": "^3.20.1",
     "nestjs-typeorm-paginate": "^4.1.0",
     "nodemailer": "^8.0.1",
     "passport-jwt": "^4.0.1",

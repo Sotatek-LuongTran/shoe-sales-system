@@ -23,7 +23,6 @@ export class MailerProcessor {
 
   @Process('send-email')
   private async handleSendEmail(job: Job<any>): Promise<void> {
-    console.log("Email is being processed")
     const { templateName, to, subject, context } = job.data;
     const html = this.compileTemplate(templateName, context);
     return await this.transporter.sendMail({
