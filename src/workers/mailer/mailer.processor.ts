@@ -36,11 +36,11 @@ export class MailerProcessor {
   private compileTemplate(templateName: string, context: any): string {
     const templatePath = path.join(
       __dirname,
-      '..',
-      '..',
-      'shared',
-      'modules',
-      'mailer',
+      // '..',
+      // '..',
+      // 'shared',
+      // 'modules',
+      // 'mailer',
       'templates',
       `${templateName}.hbs`,
     );
