@@ -10,7 +10,7 @@ import { UserRoleEnum } from 'src/shared/enums/user.enum';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { AdminLoginDto } from './dto/admin-login.dto';
-import { RedisService } from 'src/common/redis/redis.service';
+import { RedisService } from 'src/shared/modules/redis/redis.service';
 
 @Injectable()
 export class AdminAuthService {
