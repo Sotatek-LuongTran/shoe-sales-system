@@ -2,7 +2,7 @@ import { ConfigService } from '@nestjs/config';
 import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { RedisService } from '../../common/redis/redis.service';
+import { RedisService } from '../../shared/modules/redis/redis.service';
 import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
 import { UserRoleEnum } from 'src/shared/enums/user.enum';
 

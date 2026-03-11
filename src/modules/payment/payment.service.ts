@@ -12,22 +12,26 @@ import {
 import { PaymentRepository } from '../../shared/modules/common-payment/payment.repository';
 import { OrderRepository } from '../../shared/modules/common-order/order.repository';
 import { ProductVariantRepository } from 'src/shared/modules/common-product-variant/product-variant.repository';
-import { PaymentEntity } from 'src/database/entities/payment.entity';
-import { OrderEntity } from 'src/database/entities/order.entity';
-import { DataSource } from 'typeorm';
+import { DataSource, LessThan, MoreThan } from 'typeorm';
 import { PaymentResponseDto } from 'src/shared/dto/payment/payment-response.dto';
 import { PaginatePaymentsDto } from 'src/shared/dto/payment/paginate-payments.dto';
 import { UserRepository } from 'src/shared/modules/common-user/user.repository';
 import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
+import { PaymentEntity } from 'src/database/entities/payment.entity';
+import { OrderEntity } from 'src/database/entities/order.entity';
+import { ProductVariantEntity } from 'src/database/entities/product-variant.entity';
+import { VariantStatusEnum } from 'src/shared/enums/product-variant';
+import { RedisService } from 'src/shared/modules/redis/redis.service';
+import { PaymentEventEnum } from 'src/shared/enums/events.enum';
 
 @Injectable()
 export class PaymentService {
   constructor(
     private readonly paymentRepository: PaymentRepository,
     private readonly orderRepository: OrderRepository,
-    private readonly productVariantRepository: ProductVariantRepository,
     private readonly userRepository: UserRepository,
     private readonly dataSource: DataSource,
+    private readonly redisService: RedisService,
   ) {}
 
   /**
@@ -75,7 +79,12 @@ export class PaymentService {
    */
   async confirmPayment(paymentId: string) {
     return this.dataSource.transaction(async (manager) => {
-      const payment = await this.paymentRepository.findByIdWithOrder(paymentId);
+      const payment = await manager.getRepository(PaymentEntity).findOne({
+        where: {
+          id: paymentId,
+        },
+        relations: ['order'],
+      });
 
       if (!payment)
         throw new NotFoundException({
@@ -92,9 +101,15 @@ export class PaymentService {
         });
       }
 
-      const order = await this.orderRepository.findOrderWithItems(
-        payment.orderId,
-      );
+      const order = await manager.getRepository(OrderEntity).findOne({
+        where: {
+          status: OrderStatusEnum.PENDING,
+          expiresAt: MoreThan(new Date()),
+        },
+        relations: {
+          items: true,
+        },
+      });
 
       if (!order)
         throw new NotFoundException({
@@ -111,18 +126,32 @@ export class PaymentService {
         order.paymentStatus = OrderPaymentStatusEnum.PAID;
 
         for (const item of order.items) {
-          const variant =
-            await this.productVariantRepository.findByProductAndValue(
-              item.productId,
-              item.variantValue,
-            );
+          const variant = await manager
+            .getRepository(ProductVariantEntity)
+            .createQueryBuilder('variant')
+            .setLock('pessimistic_write')
+            .where('variant.product_id = :productId', {
+              productId: item.productId,
+            })
+            .andWhere('variant.variant_value = :variantValue', {
+              variantValue: item.variantValue,
+            })
+            .andWhere('variant.status = :status', {
+              status: VariantStatusEnum.ACTIVE,
+            })
+            .getOne();
 
           if (variant) {
             variant.reservedStock -= item.quantity;
             variant.stock -= item.quantity;
-            await manager.getRepository(variant.constructor).save(variant);
+            await manager.getRepository(ProductVariantEntity).save(variant);
           }
         }
+        await this.redisService.publish(PaymentEventEnum.PAYMENT_SUCCESS, {
+          userId: order.userId,
+          orderId: order.id,
+          paymentId: payment.id,
+        })
       } else {
         payment.paymentStatus = PaymentStatusEnum.FAILED;
         order.status = OrderStatusEnum.CANCELLED;
@@ -130,21 +159,30 @@ export class PaymentService {
 
         // ROLLBACK STOCK
         for (const item of order.items) {
-          const variant =
-            await this.productVariantRepository.findByProductAndValue(
-              item.productId,
-              item.variantValue,
-            );
+          const variant = await manager
+            .getRepository(ProductVariantEntity)
+            .createQueryBuilder('variant')
+            .setLock('pessimistic_write')
+            .where('variant.product_id = :productId', {
+              productId: item.productId,
+            })
+            .andWhere('variant.variant_value = :variantValue', {
+              variantValue: item.variantValue,
+            })
+            .andWhere('variant.status = :status', {
+              status: VariantStatusEnum.ACTIVE,
+            })
+            .getOne();
 
           if (variant) {
             variant.reservedStock -= item.quantity;
-            await manager.getRepository(variant.constructor).save(variant);
+            await manager.getRepository(ProductVariantEntity).save(variant);
           }
         }
       }
 
-      await this.paymentRepository.save(payment);
-      await this.orderRepository.save(order);
+      await manager.getRepository(PaymentEntity).save(payment);
+      await manager.getRepository(OrderEntity).save(order);
 
       return new PaymentResponseDto(payment);
     });
@@ -191,7 +229,10 @@ export class PaymentService {
       throw new NotFoundException();
     }
 
-    const payments = await this.paymentRepository.findPaymentsPaginationUser(userId, dto);
+    const payments = await this.paymentRepository.findPaymentsPaginationUser(
+      userId,
+      dto,
+    );
 
     return {
       ...payments,

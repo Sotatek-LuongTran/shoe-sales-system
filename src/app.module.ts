@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { DatabaseModule } from './database/database.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthenticationModule } from './modules/auth/authentication.module';
-import { RedisModule } from './common/redis/redis.module';
+import { RedisModule } from './shared/modules/redis/redis.module';
 import { ProductModule } from './modules/product/product.module';
 import { BrandModule } from './modules/brand/brand.module';
 import { CategoryModule } from './modules/category/category.module';
@@ -17,6 +17,7 @@ import { CatchEverythingFilter } from './shared/filters/catch-everything.filter'
 import { MailerModule } from './shared/modules/mailer/mailer.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { BullModule } from '@nestjs/bull';
+import { NotificationModule } from './shared/modules/notifications/notifictaion.module';
 @Module({
   imports: [
     PassportModule,
@@ -46,6 +47,7 @@ import { BullModule } from '@nestjs/bull';
     AdminModule,
     UserModule,
     MailerModule,
+    NotificationModule,
   ],
   // providers: [
   //   {

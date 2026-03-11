@@ -11,6 +11,7 @@ import { ProductVariantRepository } from 'src/shared/modules/common-product-vari
 import { UserRepository } from 'src/shared/modules/common-user/user.repository';
 import { AuthenticationModule } from '../auth/authentication.module';
 import { PaymentRepository } from '../../shared/modules/common-payment/payment.repository';
+import { RedisModule } from 'src/shared/modules/redis/redis.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { PaymentRepository } from '../../shared/modules/common-payment/payment.r
     ProductVariantRepository,
     UserRepository,
     PaymentRepository,
+    RedisModule
   ],
 })
 export class OrderModule {}

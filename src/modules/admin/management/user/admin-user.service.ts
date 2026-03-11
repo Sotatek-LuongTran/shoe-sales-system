@@ -3,7 +3,7 @@ import { UserRepository } from 'src/shared/modules/common-user/user.repository';
 import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from 'src/modules/auth/dto/create-user.dto';
 import { UpdateUserDto } from 'src/modules/admin/management/user/dto/update-user.dto';
-import { RedisService } from 'src/common/redis/redis.service';
+import { RedisService } from 'src/shared/modules/redis/redis.service';
 import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
 import { PaginateUsersDto } from 'src/shared/dto/user/paginate-user.dto';
 import { UserStatusEnum } from 'src/shared/enums/user.enum';
