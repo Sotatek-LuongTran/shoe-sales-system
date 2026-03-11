@@ -32,8 +32,10 @@ export class ProductVariantRepository extends BaseRepository<ProductVariantEntit
     const page = dto.page ?? 1;
     const limit = dto.limit ?? 10;
 
-    const qb = this.createQueryBuilder('variant')
-      .where('variant.productId = :productId', { productId });
+    const qb = this.createQueryBuilder('variant').where(
+      'variant.productId = :productId',
+      { productId },
+    );
     if (dto.variantValue) {
       qb.andWhere('variant.variantValue = :variantValue', {
         variantValue: dto.variantValue,
@@ -74,6 +76,7 @@ export class ProductVariantRepository extends BaseRepository<ProductVariantEntit
 
   async findByProductAndValue(productId: string, variantValue: string) {
     return this.createQueryBuilder('variant')
+      .setLock('pessimistic_write')
       .innerJoin('variant.product', 'product')
       .where('variant.productId = :productId', { productId })
       .andWhere('variant.variantValue = :variantValue', { variantValue })

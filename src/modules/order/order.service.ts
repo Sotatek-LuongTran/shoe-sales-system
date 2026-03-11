@@ -218,7 +218,9 @@ export class OrderService {
       });
 
     return this.dataSource.transaction(async (manager) => {
-      const order = await this.orderRepository.findOrderWithItems(orderId);
+      const order = await manager
+        .withRepository(this.orderRepository)
+        .findOrderWithItems(orderId);
       if (!order) {
         throw new NotFoundException({
           errorCode: ErrorCodeEnum.ORDER_NOT_FOUND,
@@ -248,16 +250,22 @@ export class OrderService {
 
       // ROLLBACK STOCK
       for (const item of order.items) {
-        const variant =
-          await this.productVariantRepository.findByProductAndValue(
-            item.productId,
-            item.variantValue,
-          );
+        const variant = await manager
+          .withRepository(this.productVariantRepository)
+          .findByProductAndValue(item.productId, item.variantValue);
 
-        if (variant) {
-          variant.reservedStock -= item.quantity;
-          await manager.getRepository(variant.constructor).save(variant);
+        if (!variant) {
+          throw new NotFoundException({
+            errorCode: ErrorCodeEnum.PRODUCT_VARIANT_NOT_FOUND,
+            statusCode: 404,
+            message: 'Variant not found',
+          });
         }
+
+        variant.reservedStock -= item.quantity;
+        await manager
+          .withRepository(this.productVariantRepository)
+          .save(variant);
       }
 
       await manager.getRepository(order.constructor).save(order);
