@@ -10,7 +10,7 @@ import { UserRepository } from 'src/shared/modules/common-user/user.repository';
 import { CreateUserDto } from './dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
 import { LoginDto } from './dto/login.dto';
-import { RedisService } from '../../common/redis/redis.service';
+import { RedisService } from '../../shared/modules/redis/redis.service';
 import { UserRoleEnum, UserStatusEnum } from 'src/shared/enums/user.enum';
 import { UserResponseDto } from 'src/shared/dto/user/user-response.dto';
 import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';

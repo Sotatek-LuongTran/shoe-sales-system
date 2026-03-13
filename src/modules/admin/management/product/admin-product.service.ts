@@ -10,7 +10,7 @@ import { ProductRepository } from 'src/shared/modules/common-product/product.rep
 import { AdminProductResponseDto } from './dto/admin-product-response.dto';
 import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
 import { ProductStatusEnum } from 'src/shared/enums/product.enum';
-import { VariantStatusEnum } from 'src/shared/enums/product-variant';
+import { VariantStatusEnum } from 'src/shared/enums/product-variant.enum';
 import { AdminPaginateProductsDto } from './dto/admin-paginate-product.dto';
 
 @Injectable()

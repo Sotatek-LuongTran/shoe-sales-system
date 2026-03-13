@@ -5,7 +5,7 @@ import { ProductVariantEntity } from 'src/database/entities/product-variant.enti
 import { PaginateVariantsDto } from 'src/shared/dto/product-variant/paginate-variants.dto';
 import { paginate, Pagination } from 'nestjs-typeorm-paginate';
 import { groupBy } from 'rxjs';
-import { VariantStatusEnum } from 'src/shared/enums/product-variant';
+import { VariantStatusEnum } from 'src/shared/enums/product-variant.enum';
 import { AdminPaginateVariantsDto } from 'src/modules/admin/management/product-variant/dto/admin-paginate-variant.dto';
 
 @Injectable()
@@ -32,8 +32,10 @@ export class ProductVariantRepository extends BaseRepository<ProductVariantEntit
     const page = dto.page ?? 1;
     const limit = dto.limit ?? 10;
 
-    const qb = this.createQueryBuilder('variant')
-      .where('variant.productId = :productId', { productId });
+    const qb = this.createQueryBuilder('variant').where(
+      'variant.productId = :productId',
+      { productId },
+    );
     if (dto.variantValue) {
       qb.andWhere('variant.variantValue = :variantValue', {
         variantValue: dto.variantValue,
@@ -74,6 +76,7 @@ export class ProductVariantRepository extends BaseRepository<ProductVariantEntit
 
   async findByProductAndValue(productId: string, variantValue: string) {
     return this.createQueryBuilder('variant')
+      .setLock('pessimistic_write')
       .innerJoin('variant.product', 'product')
       .where('variant.productId = :productId', { productId })
       .andWhere('variant.variantValue = :variantValue', { variantValue })

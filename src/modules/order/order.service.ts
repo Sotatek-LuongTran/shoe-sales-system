@@ -7,7 +7,7 @@ import {
 // import {
 //   CreateOrderItemDto,
 // } from 'src/modules/order/dto/create-order.dto';
-import { DataSource, Not } from 'typeorm';
+import { DataSource, LessThan, MoreThan, Not } from 'typeorm';
 import { OrderRepository } from '../../shared/modules/common-order/order.repository';
 import { OrderItemRepository } from './repository/order-item.repository';
 import { UserRepository } from 'src/shared/modules/common-user/user.repository';
@@ -32,17 +32,17 @@ import { OrderItemEntity } from 'src/database/entities/order-item.entity';
 import { OrderEntity } from 'src/database/entities/order.entity';
 import { PaymentEntity } from 'src/database/entities/payment.entity';
 import { UserEntity } from 'src/database/entities/user.entity';
+import { VariantStatusEnum } from 'src/shared/enums/product-variant.enum';
+import { RedisService } from 'src/shared/modules/redis/redis.service';
+import { OrderEventEnum } from 'src/shared/enums/events.enum';
 
 @Injectable()
 export class OrderService {
   constructor(
     private readonly dataSource: DataSource,
     private readonly orderRepository: OrderRepository,
-    private readonly orderItemRepository: OrderItemRepository,
     private readonly userRepository: UserRepository,
-    private readonly productVariantRepository: ProductVariantRepository,
-    private readonly productRepository: ProductRepository,
-    private readonly paymentRepository: PaymentRepository,
+    private readonly redisService: RedisService,
   ) {}
 
   async createOrder(userId: string, dto: CreateOrderDto) {
@@ -218,11 +218,21 @@ export class OrderService {
       });
 
     return this.dataSource.transaction(async (manager) => {
-      const order = await this.orderRepository.findOrderWithItems(orderId);
+      const order = await manager.getRepository(OrderEntity).findOne({
+        where: {
+          status: OrderStatusEnum.PENDING,
+          expiresAt: MoreThan(new Date()),
+        },
+        relations: {
+          items: true,
+          payment: true,
+        },
+      });
+
       if (!order) {
         throw new NotFoundException({
           errorCode: ErrorCodeEnum.ORDER_NOT_FOUND,
-          statusCode: 400,
+          statusCode: 404,
           message: 'Order not found',
         });
       }
@@ -248,19 +258,40 @@ export class OrderService {
 
       // ROLLBACK STOCK
       for (const item of order.items) {
-        const variant =
-          await this.productVariantRepository.findByProductAndValue(
-            item.productId,
-            item.variantValue,
-          );
+        const variant = await manager
+          .getRepository(ProductVariantEntity)
+          .createQueryBuilder('variant')
+          .setLock('pessimistic_write')
+          .where('variant.product_id = :productId', {
+            productId: item.productId,
+          })
+          .andWhere('variant.variant_value = :variantValue', {
+            variantValue: item.variantValue,
+          })
+          .andWhere('variant.status = :status', {
+            status: VariantStatusEnum.ACTIVE,
+          })
+          .getOne();
 
-        if (variant) {
-          variant.reservedStock -= item.quantity;
-          await manager.getRepository(variant.constructor).save(variant);
+        if (!variant) {
+          throw new NotFoundException({
+            errorCode: ErrorCodeEnum.PRODUCT_VARIANT_NOT_FOUND,
+            statusCode: 404,
+            message: 'Variant not found',
+          });
         }
+
+        variant.reservedStock -= item.quantity;
+        await manager.getRepository(ProductVariantEntity).save(variant);
       }
 
-      await manager.getRepository(order.constructor).save(order);
+      await manager.getRepository(OrderEntity).save(order);
+
+      await this.redisService.publish(OrderEventEnum.ORDER_CANCELLED, {
+        userId: order.userId,
+        orderId: order.id,
+      });
+
       return new OrderResponseDto(order);
     });
   }

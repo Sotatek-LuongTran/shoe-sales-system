@@ -9,7 +9,7 @@ import {
 } from 'typeorm';
 import { BaseEntity } from '../../shared/modules/base/base.entity';
 import { ProductEntity } from './product.entity';
-import { VariantStatusEnum } from '../../shared/enums/product-variant';
+import { VariantStatusEnum } from '../../shared/enums/product-variant.enum';
 
 @Entity('product_variants')
 @Index(

@@ -64,4 +64,12 @@ export class RedisService implements OnModuleDestroy {
   async del(key: string): Promise<number> {
     return this.client.del(key);
   }
+
+  async publish(channel: string, message: any) {
+    return this.client.publish(channel, JSON.stringify(message));
+  }
+
+  async duplicate() {
+    return this.client.duplicate();
+  }
 }
