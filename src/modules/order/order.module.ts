@@ -11,7 +11,7 @@ import { ProductVariantRepository } from 'src/shared/modules/common-product-vari
 import { UserRepository } from 'src/shared/modules/common-user/user.repository';
 import { AuthenticationModule } from '../auth/authentication.module';
 import { PaymentRepository } from '../../shared/modules/common-payment/payment.repository';
-import { RedisModule } from 'src/shared/modules/redis/redis.module';
+import { NotificationService } from 'src/shared/modules/notifications/notification.service';
 
 @Module({
   imports: [
@@ -27,7 +27,7 @@ import { RedisModule } from 'src/shared/modules/redis/redis.module';
     ProductVariantRepository,
     UserRepository,
     PaymentRepository,
-    RedisModule
+    NotificationService,
   ],
 })
 export class OrderModule {}

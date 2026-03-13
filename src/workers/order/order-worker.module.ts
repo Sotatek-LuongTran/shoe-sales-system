@@ -7,8 +7,6 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { DatabaseModule } from 'src/database/database.module';
 import { ConfigModule } from '@nestjs/config';
 import { NotificationService } from 'src/shared/modules/notifications/notification.service';
-import { NotificationGateway } from 'src/shared/modules/notifications/notification.gateway';
-import { RedisService } from 'src/shared/modules/redis/redis.service';
 
 @Module({
   imports: [
@@ -23,7 +21,7 @@ import { RedisService } from 'src/shared/modules/redis/redis.service';
     PaymentRepository,
     OrderRepository,
     ProductVariantRepository,
-    RedisService,
+    NotificationService,
   ],
 })
 export class OrderWorkerModule {}
