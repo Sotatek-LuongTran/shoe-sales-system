@@ -5,7 +5,7 @@ import { ProductVariantEntity } from 'src/database/entities/product-variant.enti
 import { PaginateVariantsDto } from 'src/shared/dto/product-variant/paginate-variants.dto';
 import { paginate, Pagination } from 'nestjs-typeorm-paginate';
 import { groupBy } from 'rxjs';
-import { VariantStatusEnum } from 'src/shared/enums/product-variant';
+import { VariantStatusEnum } from 'src/shared/enums/product-variant.enum';
 import { AdminPaginateVariantsDto } from 'src/modules/admin/management/product-variant/dto/admin-paginate-variant.dto';
 
 @Injectable()

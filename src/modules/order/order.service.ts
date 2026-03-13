@@ -32,7 +32,7 @@ import { OrderItemEntity } from 'src/database/entities/order-item.entity';
 import { OrderEntity } from 'src/database/entities/order.entity';
 import { PaymentEntity } from 'src/database/entities/payment.entity';
 import { UserEntity } from 'src/database/entities/user.entity';
-import { VariantStatusEnum } from 'src/shared/enums/product-variant';
+import { VariantStatusEnum } from 'src/shared/enums/product-variant.enum';
 import { RedisService } from 'src/shared/modules/redis/redis.service';
 import { OrderEventEnum } from 'src/shared/enums/events.enum';
 

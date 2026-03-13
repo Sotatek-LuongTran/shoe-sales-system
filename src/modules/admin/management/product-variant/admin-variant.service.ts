@@ -5,7 +5,7 @@ import { ProductVariantRepository } from 'src/shared/modules/common-product-vari
 import { ProductRepository } from 'src/shared/modules/common-product/product.repository';
 import { AdminVariantResponseDto } from './dto/admin-variant-response.dto';
 import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
-import { VariantStatusEnum } from 'src/shared/enums/product-variant';
+import { VariantStatusEnum } from 'src/shared/enums/product-variant.enum';
 import { AdminPaginateVariantsDto } from './dto/admin-paginate-variant.dto';
 
 @Injectable()

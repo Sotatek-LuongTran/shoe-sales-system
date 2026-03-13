@@ -20,7 +20,7 @@ import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
 import { PaymentEntity } from 'src/database/entities/payment.entity';
 import { OrderEntity } from 'src/database/entities/order.entity';
 import { ProductVariantEntity } from 'src/database/entities/product-variant.entity';
-import { VariantStatusEnum } from 'src/shared/enums/product-variant';
+import { VariantStatusEnum } from 'src/shared/enums/product-variant.enum';
 import { RedisService } from 'src/shared/modules/redis/redis.service';
 import { PaymentEventEnum } from 'src/shared/enums/events.enum';
 

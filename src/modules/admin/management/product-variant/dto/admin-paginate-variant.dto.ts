@@ -1,7 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsBoolean, IsEnum, IsOptional } from 'class-validator';
 import { PaginateVariantsDto } from 'src/shared/dto/product-variant/paginate-variants.dto';
-import { VariantStatusEnum } from 'src/shared/enums/product-variant';
+import { VariantStatusEnum } from 'src/shared/enums/product-variant.enum';
 
 export class AdminPaginateVariantsDto extends PaginateVariantsDto {
   @ApiPropertyOptional({
