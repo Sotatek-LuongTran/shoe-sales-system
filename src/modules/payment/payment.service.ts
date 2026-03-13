@@ -11,7 +11,6 @@ import {
 } from 'src/shared/enums/order.enum';
 import { PaymentRepository } from '../../shared/modules/common-payment/payment.repository';
 import { OrderRepository } from '../../shared/modules/common-order/order.repository';
-import { ProductVariantRepository } from 'src/shared/modules/common-product-variant/product-variant.repository';
 import { DataSource, LessThan, MoreThan } from 'typeorm';
 import { PaymentResponseDto } from 'src/shared/dto/payment/payment-response.dto';
 import { PaginatePaymentsDto } from 'src/shared/dto/payment/paginate-payments.dto';
@@ -21,8 +20,7 @@ import { PaymentEntity } from 'src/database/entities/payment.entity';
 import { OrderEntity } from 'src/database/entities/order.entity';
 import { ProductVariantEntity } from 'src/database/entities/product-variant.entity';
 import { VariantStatusEnum } from 'src/shared/enums/product-variant.enum';
-import { RedisService } from 'src/shared/modules/redis/redis.service';
-import { PaymentEventEnum } from 'src/shared/enums/events.enum';
+import { NotificationService } from 'src/shared/modules/notifications/notification.service';
 
 @Injectable()
 export class PaymentService {
@@ -31,7 +29,7 @@ export class PaymentService {
     private readonly orderRepository: OrderRepository,
     private readonly userRepository: UserRepository,
     private readonly dataSource: DataSource,
-    private readonly redisService: RedisService,
+    private readonly notificationService: NotificationService,
   ) {}
 
   /**
@@ -147,11 +145,12 @@ export class PaymentService {
             await manager.getRepository(ProductVariantEntity).save(variant);
           }
         }
-        await this.redisService.publish(PaymentEventEnum.PAYMENT_SUCCESS, {
-          userId: order.userId,
-          orderId: order.id,
-          paymentId: payment.id,
-        })
+
+        this.notificationService.sendPaymentSuccess(
+          order.userId,
+          order.id,
+          payment.id,
+        );
       } else {
         payment.paymentStatus = PaymentStatusEnum.FAILED;
         order.status = OrderStatusEnum.CANCELLED;
@@ -179,6 +178,12 @@ export class PaymentService {
             await manager.getRepository(ProductVariantEntity).save(variant);
           }
         }
+
+        this.notificationService.sendPaymentFailed(
+          order.userId,
+          order.id,
+          payment.id,
+        );
       }
 
       await manager.getRepository(PaymentEntity).save(payment);
@@ -219,6 +224,8 @@ export class PaymentService {
 
     payment.order.status = OrderStatusEnum.PENDING;
     await this.orderRepository.save(payment.order);
+
+    this.notificationService.sendPaymentSuccess(payment.order.userId, payment.order.id, payment.id);
 
     return new PaymentResponseDto(payment);
   }

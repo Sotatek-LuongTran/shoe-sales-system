@@ -13,3 +13,7 @@ socket.on("connect", () => {
 socket.on("orderExpired", (data) => {
   console.log("Order expired:", data);
 });
+
+socket.on("orderCancelled", (data) => {
+  console.log("Order cancelled:", data);
+});

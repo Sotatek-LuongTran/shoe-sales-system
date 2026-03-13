@@ -1,6 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { RedisService } from 'src/shared/modules/redis/redis.service';
 import { OrderEntity } from 'src/database/entities/order.entity';
 import { PaymentEntity } from 'src/database/entities/payment.entity';
 import { ProductVariantEntity } from 'src/database/entities/product-variant.entity';
@@ -9,13 +8,14 @@ import { OrderEventEnum } from 'src/shared/enums/events.enum';
 import { OrderStatusEnum } from 'src/shared/enums/order.enum';
 import { PaymentStatusEnum } from 'src/shared/enums/payment.enum';
 import { VariantStatusEnum } from 'src/shared/enums/product-variant.enum';
+import { NotificationService } from 'src/shared/modules/notifications/notification.service';
 import { DataSource, LessThan } from 'typeorm';
 
 @Injectable()
 export class OrderWorkerJob {
   constructor(
     private readonly dataSource: DataSource,
-    private readonly redisService: RedisService,
+    private readonly notificationService: NotificationService,
   ) {}
   @Cron(CronExpression.EVERY_30_SECONDS)
   async cancelExpiredOrders() {
@@ -65,15 +65,10 @@ export class OrderWorkerJob {
 
         order.payment.paymentStatus = PaymentStatusEnum.CANCELLED;
         await manager.getRepository(PaymentEntity).save(order.payment);
-        console.log(
-          `- Cancelled order: ${order.id} with payment: ${order.payment.id}.`,
-        );
 
-        await this.redisService.publish(OrderEventEnum.ORDER_EXPIRED, {
-          userId: order.userId,
-          orderId: order.id,
-        });
-        console.log(`- Published redis event: ${OrderEventEnum.ORDER_EXPIRED}`, {
+        this.notificationService.sendOrderExpired(order.userId, order.id);
+
+        console.log(`- Emit event: ${OrderEventEnum.ORDER_EXPIRED}`, {
           userId: order.userId,
           orderId: order.id,
         });
