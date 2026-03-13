@@ -11,7 +11,7 @@ import { Server, Socket } from 'socket.io';
     origin: '*',
   },
 })
-export class NotificationGateway
+export class SocketGateway
   implements OnGatewayConnection, OnGatewayDisconnect
 {
   @WebSocketServer()
@@ -36,14 +36,5 @@ export class NotificationGateway
 
   handleDisconnect(client: Socket) {
     console.log('User disconnected: ' + client.id);
-  }
-
-  emitToUser(userId: string, event: string, payload: any) {
-    if (!this.server) {
-      console.warn('Socket server not initialized');
-      return;
-    }
-    console.log('Sending socket event:', event, payload);
-    this.server.to(userId).emit(event, payload);
   }
 }

@@ -35,6 +35,7 @@ import { UserEntity } from 'src/database/entities/user.entity';
 import { VariantStatusEnum } from 'src/shared/enums/product-variant.enum';
 import { RedisService } from 'src/shared/modules/redis/redis.service';
 import { OrderEventEnum } from 'src/shared/enums/events.enum';
+import { NotificationService } from 'src/shared/modules/notifications/notification.service';
 
 @Injectable()
 export class OrderService {
@@ -42,7 +43,7 @@ export class OrderService {
     private readonly dataSource: DataSource,
     private readonly orderRepository: OrderRepository,
     private readonly userRepository: UserRepository,
-    private readonly redisService: RedisService,
+    private readonly notificationService: NotificationService,
   ) {}
 
   async createOrder(userId: string, dto: CreateOrderDto) {
@@ -153,6 +154,8 @@ export class OrderService {
           message: 'Order has not been created successfully',
         });
       }
+
+      this.notificationService.sendOrderCreated(order.userId, order.id);
 
       return new OrderResponseDto(finalOrder);
     });
@@ -287,10 +290,7 @@ export class OrderService {
 
       await manager.getRepository(OrderEntity).save(order);
 
-      await this.redisService.publish(OrderEventEnum.ORDER_CANCELLED, {
-        userId: order.userId,
-        orderId: order.id,
-      });
+      this.notificationService.sendOrderCancelled(order.userId, order.id);
 
       return new OrderResponseDto(order);
     });
