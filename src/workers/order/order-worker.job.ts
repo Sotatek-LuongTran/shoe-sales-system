@@ -8,7 +8,7 @@ import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
 import { OrderEventEnum } from 'src/shared/enums/events.enum';
 import { OrderStatusEnum } from 'src/shared/enums/order.enum';
 import { PaymentStatusEnum } from 'src/shared/enums/payment.enum';
-import { VariantStatusEnum } from 'src/shared/enums/product-variant';
+import { VariantStatusEnum } from 'src/shared/enums/product-variant.enum';
 import { DataSource, LessThan } from 'typeorm';
 
 @Injectable()

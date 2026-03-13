@@ -7,7 +7,7 @@ import { ProductVariantEntity } from '../entities/product-variant.entity';
 import { BrandStatusEnum } from 'src/shared/enums/brand.enum';
 import { CategoryStatusEnum } from 'src/shared/enums/category.enum';
 import { GenderEnum, ProductStatusEnum, ProductTypeEnum } from 'src/shared/enums/product.enum';
-import { VariantStatusEnum } from 'src/shared/enums/product-variant';
+import { VariantStatusEnum } from 'src/shared/enums/product-variant.enum';
 
 export async function seedProducts(dataSource: DataSource) {
   const brandRepo = dataSource.getRepository(BrandEntity);

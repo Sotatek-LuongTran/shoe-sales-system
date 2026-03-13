@@ -5,8 +5,9 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as handlebars from 'handlebars';
 import { Job } from 'bull';
+import { QueueNameEnum, QueueTopicsEnum } from 'src/shared/enums/queue-topics.enum';
 
-@Processor('email')
+@Processor(QueueNameEnum.EMAIL)
 export class MailerProcessor {
   private transporter: nodemailer.Transporter;
   constructor(private readonly configService: ConfigService) {
@@ -21,7 +22,7 @@ export class MailerProcessor {
     });
   }
 
-  @Process('send-email')
+  @Process(QueueTopicsEnum.SEND_EMAIL)
   private async handleSendEmail(job: Job<any>): Promise<void> {
     const { templateName, to, subject, context } = job.data;
     const html = this.compileTemplate(templateName, context);

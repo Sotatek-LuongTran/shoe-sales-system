@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
 import { ProductVariantEntity } from 'src/database/entities/product-variant.entity';
 import { ProductVariantResponseDto } from 'src/shared/dto/product-variant/product-variant-response.dto';
-import { VariantStatusEnum } from 'src/shared/enums/product-variant';
+import { VariantStatusEnum } from 'src/shared/enums/product-variant.enum';
 
 export class AdminVariantResponseDto extends ProductVariantResponseDto {
   @Expose()
