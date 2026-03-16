@@ -26,6 +26,8 @@ import { AdminProductVariantController } from './management/product-variant/admi
 import { AdminAuthController } from './auth/admin-auth.controller';
 import { AdminAuthService } from './auth/admin-auth.service';
 import { JwtService } from '@nestjs/jwt';
+import { StorageService } from 'src/shared/modules/storage/storage.service';
+import { VariantImageRepository } from 'src/shared/modules/common-product-variant/variant-image.repository';
 
 @Module({
   imports: [TypeOrmModule.forFeature([UserEntity])],
@@ -39,6 +41,7 @@ import { JwtService } from '@nestjs/jwt';
     OrderItemRepository,
     OrderRepository,
     PaymentRepository,
+    VariantImageRepository,
 
     //services
     AdminUserService,
@@ -50,6 +53,7 @@ import { JwtService } from '@nestjs/jwt';
     AdminProductVariantService,
     JwtService,
     AdminAuthService,
+    StorageService,
   ],
   controllers: [
     AdminUserController,

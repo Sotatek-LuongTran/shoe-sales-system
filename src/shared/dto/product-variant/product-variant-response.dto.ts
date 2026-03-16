@@ -2,8 +2,10 @@ import { ApiProperty } from '@nestjs/swagger';
 import { ProductVariantEntity } from 'src/database/entities/product-variant.entity';
 import { ProductResponseDto } from '../product/product-respose.dto';
 import { ResponseDto } from '../response.dto';
-import { Expose } from 'class-transformer';
+import { Exclude, Expose } from 'class-transformer';
+import { VariantImageResponseDto } from './variant-image-response.dto';
 
+@Exclude()
 export class ProductVariantResponseDto extends ResponseDto {
   @Expose()
   @ApiProperty({
@@ -25,13 +27,24 @@ export class ProductVariantResponseDto extends ResponseDto {
     example: '10',
   })
   stock: number;
-  
+
+  @Expose()
+  @ApiProperty({
+    description: 'Images of the variant',
+    type: () => VariantImageResponseDto,
+    isArray: true,
+  })
+  images: VariantImageResponseDto[];
+
   constructor(productVariant: ProductVariantEntity) {
     super(productVariant.id);
     Object.assign(this, {
-        variantValue: productVariant.variantValue,
-        price: productVariant.price,
-        stock: productVariant.stock,
+      variantValue: productVariant.variantValue,
+      price: productVariant.price,
+      stock: productVariant.stock,
+      images: productVariant.images.map(
+        (image) => new VariantImageResponseDto(image),
+      ),
     });
   }
 }

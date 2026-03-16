@@ -7,12 +7,16 @@ import { AdminVariantResponseDto } from './dto/admin-variant-response.dto';
 import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
 import { VariantStatusEnum } from 'src/shared/enums/product-variant.enum';
 import { AdminPaginateVariantsDto } from './dto/admin-paginate-variant.dto';
+import { StorageService } from 'src/shared/modules/storage/storage.service';
+import { VariantImageRepository } from 'src/shared/modules/common-product-variant/variant-image.repository';
 
 @Injectable()
 export class AdminProductVariantService {
   constructor(
     private readonly productVariantRepository: ProductVariantRepository,
     private readonly productRepository: ProductRepository,
+    private readonly storageService: StorageService,
+    private readonly variantImageRepository: VariantImageRepository
   ) {}
 
   async createProductVariant(createVariantDto: CreateVariantDto) {
@@ -152,5 +156,31 @@ export class AdminProductVariantService {
 
   async removeSoftDeletedVariants() {
     await this.productVariantRepository.removeSoftDeletedVariants();
+  }
+
+  async uploadVariantImages(variantId: string, files: Express.Multer.File[]) {
+    const variant = await this.productVariantRepository.findById(variantId);
+    if (!variant)
+      throw new NotFoundException({
+        errorCode: ErrorCodeEnum.PRODUCT_VARIANT_NOT_FOUND,
+        statusCode: 404,
+        message: 'Variant not found',
+      });
+    const urls: string[] = [];
+
+    for (const file of files) {
+      const uploadResult = await this.storageService.uploadSingleFile(file);
+
+      const variantImage = this.variantImageRepository.create({
+        imageKey: uploadResult.key,
+        variantId: variant.id,
+      });
+
+      urls.push(uploadResult.url)
+
+      await this.variantImageRepository.save(variantImage);
+    }
+
+    return urls;
   }
 }

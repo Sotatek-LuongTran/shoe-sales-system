@@ -1,7 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { ProductVariantRepository } from 'src/shared/modules/common-product-variant/product-variant.repository';
 import { ProductRepository } from 'src/shared/modules/common-product/product.repository';
 import { PaginateVariantsDto } from '../../shared/dto/product-variant/paginate-variants.dto';
@@ -14,7 +11,7 @@ export class ProductVariantService {
     private readonly productRepository: ProductRepository,
   ) {}
 
-
+  
   async getVariantsByProductPagination(
     productId: string,
     dto: PaginateVariantsDto,
@@ -45,16 +42,20 @@ export class ProductVariantService {
       });
     }
 
-    return this.productVariantRepository.findVariantsPaginationUser(productId, dto);
+    return this.productVariantRepository.findVariantsPaginationUser(
+      productId,
+      dto,
+    );
   }
 
   async getProductVariant(id: string) {
     const variant = await this.productVariantRepository.findById(id);
-    if (!variant) throw new NotFoundException({
-      errorCode: ErrorCodeEnum.PRODUCT_VARIANT_NOT_FOUND,
-      statusCode: 404,
-      message: 'Variant not found',
-    });
+    if (!variant)
+      throw new NotFoundException({
+        errorCode: ErrorCodeEnum.PRODUCT_VARIANT_NOT_FOUND,
+        statusCode: 404,
+        message: 'Variant not found',
+      });
 
     return variant;
   }
