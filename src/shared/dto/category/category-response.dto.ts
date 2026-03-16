@@ -23,6 +23,10 @@ export class CategoryResponseDto extends ResponseDto {
     @ApiProperty({ example: '2025-02-10T10:00:00Z' })
     updatedAt: Date;
 
+    @Expose()
+    @ApiProperty({ example: 'ac5dd95e-d78f-43e6-97aa-28eed93a0430?X-Amz-Algorithm=AWS4-HMAC-SHA256&X...'})
+    logoKey: string
+
     constructor(category: CategoryEntity) {
         super(category.id)
         Object.assign(this, category)
