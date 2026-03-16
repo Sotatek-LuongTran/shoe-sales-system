@@ -9,6 +9,7 @@ import {
   Patch,
   Post,
   Query,
+  UploadedFiles,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -18,6 +19,8 @@ import { UserRoleEnum } from 'src/shared/enums/user.enum';
 import { RolesGuard } from 'src/shared/guards/role.guard';
 import {
   ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
   ApiOperation,
   ApiParam,
   ApiQuery,
@@ -31,6 +34,9 @@ import { AdminVariantResponseDto } from './dto/admin-variant-response.dto';
 import { PaginateVariantsDto } from 'src/shared/dto/product-variant/paginate-variants.dto';
 import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
 import { ApiPaginatedResponse } from 'src/shared/decorators/api-paginated-response.decorator';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { ImageUploadPipe } from 'src/shared/pipes/image-upload.pipe';
+import { ImagesUploadPipe } from 'src/shared/pipes/image-array-upload.pipe';
 
 @Controller('admin/products')
 @ApiBearerAuth('access-token')
@@ -79,7 +85,7 @@ export class AdminProductVariantController {
   @ApiParam({ name: 'productId', description: 'Product ID', type: String })
   @ApiResponse({
     status: 200,
-    description: 'Paginated list of product variants'
+    description: 'Paginated list of product variants',
   })
   @ApiPaginatedResponse(AdminVariantResponseDto)
   @UseInterceptors(ClassSerializerInterceptor)
@@ -135,5 +141,32 @@ export class AdminProductVariantController {
   })
   async hardDeleteSoftDeletedProducts() {
     await this.adminProductVariantService.removeSoftDeletedVariants();
+  }
+
+  @Post(':productId/variants/:variantId/images')
+  @UseInterceptors(FilesInterceptor('files', 10))
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        files: {
+          type: 'array',
+          items: {
+            type: 'string',
+            format: 'binary',
+          },
+        },
+      },
+    },
+  })
+  async uploadVariantImages(
+    @Param('variantId') variantId: string,
+    @UploadedFiles(ImagesUploadPipe) files: Express.Multer.File[],
+  ) {
+    return this.adminProductVariantService.uploadVariantImages(
+      variantId,
+      files,
+    );
   }
 }

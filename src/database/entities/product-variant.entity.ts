@@ -6,10 +6,12 @@ import {
   JoinColumn,
   Check,
   DeleteDateColumn,
+  OneToMany,
 } from 'typeorm';
 import { BaseEntity } from '../../shared/modules/base/base.entity';
 import { ProductEntity } from './product.entity';
 import { VariantStatusEnum } from '../../shared/enums/product-variant.enum';
+import { VariantImageEntity } from './variant-image.entity';
 
 @Entity('product_variants')
 @Index(
@@ -53,6 +55,10 @@ export class ProductVariantEntity extends BaseEntity {
   productId: string;
 
   // Relations
+
+  @OneToMany(() => VariantImageEntity, (image) => image.variant)
+  images: VariantImageEntity[];
+
   @ManyToOne(() => ProductEntity, (product) => product.variants, {
     onDelete: 'CASCADE',
   })

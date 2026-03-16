@@ -9,6 +9,7 @@ import { ProductVariantEntity } from './entities/product-variant.entity';
 import { OrderEntity } from './entities/order.entity';
 import { OrderItemEntity } from './entities/order-item.entity';
 import { PaymentEntity } from './entities/payment.entity';
+import { VariantImageEntity } from './entities/variant-image.entity';
 
 // All entities should be imported here
 const entities = [
@@ -20,6 +21,7 @@ const entities = [
   OrderEntity,
   OrderItemEntity,
   PaymentEntity,
+  VariantImageEntity,
 ];
 
 @Global()
