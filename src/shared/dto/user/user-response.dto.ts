@@ -18,6 +18,12 @@ export class UserResponseDto extends ResponseDto {
   })
   email: string;
 
+  @Expose()
+  @ApiProperty({
+    description: 'User avatar'
+  })
+  avatarKey: string;
+
   constructor(user: UserEntity) {
     super(user.id)
     Object.assign(this, user)
