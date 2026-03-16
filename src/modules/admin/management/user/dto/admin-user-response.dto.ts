@@ -4,7 +4,7 @@ import { UserEntity } from 'src/database/entities/user.entity';
 import { UserResponseDto } from 'src/shared/dto/user/user-response.dto';
 import { UserStatusEnum } from 'src/shared/enums/user.enum';
 
-@Exclude()
+// @Exclude()
 export class AdminUserResponseDto extends UserResponseDto {
   @Expose()
   @ApiProperty({

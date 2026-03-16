@@ -9,6 +9,7 @@ import { VariantStatusEnum } from 'src/shared/enums/product-variant.enum';
 import { AdminPaginateVariantsDto } from './dto/admin-paginate-variant.dto';
 import { StorageService } from 'src/shared/modules/storage/storage.service';
 import { VariantImageRepository } from 'src/shared/modules/common-product-variant/variant-image.repository';
+import { VariantImageResponseDto } from 'src/shared/dto/product-variant/variant-image-response.dto';
 
 @Injectable()
 export class AdminProductVariantService {
@@ -16,7 +17,7 @@ export class AdminProductVariantService {
     private readonly productVariantRepository: ProductVariantRepository,
     private readonly productRepository: ProductRepository,
     private readonly storageService: StorageService,
-    private readonly variantImageRepository: VariantImageRepository
+    private readonly variantImageRepository: VariantImageRepository,
   ) {}
 
   async createProductVariant(createVariantDto: CreateVariantDto) {
@@ -27,7 +28,7 @@ export class AdminProductVariantService {
       throw new NotFoundException({
         errorCode: ErrorCodeEnum.PRODUCT_NOT_FOUND,
         statusCode: 404,
-        message: 'Product not found'
+        message: 'Product not found',
       });
 
     const variant = this.productVariantRepository.create({
@@ -103,14 +104,27 @@ export class AdminProductVariantService {
       });
     }
 
-    const variants = await this.productVariantRepository.findVariantsPaginationAdmin(
-      productId,
-      dto,
+    const variants =
+      await this.productVariantRepository.findVariantsPaginationAdmin(
+        productId,
+        dto,
+      );
+
+    const items = await Promise.all(
+      variants.items.map((item) => {
+        const dto = new AdminVariantResponseDto(item);
+
+        const imageDtos = item.images.map(
+          (image) => new VariantImageResponseDto(image),
+        );
+        dto.images = imageDtos;
+        return dto;
+      }),
     );
 
     return {
-      ...variants,
-      items: variants.items.map((item) => new AdminVariantResponseDto(item)),
+      items: items,
+      meta: variants.meta,
     };
   }
 
@@ -136,11 +150,12 @@ export class AdminProductVariantService {
       });
     }
     variant.status = VariantStatusEnum.INACTIVE;
-    await this.productVariantRepository.save(variant)
+    await this.productVariantRepository.save(variant);
   }
 
   async restoreProductVariant(variantId: string) {
-    const variant = await this.productVariantRepository.findInactiveVariant(variantId)
+    const variant =
+      await this.productVariantRepository.findInactiveVariant(variantId);
 
     if (!variant) {
       throw new NotFoundException({
@@ -176,7 +191,7 @@ export class AdminProductVariantService {
         variantId: variant.id,
       });
 
-      urls.push(uploadResult.url)
+      urls.push(uploadResult.url);
 
       await this.variantImageRepository.save(variantImage);
     }

@@ -27,6 +27,7 @@ export class ProductRepository extends BaseRepository<ProductEntity> {
 
     const qb = this.createQueryBuilder('product')
       .leftJoinAndSelect('product.variants', 'variant')
+      .leftJoinAndSelect('variant.images', 'image')
       .leftJoinAndSelect('product.brand', 'brand')
       .leftJoinAndSelect('product.category', 'category');
 
@@ -105,7 +106,7 @@ export class ProductRepository extends BaseRepository<ProductEntity> {
         id,
         status: ProductStatusEnum.ACTIVE,
       },
-      relations: ['variants', 'brand', 'category'],
+      relations: ['variants', 'variants.images', 'brand', 'category'],
     });
   }
 

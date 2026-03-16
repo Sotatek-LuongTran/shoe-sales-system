@@ -8,7 +8,7 @@ import {
 import { OrderEntity } from 'src/database/entities/order.entity';
 import { ResponseDto } from '../response.dto';
 
-@Exclude()
+// @Exclude()
 export class OrderResponseDto extends ResponseDto {
   @Expose()
   @ApiProperty({

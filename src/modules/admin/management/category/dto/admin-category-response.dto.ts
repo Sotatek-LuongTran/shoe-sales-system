@@ -4,7 +4,7 @@ import { CategoryEntity } from "src/database/entities/category.entity";
 import { CategoryResponseDto } from "src/shared/dto/category/category-response.dto";
 import { CategoryStatusEnum } from "src/shared/enums/category.enum";
 
-@Exclude()
+// @Exclude()
 export class AdminCategoryResponseDto extends CategoryResponseDto {
     @Expose()
     @ApiProperty({

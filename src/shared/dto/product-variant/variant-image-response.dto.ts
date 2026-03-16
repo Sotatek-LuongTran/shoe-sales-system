@@ -11,7 +11,7 @@ export class VariantImageResponseDto extends ResponseDto {
     example:
       'ac5dd95e-d78f-43e6-97aa-28eed93a0430?X-Amz-Algorithm=AWS4-HMAC-SHA256&X...',
   })
-  imageKey: string;
+  imageUrl: string;
 
   constructor(image: VariantImageEntity) {
     super(image.id);
