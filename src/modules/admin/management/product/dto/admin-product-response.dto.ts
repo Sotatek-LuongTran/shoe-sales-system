@@ -4,7 +4,7 @@ import { ProductEntity } from 'src/database/entities/product.entity';
 import { ProductResponseDto } from 'src/shared/dto/product/product-respose.dto';
 import { ProductStatusEnum } from 'src/shared/enums/product.enum';
 
-@Exclude()
+// @Exclude()
 export class AdminProductResponseDto extends ProductResponseDto {
   @Expose()
   @ApiProperty({

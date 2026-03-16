@@ -34,7 +34,13 @@ export class AdminCategoryService {
 
     await this.categoryRepository.save(category);
 
-    return new AdminCategoryResponseDto(category);
+    const dto = new AdminCategoryResponseDto(category);
+    if (category.logoKey) {
+      dto.logoUrl = await this.storageService.getPresignedSignedUrl(
+        category.logoKey,
+      );
+    }
+    return dto;
   }
 
   async updateCategory(updateCategoryDto: UpdateCategoryDto) {
@@ -71,9 +77,20 @@ export class AdminCategoryService {
     const categories =
       await this.categoryRepository.findCategoriesPaginationAdmin(dto);
 
+    const items = await Promise.all(
+      categories.items.map(async (category) => {
+        const dto = new AdminCategoryResponseDto(category);
+        if (category.logoKey) {
+          dto.logoUrl = await this.storageService.getPresignedSignedUrl(
+            category.logoKey,
+          );
+        }
+        return dto;
+      }),
+    );
     return {
-      ...categories,
-      items: categories.items.map((item) => new AdminCategoryResponseDto(item)),
+      items: items,
+      meta: categories.meta,
     };
   }
 

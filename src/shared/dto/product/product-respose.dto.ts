@@ -5,7 +5,7 @@ import { ResponseDto } from '../response.dto';
 import { ProductVariantResponseDto } from '../product-variant/product-variant-response.dto';
 import { Exclude, Expose } from 'class-transformer';
 
-@Exclude()
+// @Exclude()
 export class ProductResponseDto extends ResponseDto {
   @Expose()
   @ApiProperty({
@@ -72,7 +72,10 @@ export class ProductResponseDto extends ResponseDto {
       .map((v) => v.price)
 
     Object.assign(this, {
-      ...product,
+      name: product.name,
+      description: product.description,
+      productType: product.productType,
+      gender: product.gender,
       brandName: product.brand?.name ?? null,
       categoryName: product.category?.name ?? null,
       productVariants:

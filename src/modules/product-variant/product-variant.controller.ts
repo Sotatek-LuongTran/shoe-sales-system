@@ -63,9 +63,10 @@ export class ProductVariantController {
     description: 'ProductVariant get successfully',
     type: ProductVariantResponseDto,
   })
-  @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
+  @ApiParam({ name: 'productId', type: 'string', format: 'uuid' })
+  @ApiParam({ name: 'variantId', type: 'string', format: 'uuid' })
   @UseInterceptors(ClassSerializerInterceptor)
-  getOne(@Param('id') id: string) {
-    return this.productVariantService.getProductVariant(id);
+  getOne(@Param('productId') productId: string, @Param('variantId') variantId: string) {
+    return this.productVariantService.getProductVariant(productId, variantId);
   }
 }
