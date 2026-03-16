@@ -4,17 +4,20 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CreateCategoryDto } from 'src/modules/admin/management/category/dto/create-category.dto';
-import { PaginateCategoriesDto } from 'src/shared/dto/category/paginate-categories.dto';
 import { UpdateCategoryDto } from 'src/modules/admin/management/category/dto/update-category.dto';
 import { CategoryRepository } from 'src/shared/modules/common-category/category.repository';
 import { AdminCategoryResponseDto } from './dto/admin-category-response.dto';
 import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
 import { CategoryStatusEnum } from 'src/shared/enums/category.enum';
 import { AdminPaginateCategoriesDto } from './dto/admin-paginate-category.dto';
+import { StorageService } from 'src/shared/modules/storage/storage.service';
 
 @Injectable()
 export class AdminCategoryService {
-  constructor(private readonly categoryRepository: CategoryRepository) {}
+  constructor(
+    private readonly categoryRepository: CategoryRepository,
+    private readonly storageService: StorageService,
+  ) {}
 
   async createCategory(createCategoryDto: CreateCategoryDto) {
     const existing = await this.categoryRepository.findByName(
@@ -83,7 +86,7 @@ export class AdminCategoryService {
         message: 'Category not found',
       });
 
-      category.status = CategoryStatusEnum.INACTIVE;
+    category.status = CategoryStatusEnum.INACTIVE;
 
     await this.categoryRepository.save(category);
   }
@@ -102,5 +105,26 @@ export class AdminCategoryService {
 
     category.status = CategoryStatusEnum.ACTIVE;
     return this.categoryRepository.save(category);
+  }
+
+  async uploadCategoryLogo(categoryId: string, file: Express.Multer.File) {
+    const category =
+      await this.categoryRepository.findInactiveCategory(categoryId);
+
+    if (!category) {
+      throw new NotFoundException({
+        errorCode: ErrorCodeEnum.BRAND_NOT_FOUND,
+        statusCode: 404,
+        message: 'Category not found',
+      });
+    }
+
+    const uploadedResult = await this.storageService.uploadSingleFile(file);
+
+    category.logoKey = uploadedResult.key;
+
+    await this.categoryRepository.save(category);
+
+    return { url: uploadedResult.url };
   }
 }

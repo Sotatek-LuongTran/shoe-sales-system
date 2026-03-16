@@ -9,11 +9,14 @@ import {
   Patch,
   Post,
   Query,
+  UploadedFile,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
   ApiOperation,
   ApiParam,
   ApiQuery,
@@ -27,12 +30,10 @@ import { UserRoleEnum } from 'src/shared/enums/user.enum';
 import { RolesGuard } from 'src/shared/guards/role.guard';
 import { AdminBrandService } from './admin-brand.service';
 import { PaginateBrandsDto } from 'src/shared/dto/brand/paginate-brands.dto';
-import { AuthGuard } from '@nestjs/passport';
-import { AdminPaginationBrandResponseDto } from './dto/admin-pag-brand-response.dto';
 import { AdminBrandResponseDto } from './dto/admin-brand-response.dto';
 import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
 import { ApiPaginatedResponse } from 'src/shared/decorators/api-paginated-response.decorator';
-import { Reflector } from '@nestjs/core';
+import { ImageUploadPipe } from 'src/shared/pipes/image-upload.pipe';
 
 @Controller('admins/brands')
 @ApiBearerAuth('access-token')
@@ -111,5 +112,33 @@ export class AdminBrandController {
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
   restoreBrand(@Param('id', ParseUUIDPipe) id: string) {
     return this.adminBrandService.restoreBrand(id);
+  }
+
+  // =============================
+  // UPLOAD BRAND LOGO
+  // =============================
+  @Post(':id/logo')
+  @ApiOperation({ summary: 'Upload brand logo' })
+  @ApiResponse({
+    status: 201,
+    description: 'Brand logo uploaded successfully',
+  })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  async uploadBrandLogo(
+    @Param('id') id: string,
+    @UploadedFile(ImageUploadPipe) file: Express.Multer.File,
+  ) {
+    return this.adminBrandService.uploadBrandLogo(id, file);
   }
 }

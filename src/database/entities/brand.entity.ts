@@ -1,25 +1,28 @@
-import { Column, Entity, OneToMany, Index, DeleteDateColumn } from "typeorm";
-import { BaseEntity } from "../../shared/modules/base/base.entity";
-import { ProductEntity } from "./product.entity";
-import { BrandStatusEnum } from "../../shared/enums/brand.enum";
+import { Column, Entity, OneToMany, Index, DeleteDateColumn } from 'typeorm';
+import { BaseEntity } from '../../shared/modules/base/base.entity';
+import { ProductEntity } from './product.entity';
+import { BrandStatusEnum } from '../../shared/enums/brand.enum';
 
 @Entity('brands')
 @Index('idx_brands_name_deleted_at', ['name', 'deletedAt'])
 export class BrandEntity extends BaseEntity {
-    @Column({name:'name', type: 'varchar', length: 255})
-    name: string;
+  @Column({ name: 'name', type: 'varchar', length: 255 })
+  name: string;
 
-    @Column({name:'description', type: 'text', nullable: true})
-    description: string;
+  @Column({ name: 'description', type: 'text', nullable: true })
+  description: string;
 
-    @Column({name: 'status', type: 'enum', enum: BrandStatusEnum})
-    status: BrandStatusEnum;
+  @Column({ name: 'status', type: 'enum', enum: BrandStatusEnum })
+  status: BrandStatusEnum;
 
-    // @Column({ name: 'deleted_at', type: 'timestamp', nullable: true })
-    @DeleteDateColumn({ name: 'deleted_at' })
-    deletedAt: Date | null;
+  @Column({ name: 'logo_key', type: 'varchar', length: 255, nullable: true })
+  logoKey: string;
 
-    // Relations
-    @OneToMany(() => ProductEntity, (product) => product.brand)
-    products: ProductEntity[];
+  // @Column({ name: 'deleted_at', type: 'timestamp', nullable: true })
+  @DeleteDateColumn({ name: 'deleted_at' })
+  deletedAt: Date | null;
+
+  // Relations
+  @OneToMany(() => ProductEntity, (product) => product.brand)
+  products: ProductEntity[];
 }
