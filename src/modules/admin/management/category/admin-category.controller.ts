@@ -9,6 +9,7 @@ import {
   Patch,
   Post,
   Query,
+  UploadedFile,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -16,7 +17,16 @@ import { AdminCategoryService } from './admin-category.service';
 import { Roles } from 'src/shared/decorators/role.decorator';
 import { UserRoleEnum } from 'src/shared/enums/user.enum';
 import { RolesGuard } from 'src/shared/guards/role.guard';
-import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { CreateCategoryDto } from 'src/modules/admin/management/category/dto/create-category.dto';
 import { UpdateCategoryDto } from 'src/modules/admin/management/category/dto/update-category.dto';
 import { PaginateCategoriesDto } from 'src/shared/dto/category/paginate-categories.dto';
@@ -25,6 +35,7 @@ import { AdminPaginationCategoryResponseDto } from './dto/admin-pag-category-res
 import { AdminCategoryResponseDto } from './dto/admin-category-response.dto';
 import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
 import { ApiPaginatedResponse } from 'src/shared/decorators/api-paginated-response.decorator';
+import { ImageUploadPipe } from 'src/shared/pipes/image-upload.pipe';
 
 @Controller('admin/categories')
 @ApiBearerAuth('access-token')
@@ -101,5 +112,33 @@ export class AdminCategoryController {
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
   restoreCategory(@Param('id', ParseUUIDPipe) id: string) {
     return this.adminCategoryService.restoreCategory(id);
+  }
+
+  // =============================
+  // UPLOAD CATEGORY LOGO
+  // =============================
+  @Post(':id/logo')
+  @ApiOperation({ summary: 'Upload brand logo' })
+  @ApiResponse({
+    status: 201,
+    description: 'Category logo uploaded successfully',
+  })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  async uploadBrandLogo(
+    @Param('id') id: string,
+    @UploadedFile(ImageUploadPipe) file: Express.Multer.File,
+  ) {
+    return this.adminCategoryService.uploadCategoryLogo(id, file);
   }
 }

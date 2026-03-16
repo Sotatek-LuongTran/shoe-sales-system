@@ -10,10 +10,14 @@ import { AdminBrandResponseDto } from './dto/admin-brand-response.dto';
 import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
 import { BrandStatusEnum } from 'src/shared/enums/brand.enum';
 import { AdminPaginateBrandsDto } from './dto/admin-paginate-brand.dto';
+import { StorageService } from 'src/shared/modules/storage/storage.service';
 
 @Injectable()
 export class AdminBrandService {
-  constructor(private readonly brandRepository: BrandRepository) {}
+  constructor(
+    private readonly brandRepository: BrandRepository,
+    private readonly storageService: StorageService,
+  ) {}
 
   async getBrandsPagination(dto: AdminPaginateBrandsDto) {
     const brands = await this.brandRepository.findBrandsPaginationAdmin(dto);
@@ -95,5 +99,25 @@ export class AdminBrandService {
 
     brand.status = BrandStatusEnum.ACTIVE;
     await this.brandRepository.save(brand);
+  }
+
+  async uploadBrandLogo(brandId: string, file: Express.Multer.File) {
+    const brand = await this.brandRepository.findInactiveBrand(brandId);
+
+    if (!brand) {
+      throw new NotFoundException({
+        errorCode: ErrorCodeEnum.BRAND_NOT_FOUND,
+        statusCode: 404,
+        message: 'Brand not found',
+      });
+    }
+
+    const uploadedResult = await this.storageService.uploadSingleFile(file);
+
+    brand.logoKey = uploadedResult.key;
+
+    await this.brandRepository.save(brand);
+
+    return { url: uploadedResult.url };
   }
 }
