@@ -32,10 +32,9 @@ export class ProductVariantRepository extends BaseRepository<ProductVariantEntit
     const page = dto.page ?? 1;
     const limit = dto.limit ?? 10;
 
-    const qb = this.createQueryBuilder('variant').where(
-      'variant.productId = :productId',
-      { productId },
-    );
+    const qb = this.createQueryBuilder('variant')
+      .leftJoinAndSelect('variant.images', 'image')
+      .where('variant.productId = :productId', { productId });
     if (dto.variantValue) {
       qb.andWhere('variant.variantValue = :variantValue', {
         variantValue: dto.variantValue,
@@ -92,13 +91,14 @@ export class ProductVariantRepository extends BaseRepository<ProductVariantEntit
     });
   }
 
-  async findVariantWithProduct(variantId: string) {
+  async findVariantWithImages(productId: string, variantId: string) {
     return this.findOne({
       where: {
         id: variantId,
+        productId: productId,
         status: VariantStatusEnum.ACTIVE,
       },
-      relations: ['product'],
+      relations: ['images'],
     });
   }
 }

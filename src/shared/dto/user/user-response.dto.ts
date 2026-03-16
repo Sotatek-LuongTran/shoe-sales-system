@@ -3,7 +3,7 @@ import { Exclude, Expose } from 'class-transformer';
 import { ResponseDto } from '../response.dto';
 import { UserEntity } from 'src/database/entities/user.entity';
 
-@Exclude()
+// @Exclude()
 export class UserResponseDto extends ResponseDto {
   @Expose()
   @ApiProperty({

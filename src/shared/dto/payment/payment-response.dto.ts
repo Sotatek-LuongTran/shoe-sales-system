@@ -5,7 +5,7 @@ import { PaymentStatusEnum } from 'src/shared/enums/payment.enum';
 import { OrderResponseDto } from '../order/order-response.dto';
 import { PaymentEntity } from 'src/database/entities/payment.entity';
 
-@Exclude()
+// @Exclude()
 export class PaymentResponseDto extends ResponseDto {
   @Expose()
   @ApiProperty({

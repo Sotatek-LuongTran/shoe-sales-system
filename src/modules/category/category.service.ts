@@ -3,20 +3,33 @@ import { CategoryRepository } from 'src/shared/modules/common-category/category.
 import { PaginateCategoriesDto } from '../../shared/dto/category/paginate-categories.dto';
 import { CategoryResponseDto } from '../../shared/dto/category/category-response.dto';
 import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
+import { StorageService } from 'src/shared/modules/storage/storage.service';
 
 @Injectable()
 export class CategoryService {
-  constructor(private readonly categoryRepository: CategoryRepository) {}
+  constructor(
+    private readonly categoryRepository: CategoryRepository,
+    private readonly storageService: StorageService,
+  ) {}
 
   async getCategoriesPagination(dto: PaginateCategoriesDto) {
     const categories =
       await this.categoryRepository.findCategoriesPaginationUser(dto);
 
+    const items = await Promise.all(
+      categories.items.map(async (category) => {
+        const dto = new CategoryResponseDto(category);
+        if (category.logoKey) {
+          dto.logoUrl = await this.storageService.getPresignedSignedUrl(
+            category.logoKey,
+          );
+        }
+        return dto;
+      }),
+    );
     return {
-      ...categories,
-      items: categories.items.map(
-        (category) => new CategoryResponseDto(category),
-      ),
+      items: items,
+      meta: categories.meta,
     };
   }
 
@@ -29,6 +42,12 @@ export class CategoryService {
         message: 'Category not found',
       });
 
-    return new CategoryResponseDto(category);
+    const dto = new CategoryResponseDto(category);
+    if (category.logoKey) {
+      dto.logoUrl = await this.storageService.getPresignedSignedUrl(
+        category.logoKey,
+      );
+    }
+    return dto;
   }
 }

@@ -4,7 +4,7 @@ import { BrandEntity } from "src/database/entities/brand.entity";
 import { BrandResponseDto } from "src/shared/dto/brand/brand-response.dto";
 import { BrandStatusEnum } from "src/shared/enums/brand.enum";
 
-@Exclude()
+// @Exclude()
 export class AdminBrandResponseDto extends BrandResponseDto {
     @Expose()
     @ApiProperty({

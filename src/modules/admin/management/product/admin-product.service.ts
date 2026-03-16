@@ -12,6 +12,7 @@ import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
 import { ProductStatusEnum } from 'src/shared/enums/product.enum';
 import { VariantStatusEnum } from 'src/shared/enums/product-variant.enum';
 import { AdminPaginateProductsDto } from './dto/admin-paginate-product.dto';
+import { StorageService } from 'src/shared/modules/storage/storage.service';
 
 @Injectable()
 export class AdminProductService {
@@ -19,6 +20,7 @@ export class AdminProductService {
     private readonly productRepository: ProductRepository,
     private readonly brandRepository: BrandRepository,
     private readonly categoryRepository: CategoryRepository,
+    private readonly storageService: StorageService,
   ) {}
 
   async createProduct(createProductDto: CreateProductDto) {
@@ -70,20 +72,22 @@ export class AdminProductService {
 
     if (dto.brandId) {
       const brand = await this.brandRepository.findById(dto.brandId);
-      if (!brand) throw new NotFoundException({
-        errorCode: ErrorCodeEnum.BRAND_NOT_FOUND,
-        statusCode: 404,
-        message: 'Brand not found',
-      });
+      if (!brand)
+        throw new NotFoundException({
+          errorCode: ErrorCodeEnum.BRAND_NOT_FOUND,
+          statusCode: 404,
+          message: 'Brand not found',
+        });
     }
 
     if (dto.categoryId) {
       const category = await this.categoryRepository.findById(dto.categoryId);
-      if (!category) throw new NotFoundException({
-        errorCode: ErrorCodeEnum.CATEGORY_NOT_FOUND,
-        statusCode: 404,
-        message: 'Category not found',
-      });
+      if (!category)
+        throw new NotFoundException({
+          errorCode: ErrorCodeEnum.CATEGORY_NOT_FOUND,
+          statusCode: 404,
+          message: 'Category not found',
+        });
     }
 
     Object.assign(product, dto);
@@ -91,13 +95,34 @@ export class AdminProductService {
     await this.productRepository.save(product);
   }
 
-  async getProductsPagination(
-    dto: AdminPaginateProductsDto,
-  ) {
-    const products = await this.productRepository.findProductsPaginationAdmin(dto);
+  async getProductsPagination(dto: AdminPaginateProductsDto) {
+    const products =
+      await this.productRepository.findProductsPaginationAdmin(dto);
+    const items = await Promise.all(
+      products.items.map(async (product) => {
+        const productDto = new AdminProductResponseDto(product);
+        await Promise.all(
+          productDto.productVariants.map(async (variantDto, vIndex) => {
+            const variant = product.variants[vIndex];
+
+            await Promise.all(
+              variantDto.images.map(async (imageDto, iIndex) => {
+                const image = variant.images[iIndex];
+
+                imageDto.imageUrl =
+                  await this.storageService.getPresignedSignedUrl(
+                    image.imageKey,
+                  );
+              }),
+            );
+          }),
+        );
+        return productDto;
+      }),
+    );
     return {
-      ...products,
-      items: products.items.map((item) => new AdminProductResponseDto(item)),
+      items: items,
+      meta: products.meta,
     };
   }
 
@@ -112,7 +137,23 @@ export class AdminProductService {
       });
     }
 
-    return new AdminProductResponseDto(product);
+    const productDto = new AdminProductResponseDto(product);
+    await Promise.all(
+      productDto.productVariants.map(async (variantDto, vIndex) => {
+        const variant = product.variants[vIndex];
+
+        await Promise.all(
+          variantDto.images.map(async (imageDto, iIndex) => {
+            const image = variant.images[iIndex];
+
+            imageDto.imageUrl = await this.storageService.getPresignedSignedUrl(
+              image.imageKey,
+            );
+          }),
+        );
+      }),
+    );
+    return productDto;
   }
 
   async deleteProduct(id: string) {
@@ -141,7 +182,7 @@ export class AdminProductService {
       });
     }
     product.status = ProductStatusEnum.INACTIVE;
-    await this.productRepository.save(product)
+    await this.productRepository.save(product);
   }
 
   async restoreProduct(productId: string) {

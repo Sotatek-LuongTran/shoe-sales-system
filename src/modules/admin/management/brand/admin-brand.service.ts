@@ -22,9 +22,21 @@ export class AdminBrandService {
   async getBrandsPagination(dto: AdminPaginateBrandsDto) {
     const brands = await this.brandRepository.findBrandsPaginationAdmin(dto);
 
+    const items = await Promise.all(
+      brands.items.map(async (item) => {
+        const dto = new AdminBrandResponseDto(item);
+        if (item.logoKey) {
+          dto.logoUrl = await this.storageService.getPresignedSignedUrl(
+            item.logoKey,
+          );
+        }
+        return dto;
+      }),
+    );
+
     return {
-      ...brands,
-      items: brands.items.map((item) => new AdminBrandResponseDto(item)),
+      items: items,
+      meta: brands.meta,
     };
   }
 
@@ -41,7 +53,13 @@ export class AdminBrandService {
 
     await this.brandRepository.save(brand);
 
-    return new AdminBrandResponseDto(brand);
+    const dto = new AdminBrandResponseDto(brand);
+    if (brand.logoKey) {
+      dto.logoUrl = await this.storageService.getPresignedSignedUrl(
+        brand.logoKey,
+      );
+    }
+    return dto;
   }
 
   async updateBrand(updateBrandDto: UpdateBrandDto) {
