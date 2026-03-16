@@ -27,6 +27,9 @@ export class UserEntity extends BaseEntity {
   })
   status: UserStatusEnum;
 
+  @Column({ name: 'avatar_key', type: 'varchar', length: 255, nullable: true })
+  avatarKey: string;
+
   // @Column({ name: 'deleted_at', type: 'timestamp', nullable: true })
   @DeleteDateColumn({ name: 'deleted_at' })
   deletedAt: Date | null;
