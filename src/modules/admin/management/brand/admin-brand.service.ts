@@ -10,32 +10,16 @@ import { AdminBrandResponseDto } from './dto/admin-brand-response.dto';
 import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
 import { BrandStatusEnum } from 'src/shared/enums/brand.enum';
 import { AdminPaginateBrandsDto } from './dto/admin-paginate-brand.dto';
-import { StorageService } from 'src/shared/modules/storage/storage.service';
 
 @Injectable()
 export class AdminBrandService {
-  constructor(
-    private readonly brandRepository: BrandRepository,
-    private readonly storageService: StorageService,
-  ) {}
+  constructor(private readonly brandRepository: BrandRepository) {}
 
   async getBrandsPagination(dto: AdminPaginateBrandsDto) {
     const brands = await this.brandRepository.findBrandsPaginationAdmin(dto);
 
-    const items = await Promise.all(
-      brands.items.map(async (item) => {
-        const dto = new AdminBrandResponseDto(item);
-        if (item.logoKey) {
-          dto.logoUrl = await this.storageService.getPresignedSignedUrl(
-            item.logoKey,
-          );
-        }
-        return dto;
-      }),
-    );
-
     return {
-      items: items,
+      items: brands.items.map((item) => new AdminBrandResponseDto(item)),
       meta: brands.meta,
     };
   }
@@ -53,13 +37,7 @@ export class AdminBrandService {
 
     await this.brandRepository.save(brand);
 
-    const dto = new AdminBrandResponseDto(brand);
-    if (brand.logoKey) {
-      dto.logoUrl = await this.storageService.getPresignedSignedUrl(
-        brand.logoKey,
-      );
-    }
-    return dto;
+    return new AdminBrandResponseDto(brand);
   }
 
   async updateBrand(updateBrandDto: UpdateBrandDto) {
@@ -119,8 +97,8 @@ export class AdminBrandService {
     await this.brandRepository.save(brand);
   }
 
-  async uploadBrandLogo(brandId: string, file: Express.Multer.File) {
-    const brand = await this.brandRepository.findInactiveBrand(brandId);
+  async uploadBrandLogo(brandId: string, key: string) {
+    const brand = await this.brandRepository.findById(brandId);
 
     if (!brand) {
       throw new NotFoundException({
@@ -130,12 +108,8 @@ export class AdminBrandService {
       });
     }
 
-    const uploadedResult = await this.storageService.uploadSingleFile(file);
-
-    brand.logoKey = uploadedResult.key;
+    brand.logoKey = key;
 
     await this.brandRepository.save(brand);
-
-    return { url: uploadedResult.url };
   }
 }

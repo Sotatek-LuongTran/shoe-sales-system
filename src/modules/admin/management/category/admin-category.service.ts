@@ -10,13 +10,11 @@ import { AdminCategoryResponseDto } from './dto/admin-category-response.dto';
 import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
 import { CategoryStatusEnum } from 'src/shared/enums/category.enum';
 import { AdminPaginateCategoriesDto } from './dto/admin-paginate-category.dto';
-import { StorageService } from 'src/shared/modules/storage/storage.service';
 
 @Injectable()
 export class AdminCategoryService {
   constructor(
     private readonly categoryRepository: CategoryRepository,
-    private readonly storageService: StorageService,
   ) {}
 
   async createCategory(createCategoryDto: CreateCategoryDto) {
@@ -34,13 +32,7 @@ export class AdminCategoryService {
 
     await this.categoryRepository.save(category);
 
-    const dto = new AdminCategoryResponseDto(category);
-    if (category.logoKey) {
-      dto.logoUrl = await this.storageService.getPresignedSignedUrl(
-        category.logoKey,
-      );
-    }
-    return dto;
+    return new AdminCategoryResponseDto(category);
   }
 
   async updateCategory(updateCategoryDto: UpdateCategoryDto) {
@@ -76,20 +68,8 @@ export class AdminCategoryService {
   async getCategoriesPagination(dto: AdminPaginateCategoriesDto) {
     const categories =
       await this.categoryRepository.findCategoriesPaginationAdmin(dto);
-
-    const items = await Promise.all(
-      categories.items.map(async (category) => {
-        const dto = new AdminCategoryResponseDto(category);
-        if (category.logoKey) {
-          dto.logoUrl = await this.storageService.getPresignedSignedUrl(
-            category.logoKey,
-          );
-        }
-        return dto;
-      }),
-    );
     return {
-      items: items,
+      items: categories.items.map((item) => new AdminCategoryResponseDto(item)),
       meta: categories.meta,
     };
   }
@@ -124,24 +104,24 @@ export class AdminCategoryService {
     return this.categoryRepository.save(category);
   }
 
-  async uploadCategoryLogo(categoryId: string, file: Express.Multer.File) {
-    const category =
-      await this.categoryRepository.findInactiveCategory(categoryId);
+  // async uploadCategoryLogo(categoryId: string, file: Express.Multer.File) {
+  //   const category =
+  //     await this.categoryRepository.findInactiveCategory(categoryId);
 
-    if (!category) {
-      throw new NotFoundException({
-        errorCode: ErrorCodeEnum.BRAND_NOT_FOUND,
-        statusCode: 404,
-        message: 'Category not found',
-      });
-    }
+  //   if (!category) {
+  //     throw new NotFoundException({
+  //       errorCode: ErrorCodeEnum.BRAND_NOT_FOUND,
+  //       statusCode: 404,
+  //       message: 'Category not found',
+  //     });
+  //   }
 
-    const uploadedResult = await this.storageService.uploadSingleFile(file);
+  //   const uploadedResult = await this.storageService.uploadSingleFile(file);
 
-    category.logoKey = uploadedResult.key;
+  //   category.logoKey = uploadedResult.key;
 
-    await this.categoryRepository.save(category);
+  //   await this.categoryRepository.save(category);
 
-    return { url: uploadedResult.url };
-  }
+  //   return { url: uploadedResult.url };
+  // }
 }

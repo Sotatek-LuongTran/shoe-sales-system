@@ -1,8 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Pagination } from 'nestjs-typeorm-paginate';
-import { ProductEntity } from 'src/database/entities/product.entity';
 import { CreateProductDto } from 'src/modules/admin/management/product/dto/create-product.dto';
-import { PaginateProductsDto } from 'src/shared/dto/product/paginate-products.dto';
 import { UpdateProductDto } from 'src/modules/admin/management/product/dto/update-product.dto';
 import { BrandRepository } from 'src/shared/modules/common-brand/brand.repository';
 import { CategoryRepository } from 'src/shared/modules/common-category/category.repository';
@@ -12,7 +9,6 @@ import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
 import { ProductStatusEnum } from 'src/shared/enums/product.enum';
 import { VariantStatusEnum } from 'src/shared/enums/product-variant.enum';
 import { AdminPaginateProductsDto } from './dto/admin-paginate-product.dto';
-import { StorageService } from 'src/shared/modules/storage/storage.service';
 
 @Injectable()
 export class AdminProductService {
@@ -20,7 +16,6 @@ export class AdminProductService {
     private readonly productRepository: ProductRepository,
     private readonly brandRepository: BrandRepository,
     private readonly categoryRepository: CategoryRepository,
-    private readonly storageService: StorageService,
   ) {}
 
   async createProduct(createProductDto: CreateProductDto) {
@@ -98,30 +93,8 @@ export class AdminProductService {
   async getProductsPagination(dto: AdminPaginateProductsDto) {
     const products =
       await this.productRepository.findProductsPaginationAdmin(dto);
-    const items = await Promise.all(
-      products.items.map(async (product) => {
-        const productDto = new AdminProductResponseDto(product);
-        await Promise.all(
-          productDto.productVariants.map(async (variantDto, vIndex) => {
-            const variant = product.variants[vIndex];
-
-            await Promise.all(
-              variantDto.images.map(async (imageDto, iIndex) => {
-                const image = variant.images[iIndex];
-
-                imageDto.imageUrl =
-                  await this.storageService.getPresignedSignedUrl(
-                    image.imageKey,
-                  );
-              }),
-            );
-          }),
-        );
-        return productDto;
-      }),
-    );
     return {
-      items: items,
+      items: products.items.map((item) => new AdminProductResponseDto(item)),
       meta: products.meta,
     };
   }
@@ -137,23 +110,7 @@ export class AdminProductService {
       });
     }
 
-    const productDto = new AdminProductResponseDto(product);
-    await Promise.all(
-      productDto.productVariants.map(async (variantDto, vIndex) => {
-        const variant = product.variants[vIndex];
-
-        await Promise.all(
-          variantDto.images.map(async (imageDto, iIndex) => {
-            const image = variant.images[iIndex];
-
-            imageDto.imageUrl = await this.storageService.getPresignedSignedUrl(
-              image.imageKey,
-            );
-          }),
-        );
-      }),
-    );
-    return productDto;
+    return new AdminProductResponseDto(product);
   }
 
   async deleteProduct(id: string) {

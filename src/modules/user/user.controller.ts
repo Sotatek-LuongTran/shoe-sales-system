@@ -5,7 +5,9 @@ import {
   FileTypeValidator,
   Get,
   MaxFileSizeValidator,
+  Param,
   ParseFilePipe,
+  ParseUUIDPipe,
   Post,
   Req,
   UploadedFile,
@@ -18,6 +20,7 @@ import {
   ApiBody,
   ApiConsumes,
   ApiOperation,
+  ApiParam,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -29,8 +32,7 @@ import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
 import { UserResponseDto } from 'src/shared/dto/user/user-response.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { ConfigService } from '@nestjs/config';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { ImageUploadPipe } from 'src/shared/pipes/image-upload.pipe';
+import { ImageKeyInterceptor } from 'src/shared/interceptors/image-key.interceptor';
 
 @ApiTags('Users')
 @ApiBearerAuth('access-token')
@@ -49,17 +51,9 @@ export class UserController {
     status: 201,
     description: 'Profile get successfully',
   })
-  async getProfile(@Req() req: Request) {
-    const user = req.user as {
-      userId: string;
-      role: string;
-      sessionKey?: string;
-      exp?: number;
-    };
-    return {
-      userId: user.userId,
-      role: user.role,
-    };
+  @UseInterceptors(ClassSerializerInterceptor, ImageKeyInterceptor)
+  async getProfile(@Req() req: any) {
+    return this.userService.getProfile(req.user.userId);
   }
 
   @Post('change-password')
@@ -72,30 +66,14 @@ export class UserController {
     return this.userService.changePassword(req.user.userId, dto);
   }
 
-  @Post('change-avatar')
+  @Post('change-avatar/:key')
   @ApiOperation({ summary: 'User change avatar' })
   @ApiResponse({
     status: 201,
     description: 'Avatar changed successfully',
   })
-  @ApiConsumes('multipart/form-data')
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        file: {
-          type: 'string',
-          format: 'binary',
-        },
-      },
-    },
-  })
-  @UseInterceptors(FileInterceptor('file'))
-  async changeAvatar(
-    @Req() req: any,
-    @UploadedFile(ImageUploadPipe)
-    file: Express.Multer.File,
-  ) {
-    return this.userService.changeAvatar(req.user.userId, file);
+  @ApiParam({ name: 'key', type: 'string' })
+  async changeAvatar(@Req() req: any, @Param('key') key: string) {
+    return this.userService.changeAvatar(req.user.userId, key);
   }
 }
