@@ -4,13 +4,15 @@ import {
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
+import { createPresignedPost } from '@aws-sdk/s3-presigned-post';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import {
+  ForbiddenException,
   Injectable,
-  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { CreateUploadUrlDto } from 'src/modules/storage/dto/create-upload-url.dto';
 import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -46,45 +48,37 @@ export class StorageService {
     });
   }
 
-  async uploadSingleFile(file: Express.Multer.File) {
-    const key = `${uuidv4()}`;
+  async createUploadRurl(dto: CreateUploadUrlDto) {
+    const key = dto.entityId
+      ? `${dto.folder}/${dto.entityId}/${uuidv4()}`
+      : `${dto.folder}/${uuidv4()}`;
 
-    const command = new PutObjectCommand({
+    return createPresignedPost(this.s3, {
       Bucket: this.bucket,
       Key: key,
-      Body: file.buffer,
-      ContentType: file.mimetype,
-      Metadata: {
-        originalName: file.originalname,
+      Conditions: [
+        ['content-length-range', 0, 10 * 1024 * 1024],
+        ['starts-with', '$Content-Type', 'image/'],
+      ],
+      Fields: {
+        key,
       },
     });
-
-    await this.s3.send(command);
-
-    const url = await getSignedUrl(this.s3, command, {
-      expiresIn: 300,
-    });
-
-    return { url, key };
   }
 
-  async getPresignedSignedUrl(key: string) {
+  async createDownloadUrl(userId: string, key: string) {
+    if (!key.startsWith(`avatars/${userId}/`)) {
+      throw new ForbiddenException({
+        errorCode: ErrorCodeEnum.AUTH_FORBIDDEN,
+        statusCode: 403,
+        message: 'Forbidden resources',
+      });
+    }
     const command = new GetObjectCommand({
       Bucket: this.bucket,
       Key: key,
     });
 
-    return await getSignedUrl(this.s3, command, {
-      expiresIn: 300,
-    });
-  }
-
-  async deleteFile(key: string) {
-    const command = new DeleteObjectCommand({
-      Bucket: this.bucket,
-      Key: key,
-    });
-
-    await this.s3.send(command);
+    return getSignedUrl(this.s3, command);
   }
 }

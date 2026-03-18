@@ -15,8 +15,8 @@ export class CategoryEntity extends BaseEntity {
   @Column({ name: 'status', type: 'enum', enum: CategoryStatusEnum })
   status: CategoryStatusEnum;
 
-  @Column({ name: 'logo_key', type: 'varchar', length: 255, nullable: true })
-  logoKey: string;
+  // @Column({ name: 'logo_key', type: 'varchar', length: 255, nullable: true })
+  // logoKey: string;
 
   // @Column({ name: 'deleted_at', type: 'timestamp', nullable: true })
   @DeleteDateColumn({ name: 'deleted_at' })

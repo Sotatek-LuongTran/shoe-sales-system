@@ -19,6 +19,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { BullModule } from '@nestjs/bull';
 import { NotificationModule } from './shared/modules/notifications/notification.module';
 import { SocketModule } from './socket/socket.module';
+import { StorageModule } from './modules/storage/storage.module';
 @Module({
   imports: [
     PassportModule,
@@ -50,6 +51,7 @@ import { SocketModule } from './socket/socket.module';
     MailerModule,
     NotificationModule,
     SocketModule,
+    StorageModule,
   ],
   // providers: [
   //   {

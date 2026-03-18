@@ -4,7 +4,6 @@ import { ProductRepository } from 'src/shared/modules/common-product/product.rep
 import { PaginateVariantsDto } from '../../shared/dto/product-variant/paginate-variants.dto';
 import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
 import { ProductVariantResponseDto } from 'src/shared/dto/product-variant/product-variant-response.dto';
-import { VariantImageResponseDto } from 'src/shared/dto/product-variant/variant-image-response.dto';
 
 @Injectable()
 export class ProductVariantService {
@@ -49,22 +48,10 @@ export class ProductVariantService {
         dto,
       );
 
-    const items = await Promise.all(
-      variants.items.map((item) => {
-        const dto = new ProductVariantResponseDto(item);
-
-        const imageDtos = item.images.map(
-          (image) => new VariantImageResponseDto(image),
-        );
-        dto.images = imageDtos;
-        return dto;
-      }),
-    );
-
     return {
-      items: items,
+      items: variants.items.map((item) => new ProductVariantResponseDto(item)),
       meta: variants.meta,
-    }
+    };
   }
 
   async getProductVariant(productId: string, variantId: string) {

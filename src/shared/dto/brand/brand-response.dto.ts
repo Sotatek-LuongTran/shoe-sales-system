@@ -26,11 +26,8 @@ export class BrandResponseDto extends ResponseDto {
   updatedAt: Date;
 
   @Expose()
-  @ApiProperty({
-    example:
-      'ac5dd95e-d78f-43e6-97aa-28eed93a0430?X-Amz-Algorithm=AWS4-HMAC-SHA256&X...',
-  })
-  logoUrl: string;
+  @ApiProperty({ example: 'avatars/user123/abc123.png'})
+  logoKey: string
 
   constructor(brand: BrandEntity) {
     super(brand.id);
@@ -39,6 +36,7 @@ export class BrandResponseDto extends ResponseDto {
       description: brand.description,
       createAt: brand.createdAt,
       updateAt: brand.updatedAt,
+      logoKey: brand.logoKey,
     });
   }
 }

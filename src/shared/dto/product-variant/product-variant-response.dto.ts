@@ -1,9 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { ProductVariantEntity } from 'src/database/entities/product-variant.entity';
-import { ProductResponseDto } from '../product/product-respose.dto';
 import { ResponseDto } from '../response.dto';
 import { Exclude, Expose } from 'class-transformer';
-import { VariantImageResponseDto } from './variant-image-response.dto';
 
 @Exclude()
 export class ProductVariantResponseDto extends ResponseDto {
@@ -30,11 +28,9 @@ export class ProductVariantResponseDto extends ResponseDto {
 
   @Expose()
   @ApiProperty({
-    description: 'Images of the variant',
-    type: () => VariantImageResponseDto,
-    isArray: true,
+    description: 'Image keys of the variant',
   })
-  images: VariantImageResponseDto[];
+  imageKeys: string[];
 
   constructor(productVariant: ProductVariantEntity) {
     super(productVariant.id);
@@ -42,9 +38,7 @@ export class ProductVariantResponseDto extends ResponseDto {
       variantValue: productVariant.variantValue,
       price: productVariant.price,
       stock: productVariant.stock,
-      images: productVariant.images.map(
-        (image) => new VariantImageResponseDto(image),
-      ),
+      imageKeys: productVariant.images.map((image) => image.imageKey),
     });
   }
 }

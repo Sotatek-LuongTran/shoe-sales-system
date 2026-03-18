@@ -12,6 +12,7 @@ import { AdminProductResponseDto } from './dto/admin-product-response.dto';
 import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
 import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
 import { ApiPaginatedResponse } from 'src/shared/decorators/api-paginated-response.decorator';
+import { ImageKeyInterceptor } from 'src/shared/interceptors/image-key.interceptor';
 
 @Controller('admin/products')
 @ApiBearerAuth('access-token')
@@ -31,7 +32,7 @@ export class AdminProductController {
     description: 'Product created successfully',
     type: AdminProductResponseDto,
   })
-  @UseInterceptors(ClassSerializerInterceptor)
+  @UseInterceptors(ClassSerializerInterceptor, ImageKeyInterceptor)
   create(@Body() dto: CreateProductDto) {
     return this.adminProductService.createProduct(dto);
   }
@@ -46,7 +47,7 @@ export class AdminProductController {
     description: 'Products get successfully'
   })
   @ApiPaginatedResponse(AdminProductResponseDto)
-  @UseInterceptors(ClassSerializerInterceptor)
+  @UseInterceptors(ClassSerializerInterceptor, ImageKeyInterceptor)
   getList(@Query() dto: PaginateProductsDto) {
     return this.adminProductService.getProductsPagination(dto);
   }
@@ -89,6 +90,7 @@ export class AdminProductController {
     description: 'Product get successfully',
     type: AdminProductResponseDto,
   })
+  @UseInterceptors(ClassSerializerInterceptor, ImageKeyInterceptor)
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
   getOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.adminProductService.getProduct(id);

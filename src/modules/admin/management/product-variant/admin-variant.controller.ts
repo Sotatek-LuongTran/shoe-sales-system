@@ -27,16 +27,14 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { AuthGuard } from '@nestjs/passport';
 import { CreateVariantDto } from 'src/modules/admin/management/product-variant/dto/create-variant.dto';
 import { UpdateVariantDto } from 'src/modules/admin/management/product-variant/dto/update-vatiant.dto';
 import { AdminVariantResponseDto } from './dto/admin-variant-response.dto';
 import { PaginateVariantsDto } from 'src/shared/dto/product-variant/paginate-variants.dto';
 import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
 import { ApiPaginatedResponse } from 'src/shared/decorators/api-paginated-response.decorator';
-import { FilesInterceptor } from '@nestjs/platform-express';
-import { ImageUploadPipe } from 'src/shared/pipes/image-upload.pipe';
-import { ImagesUploadPipe } from 'src/shared/pipes/image-array-upload.pipe';
+import { ImageKeysDto } from './dto/image-keys.dto';
+import { ImageKeyInterceptor } from 'src/shared/interceptors/image-key.interceptor';
 
 @Controller('admin/products')
 @ApiBearerAuth('access-token')
@@ -58,6 +56,7 @@ export class AdminProductVariantController {
     description: 'productVariant created successfully',
     type: AdminVariantResponseDto,
   })
+  @UseInterceptors(ClassSerializerInterceptor, ImageKeyInterceptor)
   create(@Body() dto: CreateVariantDto) {
     return this.adminProductVariantService.createProductVariant(dto);
   }
@@ -88,7 +87,7 @@ export class AdminProductVariantController {
     description: 'Paginated list of product variants',
   })
   @ApiPaginatedResponse(AdminVariantResponseDto)
-  @UseInterceptors(ClassSerializerInterceptor)
+  @UseInterceptors(ClassSerializerInterceptor, ImageKeyInterceptor)
   async getVariantsByProduct(
     @Param('productId', new ParseUUIDPipe()) productId: string,
     @Query() dto: PaginateVariantsDto,
@@ -144,29 +143,22 @@ export class AdminProductVariantController {
   }
 
   @Post(':productId/variants/:variantId/images')
-  @UseInterceptors(FilesInterceptor('files', 10))
-  @ApiConsumes('multipart/form-data')
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        files: {
-          type: 'array',
-          items: {
-            type: 'string',
-            format: 'binary',
-          },
-        },
-      },
-    },
+  @ApiOperation({ summary: 'Upload variant images' })
+  @ApiResponse({
+    status: 201,
+    description: 'Variant image uploaded successfully',
   })
+  @ApiParam({ name: 'productId', type: 'string', format: 'uuid' })
+  @ApiParam({ name: 'variantId', type: 'string', format: 'uuid' })
   async uploadVariantImages(
+    @Param('productId') productId: string,
     @Param('variantId') variantId: string,
-    @UploadedFiles(ImagesUploadPipe) files: Express.Multer.File[],
+    @Body() dto: ImageKeysDto,
   ) {
     return this.adminProductVariantService.uploadVariantImages(
+      productId,
       variantId,
-      files,
+      dto,
     );
   }
 }
