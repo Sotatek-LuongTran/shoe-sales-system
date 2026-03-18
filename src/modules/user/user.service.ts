@@ -1,19 +1,18 @@
 import {
   BadRequestException,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { UserRepository } from 'src/shared/modules/common-user/user.repository';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
 import * as bcrypt from 'bcrypt';
-import { StorageService } from 'src/shared/modules/storage/storage.service';
+import { UserResponseDto } from 'src/shared/dto/user/user-response.dto';
+import { StringDecoder } from 'node:string_decoder';
 @Injectable()
 export class UserService {
-  constructor(
-    private readonly userRepository: UserRepository,
-    private readonly storageService: StorageService,
-  ) {}
+  constructor(private readonly userRepository: UserRepository) {}
 
   async changePassword(userId: string, dto: ChangePasswordDto) {
     const user = await this.userRepository.findById(userId);
@@ -47,7 +46,21 @@ export class UserService {
     await this.userRepository.save(user);
   }
 
-  async changeAvatar(userId: string, file: Express.Multer.File) {
+  async getProfile(id: string) {
+    const user = await this.userRepository.findById(id);
+
+    if (!user) {
+      throw new NotFoundException({
+        errorCode: ErrorCodeEnum.USER_NOT_FOUND,
+        statusCode: 404,
+        message: 'User not found',
+      });
+    }
+
+    return new UserResponseDto(user);
+  }
+
+  async changeAvatar(userId: string, key: string) {
     const user = await this.userRepository.findById(userId);
     if (!user) {
       throw new UnauthorizedException({
@@ -56,14 +69,10 @@ export class UserService {
         message: 'User not found',
       });
     }
-    const uploadResult = await this.storageService.uploadSingleFile(file);
+    console.log(key)
 
-    user.avatarKey = uploadResult.key;
+    user.avatarKey = key;
 
     await this.userRepository.save(user);
-
-    return {
-      avatarUrl: uploadResult.url,
-    };
   }
 }

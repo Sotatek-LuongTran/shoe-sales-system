@@ -26,6 +26,10 @@ export class UserResponseDto extends ResponseDto {
 
   constructor(user: UserEntity) {
     super(user.id)
-    Object.assign(this, user)
+    Object.assign(this, {
+      name: user.name,
+      email: user.email,
+      avatarKey: user.avatarKey,
+    })
   }
 }

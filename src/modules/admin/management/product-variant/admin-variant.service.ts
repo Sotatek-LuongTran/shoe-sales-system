@@ -7,16 +7,14 @@ import { AdminVariantResponseDto } from './dto/admin-variant-response.dto';
 import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
 import { VariantStatusEnum } from 'src/shared/enums/product-variant.enum';
 import { AdminPaginateVariantsDto } from './dto/admin-paginate-variant.dto';
-import { StorageService } from 'src/shared/modules/storage/storage.service';
 import { VariantImageRepository } from 'src/shared/modules/common-product-variant/variant-image.repository';
-import { VariantImageResponseDto } from 'src/shared/dto/product-variant/variant-image-response.dto';
+import { ImageKeysDto } from './dto/image-keys.dto';
 
 @Injectable()
 export class AdminProductVariantService {
   constructor(
     private readonly productVariantRepository: ProductVariantRepository,
     private readonly productRepository: ProductRepository,
-    private readonly storageService: StorageService,
     private readonly variantImageRepository: VariantImageRepository,
   ) {}
 
@@ -110,20 +108,8 @@ export class AdminProductVariantService {
         dto,
       );
 
-    const items = await Promise.all(
-      variants.items.map((item) => {
-        const dto = new AdminVariantResponseDto(item);
-
-        const imageDtos = item.images.map(
-          (image) => new VariantImageResponseDto(image),
-        );
-        dto.images = imageDtos;
-        return dto;
-      }),
-    );
-
     return {
-      items: items,
+      items: variants.items.map((item) => new AdminVariantResponseDto(item)),
       meta: variants.meta,
     };
   }
@@ -173,7 +159,37 @@ export class AdminProductVariantService {
     await this.productVariantRepository.removeSoftDeletedVariants();
   }
 
-  async uploadVariantImages(variantId: string, files: Express.Multer.File[]) {
+  async uploadVariantImages(
+    productId: string,
+    variantId: string,
+    dto: ImageKeysDto,
+  ) {
+    const product =
+      await this.productRepository.findOneWithBrandAndCategory(productId);
+    if (!product) {
+      throw new NotFoundException({
+        errorCode: ErrorCodeEnum.PRODUCT_NOT_FOUND,
+        statusCode: 404,
+        message: 'Product not found',
+      });
+    }
+
+    if (!product.brand.id) {
+      throw new NotFoundException({
+        errorCode: ErrorCodeEnum.BRAND_NOT_FOUND,
+        statusCode: 404,
+        message: 'Brand not found',
+      });
+    }
+
+    if (!product.category.id) {
+      throw new NotFoundException({
+        errorCode: ErrorCodeEnum.CATEGORY_NOT_FOUND,
+        statusCode: 404,
+        message: 'Category not found',
+      });
+    }
+    
     const variant = await this.productVariantRepository.findById(variantId);
     if (!variant)
       throw new NotFoundException({
@@ -181,21 +197,14 @@ export class AdminProductVariantService {
         statusCode: 404,
         message: 'Variant not found',
       });
-    const urls: string[] = [];
 
-    for (const file of files) {
-      const uploadResult = await this.storageService.uploadSingleFile(file);
-
+    for (const key of dto.keys) {
       const variantImage = this.variantImageRepository.create({
-        imageKey: uploadResult.key,
+        imageKey: key,
         variantId: variant.id,
       });
 
-      urls.push(uploadResult.url);
-
       await this.variantImageRepository.save(variantImage);
     }
-
-    return urls;
   }
 }

@@ -35,7 +35,6 @@ import { AdminPaginationCategoryResponseDto } from './dto/admin-pag-category-res
 import { AdminCategoryResponseDto } from './dto/admin-category-response.dto';
 import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
 import { ApiPaginatedResponse } from 'src/shared/decorators/api-paginated-response.decorator';
-import { ImageUploadPipe } from 'src/shared/pipes/image-upload.pipe';
 
 @Controller('admin/categories')
 @ApiBearerAuth('access-token')
@@ -117,28 +116,28 @@ export class AdminCategoryController {
   // =============================
   // UPLOAD CATEGORY LOGO
   // =============================
-  @Post(':id/logo')
-  @ApiOperation({ summary: 'Upload brand logo' })
-  @ApiResponse({
-    status: 201,
-    description: 'Category logo uploaded successfully',
-  })
-  @ApiConsumes('multipart/form-data')
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        file: {
-          type: 'string',
-          format: 'binary',
-        },
-      },
-    },
-  })
-  async uploadBrandLogo(
-    @Param('id') id: string,
-    @UploadedFile(ImageUploadPipe) file: Express.Multer.File,
-  ) {
-    return this.adminCategoryService.uploadCategoryLogo(id, file);
-  }
+  // @Post(':id/logo')
+  // @ApiOperation({ summary: 'Upload brand logo' })
+  // @ApiResponse({
+  //   status: 201,
+  //   description: 'Category logo uploaded successfully',
+  // })
+  // @ApiConsumes('multipart/form-data')
+  // @ApiBody({
+  //   schema: {
+  //     type: 'object',
+  //     properties: {
+  //       file: {
+  //         type: 'string',
+  //         format: 'binary',
+  //       },
+  //     },
+  //   },
+  // })
+  // async uploadBrandLogo(
+  //   @Param('id') id: string,
+  //   @UploadedFile(ImageUploadPipe) file: Express.Multer.File,
+  // ) {
+  //   return this.adminCategoryService.uploadCategoryLogo(id, file);
+  // }
 }

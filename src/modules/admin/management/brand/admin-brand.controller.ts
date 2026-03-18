@@ -33,7 +33,7 @@ import { PaginateBrandsDto } from 'src/shared/dto/brand/paginate-brands.dto';
 import { AdminBrandResponseDto } from './dto/admin-brand-response.dto';
 import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
 import { ApiPaginatedResponse } from 'src/shared/decorators/api-paginated-response.decorator';
-import { ImageUploadPipe } from 'src/shared/pipes/image-upload.pipe';
+import { ImageKeyInterceptor } from 'src/shared/interceptors/image-key.interceptor';
 
 @Controller('admins/brands')
 @ApiBearerAuth('access-token')
@@ -53,7 +53,7 @@ export class AdminBrandController {
     description: 'Brands get successfully',
   })
   @ApiPaginatedResponse(AdminBrandResponseDto)
-  @UseInterceptors(ClassSerializerInterceptor)
+  @UseInterceptors(ClassSerializerInterceptor, ImageKeyInterceptor)
   getList(@Query() dto: PaginateBrandsDto) {
     return this.adminBrandService.getBrandsPagination(dto);
   }
@@ -68,7 +68,7 @@ export class AdminBrandController {
     description: 'Brand created successfully',
     type: AdminBrandResponseDto,
   })
-  @UseInterceptors(ClassSerializerInterceptor)
+  @UseInterceptors(ClassSerializerInterceptor, ImageKeyInterceptor)
   create(@Body() dto: CreateBrandDto) {
     return this.adminBrandService.createBrand(dto);
   }
@@ -117,28 +117,15 @@ export class AdminBrandController {
   // =============================
   // UPLOAD BRAND LOGO
   // =============================
-  @Post(':id/logo')
+  @Post(':id/logo/:key')
   @ApiOperation({ summary: 'Upload brand logo' })
   @ApiResponse({
     status: 201,
     description: 'Brand logo uploaded successfully',
   })
-  @ApiConsumes('multipart/form-data')
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        file: {
-          type: 'string',
-          format: 'binary',
-        },
-      },
-    },
-  })
-  async uploadBrandLogo(
-    @Param('id') id: string,
-    @UploadedFile(ImageUploadPipe) file: Express.Multer.File,
-  ) {
-    return this.adminBrandService.uploadBrandLogo(id, file);
+  @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
+  @ApiParam({ name: 'key', type: 'string' })
+  async uploadBrandLogo(@Param('id') id: string, @Param('key') key: string) {
+    return this.adminBrandService.uploadBrandLogo(id, key);
   }
 }

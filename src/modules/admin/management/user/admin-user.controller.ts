@@ -26,6 +26,7 @@ import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
 import { PaginateUsersDto } from 'src/shared/dto/user/paginate-user.dto';
 import { ApiPaginatedResponse } from 'src/shared/decorators/api-paginated-response.decorator';
 import { AdminUserResponseDto } from './dto/admin-user-response.dto';
+import { ImageKeyInterceptor } from 'src/shared/interceptors/image-key.interceptor';
 
 @ApiTags('Admin')
 @ApiBearerAuth('access-token')
@@ -42,7 +43,7 @@ export class AdminUserController {
     description: 'User created successfully',
     type: UserResponseDto,
   })
-  @UseInterceptors(ClassSerializerInterceptor)
+  @UseInterceptors(ClassSerializerInterceptor, ImageKeyInterceptor)
   createUser(@Body() createUserDto: CreateUserDto) {
     return this.adminUserService.createUser(createUserDto);
   }
@@ -54,7 +55,7 @@ export class AdminUserController {
     description: 'Users get successfully',
   })
   @ApiPaginatedResponse(AdminUserResponseDto)
-  @UseInterceptors(ClassSerializerInterceptor)
+  @UseInterceptors(ClassSerializerInterceptor, ImageKeyInterceptor)
   getList(@Query() dto: PaginateUsersDto) {
     return this.adminUserService.getAllUsersPagination(dto);
   }
@@ -66,7 +67,7 @@ export class AdminUserController {
     description: 'User get successfully',
     type: UserResponseDto,
   })
-  @UseInterceptors(ClassSerializerInterceptor)
+  @UseInterceptors(ClassSerializerInterceptor, ImageKeyInterceptor)
   findUserById(@Param('id', ParseUUIDPipe) id: string) {
     return this.adminUserService.findUserById(id);
   }
