@@ -33,6 +33,7 @@ import { UserResponseDto } from 'src/shared/dto/user/user-response.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { ConfigService } from '@nestjs/config';
 import { ImageKeyInterceptor } from 'src/shared/interceptors/image-key.interceptor';
+import { ApiBaseResponse } from 'src/shared/decorators/api-base-response.decorator';
 
 @ApiTags('Users')
 @ApiBearerAuth('access-token')
@@ -51,6 +52,7 @@ export class UserController {
     status: 201,
     description: 'Profile get successfully',
   })
+  @ApiBaseResponse(UserResponseDto)
   @UseInterceptors(ClassSerializerInterceptor, ImageKeyInterceptor)
   async getProfile(@Req() req: any) {
     return this.userService.getProfile(req.user.userId);

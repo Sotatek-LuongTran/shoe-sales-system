@@ -35,7 +35,7 @@ export class AdminPaymentService {
 
     return {
       ...payments,
-      items: payments.items.map((item) => new AdminPaymentResponseDto(item)),
+      data: payments.items.map((item) => new AdminPaymentResponseDto(item)),
     };
   }
 

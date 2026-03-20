@@ -34,6 +34,7 @@ import { AdminBrandResponseDto } from './dto/admin-brand-response.dto';
 import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
 import { ApiPaginatedResponse } from 'src/shared/decorators/api-paginated-response.decorator';
 import { ImageKeyInterceptor } from 'src/shared/interceptors/image-key.interceptor';
+import { ApiBaseResponse } from 'src/shared/decorators/api-base-response.decorator';
 
 @Controller('admins/brands')
 @ApiBearerAuth('access-token')
@@ -66,8 +67,8 @@ export class AdminBrandController {
   @ApiResponse({
     status: 201,
     description: 'Brand created successfully',
-    type: AdminBrandResponseDto,
   })
+  @ApiBaseResponse(AdminBrandResponseDto)
   @UseInterceptors(ClassSerializerInterceptor, ImageKeyInterceptor)
   create(@Body() dto: CreateBrandDto) {
     return this.adminBrandService.createBrand(dto);

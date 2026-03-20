@@ -109,7 +109,7 @@ export class AdminProductVariantService {
       );
 
     return {
-      items: variants.items.map((item) => new AdminVariantResponseDto(item)),
+      data: variants.items.map((item) => new AdminVariantResponseDto(item)),
       meta: variants.meta,
     };
   }

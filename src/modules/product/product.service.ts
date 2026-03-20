@@ -5,7 +5,6 @@ import { ProductRepository } from 'src/shared/modules/common-product/product.rep
 import { PaginateProductsDto } from '../../shared/dto/product/paginate-products.dto';
 import { ProductResponseDto } from 'src/shared/dto/product/product-respose.dto';
 import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
-import { StorageService } from 'src/shared/modules/common-storage/storage.service';
 
 @Injectable()
 export class ProductService {
@@ -15,12 +14,12 @@ export class ProductService {
 
   async getProductsPagination(
     dto: PaginateProductsDto,
-  ): Promise<Pagination<ProductResponseDto>> {
+  ) {
     const products =
       await this.productRepository.findProductsPaginationUser(dto);
 
     return {
-      items: products.items.map((item) => new ProductResponseDto(item)),
+      data: products.items.map((item) => new ProductResponseDto(item)),
       meta: products.meta,
     };
   }

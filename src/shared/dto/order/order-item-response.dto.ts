@@ -4,7 +4,7 @@ import { OrderItemEntity } from 'src/database/entities/order-item.entity';
 import { GenderEnum, ProductTypeEnum } from 'src/shared/enums/product.enum';
 import { ResponseDto } from '../response.dto';
 
-@Exclude()
+// @Exclude()
 export class OrderItemResponseDto extends ResponseDto {
 
   @Expose()
@@ -69,6 +69,15 @@ export class OrderItemResponseDto extends ResponseDto {
 
   constructor(orderItem: OrderItemEntity) {
     super(orderItem.id)
-    Object.assign(this, orderItem)
+    Object.assign(this, {
+      variantValue: orderItem.variantValue,
+      quantity: orderItem.quantity,
+      name: orderItem.name,
+      price: orderItem.price,
+      finalPrice: orderItem.finalPrice,
+      description: orderItem.description,
+      productType: orderItem.productType,
+      gender: orderItem.gender,
+    })
   }
 }

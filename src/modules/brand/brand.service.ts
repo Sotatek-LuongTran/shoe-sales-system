@@ -13,7 +13,7 @@ export class BrandService {
   async getBrandsPagination(dto: PaginateBrandsDto) {
     const brands = await this.brandRepository.findBrandsPaginationUser(dto);
     return {
-      items: brands.items.map(item => new BrandResponseDto(item)),
+      data: brands.items.map(item => new BrandResponseDto(item)),
       meta: brands.meta,
     };
   }

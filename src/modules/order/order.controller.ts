@@ -33,6 +33,8 @@ import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
 import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
 import { ApiPaginatedResponse } from 'src/shared/decorators/api-paginated-response.decorator';
 import { CreateOrderDto } from './dto/create-order.dto';
+import { ApiBaseResponse } from 'src/shared/decorators/api-base-response.decorator';
+import { ResponseInterceptor } from 'src/shared/interceptors/response.interceptor';
 
 @ApiTags('Orders')
 @ApiBearerAuth('access-token')
@@ -50,10 +52,10 @@ export class OrderController {
   @ApiResponse({
     status: 201,
     description: 'Order created successfully',
-    type: OrderResponseDto,
   })
+  @ApiBaseResponse(OrderResponseDto)
   @ApiBody({ type: CreateOrderDto })
-  @UseInterceptors(ClassSerializerInterceptor)
+  @UseInterceptors(ClassSerializerInterceptor, ResponseInterceptor)
   async createOrder(@Req() req: any, @Body() dto: CreateOrderDto) {
     return this.orderService.createOrder(req.user.userId, dto);
   }
@@ -83,7 +85,7 @@ export class OrderController {
     description: 'Order get successfully',
   })
   @ApiPaginatedResponse(OrderResponseDto)
-  @UseInterceptors(ClassSerializerInterceptor)
+  @UseInterceptors(ClassSerializerInterceptor, ResponseInterceptor)
   async getAllOrders(@Req() req: any, @Query() dto: PaginateOrdersDto) {
     return this.orderService.getOrdersByUserPagination(req.user.userId, dto);
   }
@@ -96,10 +98,10 @@ export class OrderController {
   @ApiResponse({
     status: 200,
     description: 'Order get successfully',
-    type: OrderResponseDto,
   })
+  @ApiBaseResponse(OrderResponseDto)
   @ApiParam({name: 'id', type: 'string', format: 'uuid'})
-  @UseInterceptors(ClassSerializerInterceptor)
+  @UseInterceptors(ClassSerializerInterceptor, ResponseInterceptor)
   async getOrderById(@Req() req: any, @Param('id', ParseUUIDPipe) id: string) {
     return this.orderService.getOrderById(id, req.user.userId);
   }
