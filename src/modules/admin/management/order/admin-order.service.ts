@@ -27,7 +27,7 @@ export class AdminOrderService {
 
     return {
       ...orders,
-      items: orders.items.map((item) => new AdminOrderResponseDto(item)),
+      data: orders.items.map((item) => new AdminOrderResponseDto(item)),
     };
   }
 }

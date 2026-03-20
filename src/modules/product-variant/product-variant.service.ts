@@ -49,7 +49,7 @@ export class ProductVariantService {
       );
 
     return {
-      items: variants.items.map((item) => new ProductVariantResponseDto(item)),
+      data: variants.items.map((item) => new ProductVariantResponseDto(item)),
       meta: variants.meta,
     };
   }

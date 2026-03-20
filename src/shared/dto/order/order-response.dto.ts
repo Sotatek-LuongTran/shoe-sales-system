@@ -43,20 +43,19 @@ export class OrderResponseDto extends ResponseDto {
   createdAt: Date;
 
   @Expose()
-  @ApiProperty({ description: 'Payment id'})
+  @ApiProperty({ description: 'Payment id' })
   paymentId: string;
 
   constructor(order: OrderEntity) {
     super(order.id);
 
-    this.status = order.status;
-    this.paymentStatus = order.paymentStatus;
-    this.totalPrice = order.totalPrice;
-    this.createdAt = order.createdAt;
-
-    this.orderItems =
-      order.items?.map((item) => new OrderItemResponseDto(item)) ?? [];
-
-    this.paymentId = order.payment?.id ?? null;
+    Object.assign(this, {
+      status: order.status,
+      paymentStatus: order.paymentStatus,
+      totalPrice: order.totalPrice,
+      createAt: order.createdAt,
+      orderItems: order.items.map((item) => new OrderItemResponseDto(item)),
+      paymentId: order.payment.id,
+    });
   }
 }

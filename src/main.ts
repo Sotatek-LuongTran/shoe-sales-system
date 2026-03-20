@@ -5,6 +5,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { join } from 'path';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { RedisIoAdapter } from './socket/adapter/redis-io.adapter';
+import { ResponseInterceptor } from './shared/interceptors/response.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -24,6 +25,9 @@ async function bootstrap() {
   await redisIoAdapter.connectToRedis();
 
   app.useWebSocketAdapter(redisIoAdapter);
+  
+
+  app.useGlobalInterceptors(new ResponseInterceptor())
 
   const config = new DocumentBuilder()
     .setTitle('Shoe Sales API')

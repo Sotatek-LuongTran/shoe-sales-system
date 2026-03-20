@@ -66,14 +66,7 @@ export class StorageService {
     });
   }
 
-  async createDownloadUrl(userId: string, key: string) {
-    if (!key.startsWith(`avatars/${userId}/`)) {
-      throw new ForbiddenException({
-        errorCode: ErrorCodeEnum.AUTH_FORBIDDEN,
-        statusCode: 403,
-        message: 'Forbidden resources',
-      });
-    }
+  async createDownloadUrl(key: string) {
     const command = new GetObjectCommand({
       Bucket: this.bucket,
       Key: key,

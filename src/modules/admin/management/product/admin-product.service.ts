@@ -94,7 +94,7 @@ export class AdminProductService {
     const products =
       await this.productRepository.findProductsPaginationAdmin(dto);
     return {
-      items: products.items.map((item) => new AdminProductResponseDto(item)),
+      data: products.items.map((item) => new AdminProductResponseDto(item)),
       meta: products.meta,
     };
   }

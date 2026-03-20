@@ -19,7 +19,7 @@ export class AdminBrandService {
     const brands = await this.brandRepository.findBrandsPaginationAdmin(dto);
 
     return {
-      items: brands.items.map((item) => new AdminBrandResponseDto(item)),
+      data: brands.items.map((item) => new AdminBrandResponseDto(item)),
       meta: brands.meta,
     };
   }

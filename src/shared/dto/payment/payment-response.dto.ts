@@ -2,7 +2,6 @@ import { ResponseDto } from '../response.dto';
 import { ApiProperty } from '@nestjs/swagger';
 import { Exclude, Expose } from 'class-transformer';
 import { PaymentStatusEnum } from 'src/shared/enums/payment.enum';
-import { OrderResponseDto } from '../order/order-response.dto';
 import { PaymentEntity } from 'src/database/entities/payment.entity';
 
 // @Exclude()
@@ -25,7 +24,7 @@ export class PaymentResponseDto extends ResponseDto {
   @ApiProperty({
     description: 'Order of the payment',
   })
-  order: OrderResponseDto;
+  orderId: string;
 
   constructor(payment: PaymentEntity) {
     super(payment.id);
@@ -33,6 +32,6 @@ export class PaymentResponseDto extends ResponseDto {
     this.amount = Number(payment.amount);
     this.paymentStatus = payment.paymentStatus;
 
-    this.order = new OrderResponseDto(payment.order);
+    this.orderId = payment.orderId;
   }
 }
