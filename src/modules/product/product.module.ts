@@ -7,10 +7,19 @@ import { ProductRepository } from 'src/shared/modules/common-product/product.rep
 import { BrandRepository } from 'src/shared/modules/common-brand/brand.repository';
 import { CategoryRepository } from 'src/shared/modules/common-category/category.repository';
 import { StorageService } from 'src/shared/modules/common-storage/storage.service';
+import { FileRepository } from 'src/shared/modules/files/file.repository';
+import { UserRepository } from 'src/shared/modules/common-user/user.repository';
 
 @Module({
   imports: [TypeOrmModule.forFeature([ProductEntity])],
-  providers: [ProductService, ProductRepository, BrandRepository, CategoryRepository, StorageService],
+  providers: [
+    ProductService,
+    ProductRepository,
+    BrandRepository,
+    CategoryRepository,
+    StorageService,
+    FileRepository,
+  ],
   controllers: [ProductController],
 })
 export class ProductModule {}
