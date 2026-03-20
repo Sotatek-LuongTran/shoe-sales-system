@@ -7,21 +7,28 @@ import {
 import { createPresignedPost } from '@aws-sdk/s3-presigned-post';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { CreateUploadUrlDto } from 'src/modules/storage/dto/create-upload-url.dto';
 import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
 import { v4 as uuidv4 } from 'uuid';
+import { FileRepository } from '../files/file.repository';
+import { FileStatusEnum } from 'src/shared/enums/file-status.enum';
 
 @Injectable()
 export class StorageService {
   private s3: S3Client;
   private bucket: string;
 
-  constructor(private readonly configService: ConfigService) {
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly fileRepository: FileRepository,
+  ) {
     const bucket = this.configService.get<string>('S3_BUCKET');
     const region = this.configService.get<string>('S3_REGION');
     const accessKey = this.configService.get<string>('S3_ACCESS_KEY');
@@ -48,12 +55,12 @@ export class StorageService {
     });
   }
 
-  async createUploadRurl(dto: CreateUploadUrlDto) {
+  async createUploadRurl(userId: string, dto: CreateUploadUrlDto) {
     const key = dto.entityId
       ? `${dto.folder}/${dto.entityId}/${uuidv4()}`
       : `${dto.folder}/${uuidv4()}`;
 
-    return createPresignedPost(this.s3, {
+    const uploadData = await createPresignedPost(this.s3, {
       Bucket: this.bucket,
       Key: key,
       Conditions: [
@@ -64,6 +71,16 @@ export class StorageService {
         key,
       },
     });
+
+    const file = this.fileRepository.create({
+      ownerId: userId,
+      key: key,
+      status: FileStatusEnum.ACTIVE,
+    });
+
+    await this.fileRepository.save(file);
+
+    return uploadData;
   }
 
   async createDownloadUrl(key: string) {
@@ -72,6 +89,43 @@ export class StorageService {
       Key: key,
     });
 
+    const file = await this.fileRepository.findFileByKey(key);
+
+    if (!file) {
+      throw new NotFoundException({
+        errorCode: ErrorCodeEnum.FILE_NOT_FOUND,
+        statusCode: 404,
+        message: 'File not found',
+      });
+    }
+    if (file.status === FileStatusEnum.INACTIVE) {
+      throw new BadRequestException({
+        errorCode: ErrorCodeEnum.FILE_INVALID_STATUS,
+        statusCode: 404,
+        message: 'File is inactive',
+      });
+    }
+
     return getSignedUrl(this.s3, command);
+  }
+
+  async deleteFile(key: string): Promise<void> {
+    await this.s3.send(
+      new DeleteObjectCommand({
+        Bucket: this.configService.get('S3_BUCKET'),
+        Key: key,
+      }),
+    );
+
+    const file = await this.fileRepository.findFileByKey(key);
+    if (!file) {
+      throw new NotFoundException({
+        errorCode: ErrorCodeEnum.FILE_NOT_FOUND,
+        statusCode: 404,
+        message: 'File not found',
+      });
+    }
+
+    await this.fileRepository.delete(file);
   }
 }

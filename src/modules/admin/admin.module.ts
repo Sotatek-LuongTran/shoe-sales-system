@@ -28,6 +28,7 @@ import { AdminAuthService } from './auth/admin-auth.service';
 import { JwtService } from '@nestjs/jwt';
 import { VariantImageRepository } from 'src/shared/modules/common-product-variant/variant-image.repository';
 import { StorageService } from 'src/shared/modules/common-storage/storage.service';
+import { FileRepository } from 'src/shared/modules/files/file.repository';
 
 @Module({
   imports: [TypeOrmModule.forFeature([UserEntity])],
@@ -42,6 +43,7 @@ import { StorageService } from 'src/shared/modules/common-storage/storage.servic
     OrderRepository,
     PaymentRepository,
     VariantImageRepository,
+    FileRepository,
 
     //services
     AdminUserService,

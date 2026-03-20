@@ -19,8 +19,8 @@ export class StorageController {
   constructor(private readonly storageService: StorageService) {}
 
   @Post('upload-url')
-  async createUploadUrl(@Body() dto: CreateUploadUrlDto) {
-    return this.storageService.createUploadRurl(dto);
+  async createUploadUrl(@Req() req: any, @Body() dto: CreateUploadUrlDto) {
+    return this.storageService.createUploadRurl(req.user.userId, dto);
   }
 
   @Get('download-url')
