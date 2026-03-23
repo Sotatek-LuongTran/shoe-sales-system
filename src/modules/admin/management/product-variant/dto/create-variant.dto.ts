@@ -9,6 +9,7 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
+import { ImageKeysDto } from './image-keys.dto';
 
 export class CreateVariantDto {
   @ApiProperty({
@@ -43,4 +44,9 @@ export class CreateVariantDto {
   })
   @IsUUID()
   productId: string;
+
+  @ApiProperty({
+    description: 'Image keys of the variant'
+  })
+  keysDto: ImageKeysDto;
 }

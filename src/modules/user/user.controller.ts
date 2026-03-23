@@ -9,6 +9,7 @@ import {
   ParseFilePipe,
   ParseUUIDPipe,
   Post,
+  Query,
   Req,
   UploadedFile,
   UseGuards,
@@ -34,6 +35,7 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 import { ConfigService } from '@nestjs/config';
 import { ImageKeyInterceptor } from 'src/shared/interceptors/image-key.interceptor';
 import { ApiBaseResponse } from 'src/shared/decorators/api-base-response.decorator';
+import { AvatarKeyDto } from './dto/avatar-key.dto';
 
 @ApiTags('Users')
 @ApiBearerAuth('access-token')
@@ -75,7 +77,7 @@ export class UserController {
     description: 'Avatar changed successfully',
   })
   @ApiParam({ name: 'key', type: 'string' })
-  async changeAvatar(@Req() req: any, @Param('key') key: string) {
-    return this.userService.changeAvatar(req.user.userId, key);
+  async changeAvatar(@Req() req: any, @Query() dto: AvatarKeyDto) {
+    return this.userService.changeAvatar(req.user.userId, dto);
   }
 }

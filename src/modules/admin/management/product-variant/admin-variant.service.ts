@@ -38,7 +38,18 @@ export class AdminProductVariantService {
     });
 
     await this.productVariantRepository.save(variant);
+    const keys = createVariantDto.keysDto?.keys ?? [];
 
+    if (keys.length > 0) {
+      const images = keys.map((key) =>
+        this.variantImageRepository.create({
+          imageKey: key,
+          variant,
+        }),
+      );
+
+      await this.variantImageRepository.save(images);
+    }
     return new AdminVariantResponseDto(variant);
   }
 
@@ -189,7 +200,7 @@ export class AdminProductVariantService {
         message: 'Category not found',
       });
     }
-    
+
     const variant = await this.productVariantRepository.findById(variantId);
     if (!variant)
       throw new NotFoundException({
