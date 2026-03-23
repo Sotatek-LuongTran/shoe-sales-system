@@ -38,10 +38,6 @@ export class ProductVariantController {
     summary: 'Get variants of a product with pagination',
   })
   @ApiParam({ name: 'productId', description: 'Product ID', type: String })
-  @ApiResponse({
-    status: 200,
-    description: 'Paginated list of product variants'
-  })
   @ApiPaginatedResponse(ProductVariantResponseDto)
   @UseInterceptors(ClassSerializerInterceptor)
   async getVariantsByProduct(
@@ -59,10 +55,6 @@ export class ProductVariantController {
   // =============================
   @Get(':productId/variants/:id')
   @ApiOperation({ summary: 'Get product variant detail' })
-  @ApiResponse({
-    status: 201,
-    description: 'ProductVariant get successfully',
-  })
   @ApiBaseResponse(ProductVariantResponseDto)
   @ApiParam({ name: 'productId', type: 'string', format: 'uuid' })
   @ApiParam({ name: 'variantId', type: 'string', format: 'uuid' })

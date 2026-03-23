@@ -26,6 +26,7 @@ import { RegistrationOtpDto } from './dto/registration-otp.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { NewPasswordDto } from './dto/new-password.dto';
 import { RefreshTokenGuard } from 'src/shared/guards/refresh-token.guard';
+import { ApiBaseResponse } from 'src/shared/decorators/api-base-response.decorator';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -33,11 +34,7 @@ export class AuthenticationController {
   constructor(private readonly authService: AuthenticationService) {}
 
   @ApiOperation({ summary: 'Register a new user' })
-  @ApiResponse({
-    status: 201,
-    description: 'User registered successfully',
-    type: UserResponseDto,
-  })
+  @ApiBaseResponse(UserResponseDto)
   @Post('register')
   @UseInterceptors(ClassSerializerInterceptor)
   async register(@Body() createUserDto: CreateUserDto) {

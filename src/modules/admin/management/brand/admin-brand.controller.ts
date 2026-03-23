@@ -49,10 +49,6 @@ export class AdminBrandController {
   // =============================
   @Get()
   @ApiOperation({ summary: 'Get brands with pagination & filters' })
-  @ApiResponse({
-    status: 201,
-    description: 'Brands get successfully',
-  })
   @ApiPaginatedResponse(AdminBrandResponseDto)
   @UseInterceptors(ClassSerializerInterceptor, ImageKeyInterceptor)
   getList(@Query() dto: PaginateBrandsDto) {
@@ -64,10 +60,6 @@ export class AdminBrandController {
   // =============================
   @Post()
   @ApiOperation({ summary: 'Create a new brand' })
-  @ApiResponse({
-    status: 201,
-    description: 'Brand created successfully',
-  })
   @ApiBaseResponse(AdminBrandResponseDto)
   @UseInterceptors(ClassSerializerInterceptor, ImageKeyInterceptor)
   create(@Body() dto: CreateBrandDto) {

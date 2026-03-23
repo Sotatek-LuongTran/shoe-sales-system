@@ -28,11 +28,9 @@ import {
 import { RolesGuard } from 'src/shared/guards/role.guard';
 import { UserRoleEnum } from 'src/shared/enums/user.enum';
 import { Roles } from 'src/shared/decorators/role.decorator';
-import { Request } from 'express';
 import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
 import { UserResponseDto } from 'src/shared/dto/user/user-response.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
-import { ConfigService } from '@nestjs/config';
 import { ImageKeyInterceptor } from 'src/shared/interceptors/image-key.interceptor';
 import { ApiBaseResponse } from 'src/shared/decorators/api-base-response.decorator';
 import { AvatarKeyDto } from './dto/avatar-key.dto';
@@ -45,15 +43,10 @@ import { AvatarKeyDto } from './dto/avatar-key.dto';
 export class UserController {
   constructor(
     private readonly userService: UserService,
-    private readonly configService: ConfigService,
   ) {}
 
   @Get('profile')
   @ApiOperation({ summary: 'User get profile' })
-  @ApiResponse({
-    status: 201,
-    description: 'Profile get successfully',
-  })
   @ApiBaseResponse(UserResponseDto)
   @UseInterceptors(ClassSerializerInterceptor, ImageKeyInterceptor)
   async getProfile(@Req() req: any) {
@@ -62,20 +55,12 @@ export class UserController {
 
   @Post('change-password')
   @ApiOperation({ summary: 'User change profile' })
-  @ApiResponse({
-    status: 201,
-    description: 'Password changed successfully',
-  })
   async changePassword(@Req() req: any, @Body() dto: ChangePasswordDto) {
     return this.userService.changePassword(req.user.userId, dto);
   }
 
   @Post('change-avatar/:key')
   @ApiOperation({ summary: 'User change avatar' })
-  @ApiResponse({
-    status: 201,
-    description: 'Avatar changed successfully',
-  })
   @ApiParam({ name: 'key', type: 'string' })
   async changeAvatar(@Req() req: any, @Query() dto: AvatarKeyDto) {
     return this.userService.changeAvatar(req.user.userId, dto);

@@ -28,10 +28,6 @@ export class AdminOrderController {
   // =========================
   @Get()
   @ApiOperation({ summary: 'Admin: get all orders' })
-  @ApiResponse({
-    status: 201,
-    description: 'Category deleted successfully',
-  })
   @ApiPaginatedResponse(AdminOrderResponseDto)
   @UseInterceptors(ClassSerializerInterceptor)
   async getAllOrders(@Query() dto: AdminPaginateOrdersDto) {

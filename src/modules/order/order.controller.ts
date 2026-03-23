@@ -80,10 +80,6 @@ export class OrderController {
   // =========================
   @Get()
   @ApiOperation({ summary: 'get all orders' })
-  @ApiResponse({
-    status: 200,
-    description: 'Order get successfully',
-  })
   @ApiPaginatedResponse(OrderResponseDto)
   @UseInterceptors(ClassSerializerInterceptor, ResponseInterceptor)
   async getAllOrders(@Req() req: any, @Query() dto: PaginateOrdersDto) {
@@ -95,10 +91,6 @@ export class OrderController {
   // =========================
   @Get(':id')
   @ApiOperation({ summary: 'Get order by id (owner only)' })
-  @ApiResponse({
-    status: 200,
-    description: 'Order get successfully',
-  })
   @ApiBaseResponse(OrderResponseDto)
   @ApiParam({name: 'id', type: 'string', format: 'uuid'})
   @UseInterceptors(ClassSerializerInterceptor, ResponseInterceptor)

@@ -33,10 +33,6 @@ export class BrandController {
   // =============================
   @Get()
   @ApiOperation({ summary: 'Get brands with pagination & filters' })
-  @ApiResponse({
-    status: 201,
-    description: 'Brands get successfully'
-  })
   @ApiPaginatedResponse(BrandResponseDto)
   @UseInterceptors(ClassSerializerInterceptor, ImageKeyInterceptor)
   getList(@Query() dto: PaginateBrandsDto) {
@@ -48,10 +44,6 @@ export class BrandController {
   // =============================
   @Get(':id')
   @ApiOperation({ summary: 'Get brand detail' })
-  @ApiResponse({
-    status: 201,
-    description: 'Brand get successfully',
-  })
   @ApiBaseResponse(BrandResponseDto)
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
   @UseInterceptors(ClassSerializerInterceptor, ImageKeyInterceptor)

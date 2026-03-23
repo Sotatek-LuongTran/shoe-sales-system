@@ -14,6 +14,7 @@ export const ApiPaginatedResponse = <TModel extends Type<any>>(model: TModel) =>
           {
             type: 'object',
             properties: {
+              message: { type: 'string', example: 'Get data successfully' },
               data: {
                 type: 'array',
                 items: {

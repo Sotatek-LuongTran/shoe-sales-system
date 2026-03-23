@@ -11,8 +11,9 @@ export const ApiBaseResponse = <TModel extends Type<any>>(model: TModel) => {
           { $ref: getSchemaPath(BaseResponseDto) },
           {
             properties: {
+              message: { type: 'string', example: 'Get data successfully' },
               data: { $ref: getSchemaPath(model) },
-            },
+            },  
           },
         ],
       },

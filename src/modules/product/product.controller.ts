@@ -41,10 +41,6 @@ export class ProductController {
   // =============================
   @Get()
   @ApiOperation({ summary: 'Get products with pagination & filters' })
-  @ApiResponse({
-    status: 201,
-    description: 'Products get successfully'
-  })
   @ApiPaginatedResponse(ProductResponseDto)
   @UseInterceptors(ClassSerializerInterceptor, ResponseInterceptor)
   getList(@Query() dto: PaginateProductsDto) {
@@ -56,10 +52,6 @@ export class ProductController {
   // =============================
   @Get(':id')
   @ApiOperation({ summary: 'Get product detail' })
-  @ApiResponse({
-    status: 201,
-    description: 'Product get successfully',
-  })
   @ApiBaseResponse(ProductResponseDto)
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
   @UseInterceptors(ClassSerializerInterceptor)

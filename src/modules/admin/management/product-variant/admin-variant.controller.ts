@@ -35,6 +35,7 @@ import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
 import { ApiPaginatedResponse } from 'src/shared/decorators/api-paginated-response.decorator';
 import { ImageKeysDto } from './dto/image-keys.dto';
 import { ImageKeyInterceptor } from 'src/shared/interceptors/image-key.interceptor';
+import { ApiBaseResponse } from 'src/shared/decorators/api-base-response.decorator';
 
 @Controller('admin/products')
 @ApiBearerAuth('access-token')
@@ -51,11 +52,7 @@ export class AdminProductVariantController {
   // =============================
   @Post(':productId/variants')
   @ApiOperation({ summary: 'Create a new productVariant' })
-  @ApiResponse({
-    status: 201,
-    description: 'productVariant created successfully',
-    type: AdminVariantResponseDto,
-  })
+  @ApiBaseResponse(AdminVariantResponseDto)
   @UseInterceptors(ClassSerializerInterceptor, ImageKeyInterceptor)
   create(@Body() dto: CreateVariantDto) {
     return this.adminProductVariantService.createProductVariant(dto);
@@ -69,7 +66,6 @@ export class AdminProductVariantController {
   @ApiResponse({
     status: 201,
     description: 'Product updated successfully',
-    type: AdminVariantResponseDto,
   })
   update(@Body() dto: UpdateVariantDto) {
     return this.adminProductVariantService.updateProductVariant(dto);
@@ -82,10 +78,6 @@ export class AdminProductVariantController {
     summary: 'Get variants of a product with pagination',
   })
   @ApiParam({ name: 'productId', description: 'Product ID', type: String })
-  @ApiResponse({
-    status: 200,
-    description: 'Paginated list of product variants',
-  })
   @ApiPaginatedResponse(AdminVariantResponseDto)
   @UseInterceptors(ClassSerializerInterceptor, ImageKeyInterceptor)
   async getVariantsByProduct(
