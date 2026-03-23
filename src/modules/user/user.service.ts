@@ -10,9 +10,15 @@ import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
 import * as bcrypt from 'bcrypt';
 import { UserResponseDto } from 'src/shared/dto/user/user-response.dto';
 import { StringDecoder } from 'node:string_decoder';
+import { FileRepository } from 'src/shared/modules/files/file.repository';
+import { FileStatusEnum } from 'src/shared/enums/file-status.enum';
+import { AvatarKeyDto } from './dto/avatar-key.dto';
 @Injectable()
 export class UserService {
-  constructor(private readonly userRepository: UserRepository) {}
+  constructor(
+    private readonly userRepository: UserRepository,
+    private readonly fileRepository: FileRepository,
+  ) {}
 
   async changePassword(userId: string, dto: ChangePasswordDto) {
     const user = await this.userRepository.findById(userId);
@@ -60,7 +66,7 @@ export class UserService {
     return new UserResponseDto(user);
   }
 
-  async changeAvatar(userId: string, key: string) {
+  async changeAvatar(userId: string, dto: AvatarKeyDto) {
     const user = await this.userRepository.findById(userId);
     if (!user) {
       throw new UnauthorizedException({
@@ -69,9 +75,27 @@ export class UserService {
         message: 'User not found',
       });
     }
-    console.log(key)
 
-    user.avatarKey = key;
+    const file = await this.fileRepository.findFileByKey(dto.key);
+    if (!file) {
+      throw new NotFoundException({
+        errorCode: ErrorCodeEnum.FILE_NOT_FOUND,
+        statusCode: 404,
+        message: 'File not found',
+      });
+    }
+    if (file.status === FileStatusEnum.INACTIVE) {
+      throw new BadRequestException({
+        errorCode: ErrorCodeEnum.FILE_INVALID_STATUS,
+        statusCode: 404,
+        message: 'File is inactive',
+      });
+    }
+
+    file.status = FileStatusEnum.INACTIVE;
+    await this.fileRepository.save(file);
+
+    user.avatarKey = dto.key;
 
     await this.userRepository.save(user);
   }

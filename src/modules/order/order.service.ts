@@ -177,7 +177,7 @@ export class OrderService {
 
     return {
       ...orders,
-      items: orders.items.map((item) => new OrderResponseDto(item)),
+      data: orders.items.map((item) => new OrderResponseDto(item)),
     };
   }
 

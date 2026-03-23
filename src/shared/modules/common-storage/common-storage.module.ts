@@ -4,4 +4,4 @@ import { StorageService } from "./storage.service";
 @Module({
     exports: [StorageService]
 })
-export class CommonUserModule {}
+export class CommonStorageModule {}

@@ -24,7 +24,11 @@ export class AdminUserService {
   }
 
   async getAllUsersPagination(dto: PaginateUsersDto) {
-    return this.userRepository.findUsersPagination(dto);
+    const users = await this.userRepository.findUsersPagination(dto);
+    return {
+      data: users.items,
+      meta: users.meta,
+    }
   }
 
   async findUserById(id: string) {

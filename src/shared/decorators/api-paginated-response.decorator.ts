@@ -10,18 +10,23 @@ export const ApiPaginatedResponse = <TModel extends Type<any>>(model: TModel) =>
     ApiExtraModels(PaginationResponseDto, PaginationMetaDto, model),
     ApiOkResponse({
       schema: {
-        type: 'object',
-        properties: {
-          items: {
-            type: 'array',
-            items: {
-              $ref: getSchemaPath(model),
+        allOf: [
+          {
+            type: 'object',
+            properties: {
+              message: { type: 'string', example: 'Get data successfully' },
+              data: {
+                type: 'array',
+                items: {
+                  $ref: getSchemaPath(model),
+                },
+              },
+              meta: {
+                $ref: getSchemaPath(PaginationMetaDto),
+              },
             },
           },
-          meta: {
-            $ref: getSchemaPath(PaginationMetaDto),
-          },
-        },
+        ],
       },
     }),
   );

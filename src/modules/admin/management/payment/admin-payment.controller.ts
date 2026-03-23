@@ -29,6 +29,7 @@ import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
 import { ApiPaginatedResponse } from 'src/shared/decorators/api-paginated-response.decorator';
 import { AdminPaginatePaymentsDto } from './dto/admin-paginate-payments.dto';
 import { AdminPaymentResponseDto } from './dto/admin-payment-response.dto';
+import { ApiBaseResponse } from 'src/shared/decorators/api-base-response.decorator';
 
 @Controller('admin/payments')
 @ApiBearerAuth('access-token')
@@ -42,10 +43,6 @@ export class AdminPaymentController {
   // =========================
   @Get()
   @ApiOperation({ summary: 'Admin: get all payments' })
-  @ApiResponse({
-    status: 200,
-    description: 'Payment refunded successfully'
-  })
   @ApiPaginatedResponse(AdminPaymentResponseDto)
   @UseInterceptors(ClassSerializerInterceptor)
   async getAllPayments(@Query() dto: AdminPaginatePaymentsDto) {
@@ -56,11 +53,7 @@ export class AdminPaymentController {
   // =========================
   @Post('refund/:paymentId')
   @ApiOperation({ summary: 'Admin refund payment' })
-  @ApiResponse({
-    status: 200,
-    description: 'Payment refunded successfully',
-    type: PaymentResponseDto,
-  })
+  @ApiBaseResponse(AdminPaymentResponseDto)
   @ApiParam({name: 'paymentId', required: true, type: 'string', format: 'uuid' })
   @UseInterceptors(ClassSerializerInterceptor)
   async refund(@Param('paymentId', ParseUUIDPipe) paymentId: string) {

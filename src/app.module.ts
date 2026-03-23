@@ -53,11 +53,11 @@ import { StorageModule } from './modules/storage/storage.module';
     SocketModule,
     StorageModule,
   ],
-  // providers: [
-  //   {
-  //     provide: APP_FILTER,
-  //     useClass: CatchEverythingFilter,
-  //   },
-  // ],
+  providers: [
+    {
+      provide: APP_FILTER,
+      useClass: CatchEverythingFilter,
+    },
+  ],
 })
 export class AppModule {}

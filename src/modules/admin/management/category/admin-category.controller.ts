@@ -30,11 +30,10 @@ import {
 import { CreateCategoryDto } from 'src/modules/admin/management/category/dto/create-category.dto';
 import { UpdateCategoryDto } from 'src/modules/admin/management/category/dto/update-category.dto';
 import { PaginateCategoriesDto } from 'src/shared/dto/category/paginate-categories.dto';
-import { AuthGuard } from '@nestjs/passport';
-import { AdminPaginationCategoryResponseDto } from './dto/admin-pag-category-response.dto';
 import { AdminCategoryResponseDto } from './dto/admin-category-response.dto';
 import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
 import { ApiPaginatedResponse } from 'src/shared/decorators/api-paginated-response.decorator';
+import { ApiBaseResponse } from 'src/shared/decorators/api-base-response.decorator';
 
 @Controller('admin/categories')
 @ApiBearerAuth('access-token')
@@ -48,11 +47,7 @@ export class AdminCategoryController {
   // =============================
   @Post()
   @ApiOperation({ summary: 'Create a new category' })
-  @ApiResponse({
-    status: 201,
-    description: 'category created successfully',
-    type: AdminPaginationCategoryResponseDto,
-  })
+  @ApiBaseResponse(AdminCategoryResponseDto)
   create(@Body() dto: CreateCategoryDto) {
     return this.adminCategoryService.createCategory(dto);
   }
@@ -75,10 +70,6 @@ export class AdminCategoryController {
   // =============================
   @Get()
   @ApiOperation({ summary: 'Get categories with pagination & filters' })
-  @ApiResponse({
-    status: 201,
-    description: 'Categories get successfully',
-  })
   @ApiPaginatedResponse(AdminCategoryResponseDto)
   @UseInterceptors(ClassSerializerInterceptor)
   getList(@Query() dto: PaginateCategoriesDto) {
@@ -112,32 +103,4 @@ export class AdminCategoryController {
   restoreCategory(@Param('id', ParseUUIDPipe) id: string) {
     return this.adminCategoryService.restoreCategory(id);
   }
-
-  // =============================
-  // UPLOAD CATEGORY LOGO
-  // =============================
-  // @Post(':id/logo')
-  // @ApiOperation({ summary: 'Upload brand logo' })
-  // @ApiResponse({
-  //   status: 201,
-  //   description: 'Category logo uploaded successfully',
-  // })
-  // @ApiConsumes('multipart/form-data')
-  // @ApiBody({
-  //   schema: {
-  //     type: 'object',
-  //     properties: {
-  //       file: {
-  //         type: 'string',
-  //         format: 'binary',
-  //       },
-  //     },
-  //   },
-  // })
-  // async uploadBrandLogo(
-  //   @Param('id') id: string,
-  //   @UploadedFile(ImageUploadPipe) file: Express.Multer.File,
-  // ) {
-  //   return this.adminCategoryService.uploadCategoryLogo(id, file);
-  // }
 }

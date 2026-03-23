@@ -69,7 +69,7 @@ export class AdminCategoryService {
     const categories =
       await this.categoryRepository.findCategoriesPaginationAdmin(dto);
     return {
-      items: categories.items.map((item) => new AdminCategoryResponseDto(item)),
+      data: categories.items.map((item) => new AdminCategoryResponseDto(item)),
       meta: categories.meta,
     };
   }

@@ -14,7 +14,7 @@ export class CategoryService {
     const categories =
       await this.categoryRepository.findCategoriesPaginationUser(dto);
     return {
-      items: categories.items.map(item => new CategoryResponseDto(item)),
+      data: categories.items.map(item => new CategoryResponseDto(item)),
       meta: categories.meta,
     };
   }

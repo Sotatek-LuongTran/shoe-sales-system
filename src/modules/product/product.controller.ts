@@ -24,6 +24,9 @@ import { ProductService } from './product.service';
 import { PaginateProductsDto } from '../../shared/dto/product/paginate-products.dto';
 import { ProductResponseDto } from 'src/shared/dto/product/product-respose.dto';
 import { ApiPaginatedResponse } from 'src/shared/decorators/api-paginated-response.decorator';
+import { ResponseInterceptor } from 'src/shared/interceptors/response.interceptor';
+import { ImageKeyInterceptor } from 'src/shared/interceptors/image-key.interceptor';
+import { ApiBaseResponse } from 'src/shared/decorators/api-base-response.decorator';
 
 @ApiTags('Products')
 // @ApiBearerAuth('access-token')
@@ -38,12 +41,8 @@ export class ProductController {
   // =============================
   @Get()
   @ApiOperation({ summary: 'Get products with pagination & filters' })
-  @ApiResponse({
-    status: 201,
-    description: 'Products get successfully'
-  })
   @ApiPaginatedResponse(ProductResponseDto)
-  @UseInterceptors(ClassSerializerInterceptor)
+  @UseInterceptors(ClassSerializerInterceptor, ResponseInterceptor)
   getList(@Query() dto: PaginateProductsDto) {
     return this.productService.getProductsPagination(dto);
   }
@@ -53,11 +52,7 @@ export class ProductController {
   // =============================
   @Get(':id')
   @ApiOperation({ summary: 'Get product detail' })
-  @ApiResponse({
-    status: 201,
-    description: 'Product get successfully',
-    type: ProductResponseDto,
-  })
+  @ApiBaseResponse(ProductResponseDto)
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
   @UseInterceptors(ClassSerializerInterceptor)
   getOne(@Param('id', ParseUUIDPipe) id: string) {

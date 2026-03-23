@@ -21,6 +21,7 @@ import { PaginateBrandsDto } from '../../shared/dto/brand/paginate-brands.dto';
 import { BrandResponseDto } from 'src/shared/dto/brand/brand-response.dto';
 import { ApiPaginatedResponse } from 'src/shared/decorators/api-paginated-response.decorator';
 import { ImageKeyInterceptor } from 'src/shared/interceptors/image-key.interceptor';
+import { ApiBaseResponse } from 'src/shared/decorators/api-base-response.decorator';
 
 @ApiTags('Brands')
 @Controller('brands')
@@ -32,10 +33,6 @@ export class BrandController {
   // =============================
   @Get()
   @ApiOperation({ summary: 'Get brands with pagination & filters' })
-  @ApiResponse({
-    status: 201,
-    description: 'Brands get successfully'
-  })
   @ApiPaginatedResponse(BrandResponseDto)
   @UseInterceptors(ClassSerializerInterceptor, ImageKeyInterceptor)
   getList(@Query() dto: PaginateBrandsDto) {
@@ -47,13 +44,9 @@ export class BrandController {
   // =============================
   @Get(':id')
   @ApiOperation({ summary: 'Get brand detail' })
-  @ApiResponse({
-    status: 201,
-    description: 'Brand get successfully',
-    type: BrandResponseDto
-  })
+  @ApiBaseResponse(BrandResponseDto)
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
-  @UseInterceptors(ClassSerializerInterceptor)
+  @UseInterceptors(ClassSerializerInterceptor, ImageKeyInterceptor)
   getOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.brandService.getBrand(id);
   }

@@ -243,7 +243,7 @@ export class PaymentService {
 
     return {
       ...payments,
-      items: payments.items.map((item) => new PaymentResponseDto(item)),
+      data: payments.items.map((item) => new PaymentResponseDto(item)),
     };
   }
 }

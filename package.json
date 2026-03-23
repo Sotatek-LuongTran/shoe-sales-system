@@ -27,7 +27,8 @@
     "seed:run": "ts-node -r tsconfig-paths/register src/database/seeds/seed.ts",
     "copy:templates": "cpx \"src/shared/modules/mailer/templates/**/*\" \"dist/shared/modules/mailer/templates\"",
     "worker:mailer": "ts-node -r tsconfig-paths/register src/workers/mailer-worker.ts",
-    "worker:order": "ts-node -r tsconfig-paths/register src/workers/order-worker.ts"
+    "worker:order": "ts-node -r tsconfig-paths/register src/workers/order-worker.ts",
+    "worker:file": "ts-node -r tsconfig-paths/register src/workers/file-worker.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1008.0",

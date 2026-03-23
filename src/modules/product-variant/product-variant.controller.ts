@@ -20,6 +20,7 @@ import { ProductVariantService } from './product-variant.service';
 import { PaginateVariantsDto } from '../../shared/dto/product-variant/paginate-variants.dto';
 import { ProductVariantResponseDto } from 'src/shared/dto/product-variant/product-variant-response.dto';
 import { ApiPaginatedResponse } from 'src/shared/decorators/api-paginated-response.decorator';
+import { ApiBaseResponse } from 'src/shared/decorators/api-base-response.decorator';
 
 @ApiTags('Product variants')
 // @ApiBearerAuth('access-token')
@@ -37,10 +38,6 @@ export class ProductVariantController {
     summary: 'Get variants of a product with pagination',
   })
   @ApiParam({ name: 'productId', description: 'Product ID', type: String })
-  @ApiResponse({
-    status: 200,
-    description: 'Paginated list of product variants'
-  })
   @ApiPaginatedResponse(ProductVariantResponseDto)
   @UseInterceptors(ClassSerializerInterceptor)
   async getVariantsByProduct(
@@ -58,11 +55,7 @@ export class ProductVariantController {
   // =============================
   @Get(':productId/variants/:id')
   @ApiOperation({ summary: 'Get product variant detail' })
-  @ApiResponse({
-    status: 201,
-    description: 'ProductVariant get successfully',
-    type: ProductVariantResponseDto,
-  })
+  @ApiBaseResponse(ProductVariantResponseDto)
   @ApiParam({ name: 'productId', type: 'string', format: 'uuid' })
   @ApiParam({ name: 'variantId', type: 'string', format: 'uuid' })
   @UseInterceptors(ClassSerializerInterceptor)

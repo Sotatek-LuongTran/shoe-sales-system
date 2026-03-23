@@ -28,6 +28,8 @@ import { PaginatePaymentsDto } from 'src/shared/dto/payment/paginate-payments.dt
 import { JwtAuthGuard } from 'src/shared/guards/jwt-auth.guard';
 import { PaginationResponseDto } from 'src/shared/dto/pagination-response.dto';
 import { ApiPaginatedResponse } from 'src/shared/decorators/api-paginated-response.decorator';
+import { ApiBaseResponse } from 'src/shared/decorators/api-base-response.decorator';
+import { ResponseInterceptor } from 'src/shared/interceptors/response.interceptor';
 
 @ApiTags('Payments')
 @ApiBearerAuth('access-token')
@@ -43,11 +45,8 @@ export class PaymentController {
   @Post(':orderId')
   @ApiOperation({ summary: 'Create payment for an order (fake)' })
   @ApiParam({ name: 'orderId', type: String })
-  @ApiResponse({
-    status: 201,
-    description: 'Payment created',
-    type: PaymentResponseDto,
-  })
+  @ApiBaseResponse(PaymentResponseDto)
+  @UseInterceptors(ClassSerializerInterceptor)
   async createPayment(
     @Param('orderId', ParseUUIDPipe) orderId: string,
     @Req() req: any,
@@ -61,11 +60,7 @@ export class PaymentController {
   @Post('confirm/:paymentId')
   @ApiOperation({ summary: 'Confirm payment (simulate success/failure)' })
   @ApiParam({ name: 'paymentId', type: String })
-  @ApiResponse({
-    status: 200,
-    description: 'Payment processed',
-    type: PaymentResponseDto,
-  })
+  @ApiBaseResponse(PaymentResponseDto)
   @UseInterceptors(ClassSerializerInterceptor)
   async confirmPayment(@Param('paymentId', ParseUUIDPipe) paymentId: string) {
     return this.paymentService.confirmPayment(paymentId);
@@ -76,11 +71,7 @@ export class PaymentController {
   // =========================
   @Post('retry/:paymentId')
   @ApiOperation({ summary: 'Retry failed payment' })
-  @ApiResponse({
-    status: 200,
-    description: 'Payment retried successfully',
-    type: PaymentResponseDto,
-  })
+  @ApiBaseResponse(PaymentResponseDto)
   @ApiParam({name: 'paymentId', type: 'string', format: 'uuid'})
   @UseInterceptors(ClassSerializerInterceptor)
   async retryPayment(
@@ -95,14 +86,9 @@ export class PaymentController {
   // =========================
   @Get()
   @ApiOperation({ summary: 'get all payments' })
-  @ApiResponse({
-    status: 200,
-    description: 'Payment get successfully',
-    type: PaymentResponseDto,
-  })
   @ApiPaginatedResponse(PaymentResponseDto)
   @UseInterceptors(ClassSerializerInterceptor)
-  async getAllOrders(@Req() req: any, @Query() dto: PaginatePaymentsDto) {
+  async getAllPayments(@Req() req: any, @Query() dto: PaginatePaymentsDto) {
     return this.paymentService.getMyPaymentsPagination(req.user.userId, dto);
   }
 

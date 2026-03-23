@@ -2,6 +2,7 @@ import { Column, DeleteDateColumn, Entity, Index, OneToMany } from 'typeorm';
 import { BaseEntity } from '../../shared/modules/base/base.entity';
 import { OrderEntity } from './order.entity';
 import { UserRoleEnum, UserStatusEnum } from '../../shared/enums/user.enum';
+import { FileEntity } from './file.entity';
 
 @Entity('users')
 @Index('idx_users_email_deleted_at', ['email', 'deletedAt'])
@@ -37,4 +38,7 @@ export class UserEntity extends BaseEntity {
   // Relations
   @OneToMany(() => OrderEntity, (order) => order.user)
   orders: OrderEntity[];
+
+  @OneToMany(() => FileEntity, (file) => file.user)
+  files: FileEntity[];
 }
