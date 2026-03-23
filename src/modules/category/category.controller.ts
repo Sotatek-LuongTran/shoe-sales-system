@@ -31,10 +31,6 @@ export class CategoryController {
   // =============================
   @Get()
   @ApiOperation({ summary: 'Get categories with pagination & filters' })
-  @ApiResponse({
-    status: 201,
-    description: 'Categories get successfully',
-  })
   @ApiPaginatedResponse(CategoryResponseDto)
   @UseInterceptors(ClassSerializerInterceptor)
   getList(
@@ -48,10 +44,6 @@ export class CategoryController {
   // =============================
   @Get(':id')
   @ApiOperation({ summary: 'Get category detail' })
-  @ApiResponse({
-    status: 201,
-    description: 'Category get successfully',
-  })
   @ApiBaseResponse(CategoryResponseDto)
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
   @UseInterceptors(ClassSerializerInterceptor)

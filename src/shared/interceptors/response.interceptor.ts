@@ -15,10 +15,14 @@ export class ResponseInterceptor implements NestInterceptor {
     return next.handle().pipe(
       map((data) => {
         if (this.isPaginationResponse(data)) {
-          return data;
+          return {
+            message: 'Get data successfully',
+            data,
+          };
         }
-        console.log(data)
+        console.log(data);
         return {
+          message: 'Get data successfully',
           data,
         };
       }),

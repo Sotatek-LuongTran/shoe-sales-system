@@ -29,10 +29,6 @@ export class AdminProductController {
   // =============================
   @Post()
   @ApiOperation({ summary: 'Create a new product' })
-  @ApiResponse({
-    status: 201,
-    description: 'Product created successfully',
-  })
   @ApiBaseResponse(AdminProductResponseDto)
   @UseInterceptors(ClassSerializerInterceptor, ImageKeyInterceptor)
   create(@Body() dto: CreateProductDto) {
@@ -44,10 +40,6 @@ export class AdminProductController {
   // =============================
   @Get()
   @ApiOperation({ summary: 'Get products with pagination & filters' })
-  @ApiResponse({
-    status: 201,
-    description: 'Products get successfully'
-  })
   @ApiPaginatedResponse(AdminProductResponseDto)
   @UseInterceptors(ClassSerializerInterceptor, ImageKeyInterceptor)
   getList(@Query() dto: PaginateProductsDto) {
@@ -87,10 +79,6 @@ export class AdminProductController {
   // =============================
   @Get(':id')
   @ApiOperation({ summary: 'Get product detail' })
-  @ApiResponse({
-    status: 201,
-    description: 'Product get successfully',
-  })
   @ApiBaseResponse(AdminProductResponseDto)
   @UseInterceptors(ClassSerializerInterceptor, ImageKeyInterceptor)
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })

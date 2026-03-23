@@ -45,12 +45,8 @@ export class PaymentController {
   @Post(':orderId')
   @ApiOperation({ summary: 'Create payment for an order (fake)' })
   @ApiParam({ name: 'orderId', type: String })
-  @ApiResponse({
-    status: 201,
-    description: 'Payment created',
-  })
   @ApiBaseResponse(PaymentResponseDto)
-  @UseInterceptors(ClassSerializerInterceptor, ResponseInterceptor)
+  @UseInterceptors(ClassSerializerInterceptor)
   async createPayment(
     @Param('orderId', ParseUUIDPipe) orderId: string,
     @Req() req: any,
@@ -64,12 +60,8 @@ export class PaymentController {
   @Post('confirm/:paymentId')
   @ApiOperation({ summary: 'Confirm payment (simulate success/failure)' })
   @ApiParam({ name: 'paymentId', type: String })
-  @ApiResponse({
-    status: 200,
-    description: 'Payment processed',
-  })
   @ApiBaseResponse(PaymentResponseDto)
-  @UseInterceptors(ClassSerializerInterceptor, ResponseInterceptor)
+  @UseInterceptors(ClassSerializerInterceptor)
   async confirmPayment(@Param('paymentId', ParseUUIDPipe) paymentId: string) {
     return this.paymentService.confirmPayment(paymentId);
   }
@@ -79,13 +71,9 @@ export class PaymentController {
   // =========================
   @Post('retry/:paymentId')
   @ApiOperation({ summary: 'Retry failed payment' })
-  @ApiResponse({
-    status: 200,
-    description: 'Payment retried successfully',
-  })
   @ApiBaseResponse(PaymentResponseDto)
   @ApiParam({name: 'paymentId', type: 'string', format: 'uuid'})
-  @UseInterceptors(ClassSerializerInterceptor, ResponseInterceptor)
+  @UseInterceptors(ClassSerializerInterceptor)
   async retryPayment(
     @Param('paymentId', ParseUUIDPipe) paymentId: string,
     @Req() req: any,
@@ -98,12 +86,8 @@ export class PaymentController {
   // =========================
   @Get()
   @ApiOperation({ summary: 'get all payments' })
-  @ApiResponse({
-    status: 200,
-    description: 'Payment get successfully',
-  })
   @ApiPaginatedResponse(PaymentResponseDto)
-  @UseInterceptors(ClassSerializerInterceptor, ResponseInterceptor)
+  @UseInterceptors(ClassSerializerInterceptor)
   async getAllPayments(@Req() req: any, @Query() dto: PaginatePaymentsDto) {
     return this.paymentService.getMyPaymentsPagination(req.user.userId, dto);
   }
