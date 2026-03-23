@@ -17,7 +17,8 @@ export class ResponseInterceptor implements NestInterceptor {
         if (this.isPaginationResponse(data)) {
           return {
             message: 'Get data successfully',
-            data,
+            data: data.data,
+            meta: data.meta,
           };
         }
         console.log(data);
