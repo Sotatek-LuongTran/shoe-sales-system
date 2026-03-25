@@ -1,20 +1,29 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleDestroy } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { OrderEventEnum, PaymentEventEnum } from 'src/shared/enums/events.enum';
 import Redis from 'ioredis';
 
 const Emitter = require('socket.io-emitter');
 
 @Injectable()
-export class NotificationService {
+export class NotificationService implements OnModuleDestroy {
   private emitter: any;
+  private redisClient?: Redis;
+
+  constructor(private readonly configService: ConfigService) {}
 
   async onModuleInit() {
     const redis = new Redis({
-      host: 'localhost',
-      port: 6379,
+      host: this.configService.get<string>('REDIS_HOST') ?? 'localhost',
+      port: this.configService.get<number>('REDIS_PORT') ?? 6379,
     });
 
     this.emitter = new Emitter(redis);
+    this.redisClient = redis;
+  }
+
+  async onModuleDestroy() {
+    await this.redisClient?.quit();
   }
 
   sendOrderExpired(userId: string, orderId: string) {
