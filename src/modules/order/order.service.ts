@@ -4,37 +4,24 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-// import {
-//   CreateOrderItemDto,
-// } from 'src/modules/order/dto/create-order.dto';
-import { DataSource, LessThan, MoreThan, Not } from 'typeorm';
+import { DataSource, MoreThan } from 'typeorm';
 import { OrderRepository } from '../../shared/modules/common-order/order.repository';
-import { OrderItemRepository } from './repository/order-item.repository';
 import { UserRepository } from 'src/shared/modules/common-user/user.repository';
-import { AddToPendingOrderDto } from 'src/modules/order/dto/add-to-order.dto';
 import {
   OrderPaymentStatusEnum,
   OrderStatusEnum,
 } from 'src/shared/enums/order.enum';
-import { ProductVariantRepository } from 'src/shared/modules/common-product-variant/product-variant.repository';
-import { ProductRepository } from 'src/shared/modules/common-product/product.repository';
-import { PaymentRepository } from '../../shared/modules/common-payment/payment.repository';
 import { PaymentStatusEnum } from 'src/shared/enums/payment.enum';
-import { RemoveOrderItemDto } from 'src/modules/order/dto/remove-item.dto';
 import { OrderResponseDto } from 'src/shared/dto/order/order-response.dto';
 import { PaginateOrdersDto } from 'src/shared/dto/order/paginate-order.dto';
 import { ErrorCodeEnum } from 'src/shared/enums/error-code.enum';
-import { ProductStatusEnum } from 'src/shared/enums/product.enum';
 import { CreateOrderDto } from './dto/create-order.dto';
-import { Cron, CronExpression } from '@nestjs/schedule';
 import { ProductVariantEntity } from 'src/database/entities/product-variant.entity';
 import { OrderItemEntity } from 'src/database/entities/order-item.entity';
 import { OrderEntity } from 'src/database/entities/order.entity';
 import { PaymentEntity } from 'src/database/entities/payment.entity';
 import { UserEntity } from 'src/database/entities/user.entity';
 import { VariantStatusEnum } from 'src/shared/enums/product-variant.enum';
-import { RedisService } from 'src/shared/modules/redis/redis.service';
-import { OrderEventEnum } from 'src/shared/enums/events.enum';
 import { NotificationService } from 'src/shared/modules/notifications/notification.service';
 
 @Injectable()
@@ -146,7 +133,7 @@ export class OrderService {
         where: { id: order.id },
         relations: ['items', 'payment'],
       });
-
+      
       if (!finalOrder) {
         throw new NotFoundException({
           errorCode: ErrorCodeEnum.ORDER_NOT_FOUND,
@@ -190,7 +177,7 @@ export class OrderService {
         message: 'User not found',
       });
 
-    const order = await this.orderRepository.findById(orderId);
+    const order = await this.orderRepository.findOrderWithItems(orderId);
 
     if (!order) {
       throw new NotFoundException({
@@ -223,6 +210,7 @@ export class OrderService {
     return this.dataSource.transaction(async (manager) => {
       const order = await manager.getRepository(OrderEntity).findOne({
         where: {
+          id: orderId,
           status: OrderStatusEnum.PENDING,
           expiresAt: MoreThan(new Date()),
         },
