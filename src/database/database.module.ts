@@ -48,7 +48,10 @@ const entities = [
           entities,
           migrations: ['dist/database/migrations/*.js'],
           migrationsTableName: 'migrations',
-          migrationsRun: true,
+          migrationsRun: false,
+          synchronize: true,
+          // migrationsRun: true,
+          // synchronize: false,
         };
       },
       inject: [ConfigService],

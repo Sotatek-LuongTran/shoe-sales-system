@@ -88,7 +88,6 @@ export class OrderRepository extends BaseRepository<OrderEntity> {
     return this.findOne({
       where: {
         id,
-        status: OrderStatusEnum.PENDING,
       },
       relations: {
         items: true,
