@@ -97,9 +97,59 @@ describe('Order E2E', () => {
     expect(finalOrder?.status).toBe(OrderStatusEnum.COMPLETED);
     expect(finalOrder?.paymentStatus).toBe(OrderPaymentStatusEnum.PAID);
 
+    const finalPayment = await paymentRepository.findById(paymentId);
+    expect(finalPayment?.paymentStatus).toBe(PaymentStatusEnum.SUCCESSFUL);
+
     const variant = await productVariantRepository.findById(variants[1].id);
     expect(variant?.reservedStock).toBe(0);
     expect(variant?.stock).toBe(35);
+  });
+
+  it('should create and cancel an order successfully', async () => {
+    jest.spyOn(Math, 'random').mockReturnValue(0.9);
+
+    const { variants } = seededData;
+
+    const loginRes = await request(app.getHttpServer())
+      .post('/auth/login')
+      .send({
+        email: 'test@mail.com',
+        password: '123456',
+      });
+
+    const token = loginRes.body.accessToken;
+
+    const orderRes = await request(app.getHttpServer())
+      .post('/orders')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        items: [
+          {
+            variantId: variants[1].id,
+            quantity: 5,
+          },
+        ],
+      });
+    expect(orderRes.status).toBe(201);
+
+    const paymentId = orderRes.body.data.paymentId;
+    const orderId = orderRes.body.data.id;
+
+    const cancelOrderRes = await request(app.getHttpServer())
+      .delete(`/orders/${orderId}/cancel`)
+      .set('Authorization', `Bearer ${token}`);
+    expect(cancelOrderRes.status).toBe(200);
+
+    const finalOrder = await orderRepository.findById(orderId);
+    expect(finalOrder?.status).toBe(OrderStatusEnum.CANCELLED);
+    expect(finalOrder?.paymentStatus).toBe(OrderPaymentStatusEnum.UNPAID);
+
+    const finalPayment = await paymentRepository.findById(paymentId);
+    expect(finalPayment?.paymentStatus).toBe(PaymentStatusEnum.CANCELLED);
+
+    const variant = await productVariantRepository.findById(variants[1].id);
+    expect(variant?.reservedStock).toBe(0);
+    expect(variant?.stock).toBe(40);
   });
 
   afterAll(async () => {

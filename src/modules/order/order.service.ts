@@ -247,6 +247,8 @@ export class OrderService {
       order.status = OrderStatusEnum.CANCELLED;
       order.paymentStatus = OrderPaymentStatusEnum.UNPAID; // Reset payment status
 
+      order.payment.paymentStatus = PaymentStatusEnum.CANCELLED;
+
       // ROLLBACK STOCK
       for (const item of order.items) {
         const variant = await manager
@@ -277,6 +279,7 @@ export class OrderService {
       }
 
       await manager.getRepository(OrderEntity).save(order);
+      await manager.getRepository(PaymentEntity).save(order.payment);
 
       this.notificationService.sendOrderCancelled(order.userId, order.id);
 
