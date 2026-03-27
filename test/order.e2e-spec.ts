@@ -53,6 +53,7 @@ describe('Order E2E', () => {
   beforeEach(async () => {
     await clearDatabase(dataSource);
     seededData = await seedTestData(dataSource);
+    console.log('Data has been seeded');
   });
 
   it('should create and pay an order successfully', async () => {
@@ -85,14 +86,14 @@ describe('Order E2E', () => {
 
     const paymentId = orderRes.body.data.paymentId;
     const orderId = orderRes.body.data.id;
-    
+
     const paymentRes = await request(app.getHttpServer())
-    .post(`/payments/confirm/${paymentId}`)
-    .set('Authorization', `Bearer ${token}`)
+      .post(`/payments/confirm/${paymentId}`)
+      .set('Authorization', `Bearer ${token}`);
 
     expect(paymentRes.status).toBe(201);
 
-    const finalOrder = await orderRepository.findById(orderId)
+    const finalOrder = await orderRepository.findById(orderId);
     expect(finalOrder?.status).toBe(OrderStatusEnum.COMPLETED);
     expect(finalOrder?.paymentStatus).toBe(OrderPaymentStatusEnum.PAID);
 
