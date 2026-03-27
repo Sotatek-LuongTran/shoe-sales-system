@@ -33,6 +33,9 @@ const entities = [
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => {
         const sslConfig = configService.get<boolean>('DATABASE_SSL');
+        const nodeEnv = process.env.NODE_ENV;
+
+        const isTest = nodeEnv === 'test';
 
         return {
           type: 'postgres' as const,
@@ -48,10 +51,8 @@ const entities = [
           entities,
           migrations: ['dist/database/migrations/*.js'],
           migrationsTableName: 'migrations',
-          migrationsRun: false,
-          synchronize: true,
-          // migrationsRun: true,
-          // synchronize: false,
+          migrationsRun: isTest ? false : true,
+          synchronize: isTest ? true : false,
         };
       },
       inject: [ConfigService],
