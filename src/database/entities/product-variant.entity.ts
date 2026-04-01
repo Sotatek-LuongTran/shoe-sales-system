@@ -22,8 +22,8 @@ import { VariantImageEntity } from './variant-image.entity';
 @Index('idx_product_variants_product_id', ['productId'])
 @Check(`"price" >= 0`)
 @Check(`"stock" >= 0`)
-@Check(`"reserved_stock >=0`)
-@Check(`"reserved_stock <= stock`)
+@Check(`"reserved_stock" >= 0`)
+@Check(`"reserved_stock" <= "stock"`)
 export class ProductVariantEntity extends BaseEntity {
   @Column({ name: 'variant_value', type: 'varchar', length: 100 })
   variantValue: string;
