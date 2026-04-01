@@ -139,6 +139,12 @@ export class AdminProductService {
       });
     }
     product.status = ProductStatusEnum.INACTIVE;
+
+    for (const variant of product.variants) {
+      if (variant.status === VariantStatusEnum.ACTIVE) {
+        variant.status = VariantStatusEnum.INACTIVE;
+      }
+    }
     await this.productRepository.save(product);
   }
 
