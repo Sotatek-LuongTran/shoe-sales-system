@@ -64,7 +64,17 @@ export class AdminProductVariantService {
         message: 'Variant not found',
       });
 
-    Object.assign(variant, UpdateVariantDto);
+    // Handle isActive flag to update status
+    if (updateVariantDto.isActive !== undefined) {
+      variant.status = updateVariantDto.isActive
+        ? VariantStatusEnum.ACTIVE
+        : VariantStatusEnum.INACTIVE;
+    }
+
+    // Assign other fields (variantValue, price, stock)
+    // Using destructuring to exclude isActive and id which are handled separately
+    const { id, isActive, ...rest } = updateVariantDto;
+    Object.assign(variant, rest);
 
     await this.productVariantRepository.save(variant);
   }
