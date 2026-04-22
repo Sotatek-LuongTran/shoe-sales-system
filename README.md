@@ -107,13 +107,31 @@ Backend API for a shoe sales system built with **NestJS**, **TypeORM**, **Postgr
 
 ```
 src/
-├── auth/                 # Registration, login, JWT
-├── common/               # Guards (JWT, Role), decorators
-├── database/            # Entities, migrations, repositories, seed
-├── product/             # Shoe API (and related variant/brand/category)
-├── redis/               # Redis service (blacklist, refresh)
 ├── app.module.ts
-└── main.ts
+├── main.ts
+├── auth/                     # Auth module (login, registration, OTP, password reset)
+├── admin/                    # Admin side features
+│   ├── auth/                 # Admin authentication
+│   ├── management/           # CRUD for brands, categories, products, variants, users, orders, payments
+│   └── ...
+├── order/                    # Order handling (DTOs, repository, services)
+├── user/                     # User profile and password management
+├── workers/                  # Bull workers (mailer, order, file handling)
+│   ├── mailer/               # Email sending worker
+│   ├── order/                # Background order processing
+│   └── file/                 # File upload / MinIO worker
+├── shared/                   # Shared utilities, modules, DTOs, guards, enums, filters
+│   ├── modules/              # Common modules (brand, category, product, user, etc.)
+│   ├── decorators/           # Custom decorators (role, etc.)
+│   ├── guards/               # Role and refresh‑token guards
+│   ├── enums/                # Application enums (order, payment, user, etc.)
+│   ├── dto/                  # Common response & pagination DTOs
+│   └── ...
+├── database/                 # TypeORM entities, migrations, seeds, data‑source config
+│   ├── entities/             # Entity definitions (user, product, order, payment, ...)
+│   ├── migrations/           # Migration scripts
+│   └── seeds/                # Seed data scripts
+└── ...
 ```
 
 ---
@@ -128,29 +146,34 @@ npm install
 
 ### 2. Environment variables
 
-Copy `.env.example` to `.env` and set values (database, JWT, Redis):
+Copy `.env.example` to `.env` and set values (database, JWT, Redis, MinIO, Mailer):
 
 ```bash
 cp .env.example .env
 ```
 
-Important variables: `DATABASE_*`, `JWT_SECRET`, `JWT_EXPIRES_IN`, `REDIS_HOST`, `REDIS_PORT`.
+Important variables include:
+- `DATABASE_*` – PostgreSQL connection settings
+- `JWT_SECRET`, `JWT_EXPIRES_IN` – authentication tokens
+- `REDIS_HOST`, `REDIS_PORT` – Redis for session/blacklist and Bull queues
+- `MINIO_ENDPOINT`, `MINIO_ACCESS_KEY`, `MINIO_SECRET_KEY` – MinIO object storage
+- `MAILER_HOST`, `MAILER_PORT`, `MAILER_USER`, `MAILER_PASS` – email service configuration
 
-### 3. Database and Redis (Docker)
+### 3. Run supporting services (Docker)
 
 ```bash
 docker compose up -d
 ```
 
-Starts PostgreSQL and Redis as defined in `docker-compose.yml`.
+This brings up PostgreSQL, Redis, and MinIO (for file storage) as defined in `docker-compose.yml`.
 
-### 4. Run migrations
+### 4. Run database migrations
 
 ```bash
 npm run migration:run
 ```
 
-### 5. Seed (optional – create admin or sample data)
+### 5. Seed data (optional)
 
 ```bash
 npm run seed:run
@@ -159,7 +182,7 @@ npm run seed:run
 ### 6. Start the application
 
 ```bash
-# Development (watch)
+# Development (watch mode)
 npm run start:dev
 
 # Production build and run
@@ -167,7 +190,22 @@ npm run build
 npm run start:prod
 ```
 
-API runs at `http://localhost:3000` by default (or the `PORT` in `.env`).
+### 7. Run background workers (optional)
+
+The project includes several Bull‑based workers for asynchronous tasks:
+
+```bash
+# Mailer worker (sends emails)
+npm run worker:mailer
+
+# Order processing worker
+npm run worker:order
+
+# File handling worker (e.g., uploads to MinIO)
+npm run worker:file
+```
+
+API is available at `http://localhost:3000` (or the port defined in `.env`).
 
 ---
 
